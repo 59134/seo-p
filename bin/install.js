@@ -220,6 +220,11 @@ function copyModuleFiles(args) {
     const files = listFiles(filesRoot);
 
     for (const relative of files) {
+        if (relative === '.env.seo-programmatique.example') {
+            log('skip', `${relative} garde en interne, variables fusionnees dans ${args.env}`);
+            continue;
+        }
+
         const source = path.join(filesRoot, relative);
         const target = path.join(args.target, relative);
 

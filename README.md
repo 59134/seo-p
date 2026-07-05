@@ -6,6 +6,7 @@ Ce package installe le module SEO programmatique dans un projet Symfony/Webtime 
 
 - Copie les nouveaux fichiers du module : entites, repositories, services, controllers SEO, templates, documentation et migrations SEO.
 - Ajoute les variables manquantes dans `.env.local` ou dans le fichier choisi avec `--env`.
+- Garde `.env.seo-programmatique.example` en interne dans le package : ce fichier n'est pas copie dans le projet cible.
 - Ajoute la route front `seo_programmatic_page` dans `config/routes.yaml` si elle n'existe pas.
 - Ajoute le menu admin SEO programmatique dans `DashboardController.php` si absent.
 - Ajoute les pages SEO publiees dans `SitemapController.php` si absent.
