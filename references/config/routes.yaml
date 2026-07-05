@@ -1,0 +1,865 @@
+controllers:
+    resource: ../src/Controller/
+    type: annotation
+
+kernel:
+    resource: ../src/Kernel.php
+    type: annotation
+
+#vitrine
+app_main:
+    path:
+        fr: /
+        en: /{_locale<%app.locales%>}
+        de: /{_locale<%app.locales%>}
+        es: /{_locale<%app.locales%>}
+        it: /{_locale<%app.locales%>}
+        nl: /{_locale<%app.locales%>}
+        be: /{_locale<%app.locales%>}
+    controller: 'App\Controller\MainController::index'
+    methods: [GET, POST]
+
+app_categorie:
+    path:
+        fr: /{id<\d+>}-{slug}
+        en: /{_locale<%app.locales%>}/{id<\d+>}-{slug}
+        de: /{_locale<%app.locales%>}/{id<\d+>}-{slug}
+        es: /{_locale<%app.locales%>}/{id<\d+>}-{slug}
+        it: /{_locale<%app.locales%>}/{id<\d+>}-{slug}
+        nl: /{_locale<%app.locales%>}/{id<\d+>}-{slug}
+        be: /{_locale<%app.locales%>}/{id<\d+>}-{slug}
+    controller: 'App\Controller\CategorieController::index'
+    methods: [GET, POST]
+
+article-ref:
+    path:
+        fr: /{id<\d+>}/{slug}
+        en: /{_locale<%app.locales%>}/{id<\d+>}/{slug}
+        de: /{_locale<%app.locales%>}/{id<\d+>}/{slug}
+        es: /{_locale<%app.locales%>}/{id<\d+>}/{slug}
+        it: /{_locale<%app.locales%>}/{id<\d+>}/{slug}
+        nl: /{_locale<%app.locales%>}/{id<\d+>}/{slug}
+        be: /{_locale<%app.locales%>}/{id<\d+>}/{slug}
+    controller: 'App\Controller\ArticleRefController::index'
+    methods: [GET, POST]
+
+calculateur:
+    path:
+        fr: /calculateur
+        en: /{_locale<%app.locales%>}/calculateur
+        de: /{_locale<%app.locales%>}/calculateur
+        es: /{_locale<%app.locales%>}/calculateur
+        it: /{_locale<%app.locales%>}/calculateur
+        nl: /{_locale<%app.locales%>}/calculateur
+        be: /{_locale<%app.locales%>}/calculateur
+    controller: 'App\Controller\CalculateurController::index'
+    methods: [GET, POST]
+
+reservation:
+    path:
+        fr: /devis
+        en: /{_locale<%app.locales%>}/devis
+        de: /{_locale<%app.locales%>}/devis
+        es: /{_locale<%app.locales%>}/devis
+        it: /{_locale<%app.locales%>}/devis
+        nl: /{_locale<%app.locales%>}/devis
+        be: /{_locale<%app.locales%>}/devis
+    controller: 'App\Controller\ReservationController::index'
+    methods: [GET, POST]
+
+liste-poste:
+    path:
+        fr: /recrutement
+        en: /{_locale<%app.locales%>}/recrutement
+        de: /{_locale<%app.locales%>}/recrutement
+        es: /{_locale<%app.locales%>}/recrutement
+        it: /{_locale<%app.locales%>}/recrutement
+        nl: /{_locale<%app.locales%>}/recrutement
+        be: /{_locale<%app.locales%>}/recrutement
+    controller: 'App\Controller\RecrutementController::index'
+    methods: [GET, POST]
+
+poste:
+    path:
+        fr: /recrutement/{id<\d+>}/{name}
+        en: /{_locale<%app.locales%>}/recrutement/{id<\d+>}/{name}
+        de: /{_locale<%app.locales%>}/recrutement/{id<\d+>}/{name}
+        es: /{_locale<%app.locales%>}/recrutement/{id<\d+>}/{name}
+        it: /{_locale<%app.locales%>}/recrutement/{id<\d+>}/{name}
+        nl: /{_locale<%app.locales%>}/recrutement/{id<\d+>}/{name}
+        be: /{_locale<%app.locales%>}/recrutement/{id<\d+>}/{name}
+    controller: 'App\Controller\RecrutementController::poste'
+    methods: [GET, POST]
+    
+avantApres:
+    path:
+        fr: /avantApres
+        en: /{_locale<%app.locales%>}/beforeAfter
+        de: /{_locale<%app.locales%>}/vorherNachher
+        es: /{_locale<%app.locales%>}/antesDespues
+        it: /{_locale<%app.locales%>}/primaDopo
+        nl: /{_locale<%app.locales%>}/voorNa
+        be: /{_locale<%app.locales%>}/avantApres
+    controller: 'App\Controller\AvantApresController::index'
+    methods: [GET, POST]
+
+partenaire:
+    path:
+        fr: /partenaire
+        en: /{_locale<%app.locales%>}/partner
+        de: /{_locale<%app.locales%>}/partner
+        es: /{_locale<%app.locales%>}/pareja
+        it: /{_locale<%app.locales%>}/compagno
+        nl: /{_locale<%app.locales%>}/partner
+        be: /{_locale<%app.locales%>}/partenaire
+    controller: 'App\Controller\PartenaireController::index'
+    methods: [GET, POST]
+
+equipes:
+    path:
+        fr: /equipe
+        en: /{_locale<%app.locales%>}/crew
+        de: /{_locale<%app.locales%>}/besatzung
+        es: /{_locale<%app.locales%>}/multitud
+        it: /{_locale<%app.locales%>}/equipaggio
+        nl: /{_locale<%app.locales%>}/bemanning
+        be: /{_locale<%app.locales%>}/equipe
+    controller: 'App\Controller\EquipeController::index'
+    methods: [GET, POST]
+
+equipe:
+    path:
+        fr: /equipe/{id<\d+>}
+        en: /{_locale<%app.locales%>}/crew/{id<\d+>}
+        de: /{_locale<%app.locales%>}/besatzung/{id<\d+>}
+        es: /{_locale<%app.locales%>}/multitud/{id<\d+>}
+        it: /{_locale<%app.locales%>}/equipaggio/{id<\d+>}
+        nl: /{_locale<%app.locales%>}/bemanning/{id<\d+>}
+        be: /{_locale<%app.locales%>}/equipe/{id<\d+>}
+    controller: 'App\Controller\EquipeController::ficheEquipe'
+    methods: [GET, POST]
+
+prestations:
+    path:
+        fr: /prestations
+        en: /{_locale<%app.locales%>}/services
+        de: /{_locale<%app.locales%>}/vorteile
+        es: /{_locale<%app.locales%>}/beneficios
+        it: /{_locale<%app.locales%>}/benefici
+        nl: /{_locale<%app.locales%>}/diensten
+        be: /{_locale<%app.locales%>}/prestations
+    controller: 'App\Controller\PrestationController::index'
+    methods: [GET, POST]
+
+prestation:
+    path:
+        fr: /prestations/{id<\d+>}-{name}
+        en: /{_locale<%app.locales%>}/services/{id<\d+>}-{name}
+        de: /{_locale<%app.locales%>}/vorteile/{id<\d+>}-{name}
+        es: /{_locale<%app.locales%>}/beneficios/{id<\d+>}-{name}
+        it: /{_locale<%app.locales%>}/benefici/{id<\d+>}-{name}
+        nl: /{_locale<%app.locales%>}/diensten/{id<\d+>}-{name}
+        be: /{_locale<%app.locales%>}/prestations/{id<\d+>}-{name}
+    controller: 'App\Controller\PrestationController::prestation'
+    methods: [GET, POST]
+    
+formations:
+    path:
+        fr: /formations
+        en: /{_locale<%app.locales%>}/training
+        de: /{_locale<%app.locales%>}/Ausbildung
+        es: /{_locale<%app.locales%>}/capacitación
+        it: /{_locale<%app.locales%>}/formazione
+        nl: /{_locale<%app.locales%>}/opleiding
+        be: /{_locale<%app.locales%>}/formations
+    controller: 'App\Controller\FormationController::index'
+    methods: [GET, POST]
+
+formation:
+    path:
+        fr: /formations/{id<\d+>}-{name}
+        en: /{_locale<%app.locales%>}/training/{id<\d+>}-{name}
+        de: /{_locale<%app.locales%>}/Ausbildung/{id<\d+>}-{name}
+        es: /{_locale<%app.locales%>}/capacitación/{id<\d+>}-{name}
+        it: /{_locale<%app.locales%>}/formazione/{id<\d+>}-{name}
+        nl: /{_locale<%app.locales%>}/opleiding/{id<\d+>}-{name}
+        be: /{_locale<%app.locales%>}/formations/{id<\d+>}-{name}
+    controller: 'App\Controller\FormationController::formation'
+    methods: [GET, POST]
+
+magasins:
+    path:
+        fr: /lieux
+        en: /{_locale<%app.locales%>}/places
+        de: /{_locale<%app.locales%>}/setzt
+        es: /{_locale<%app.locales%>}/lugares
+        it: /{_locale<%app.locales%>}/luoghi
+        nl: /{_locale<%app.locales%>}/plaatsen
+        be: /{_locale<%app.locales%>}/lieux
+    controller: 'App\Controller\MagasinController::index'
+    methods: [GET, POST]
+
+magasin:
+    path:
+        fr: /lieux/{id<\d+>}
+        en: /{_locale<%app.locales%>}/places/{id<\d+>}
+        de: /{_locale<%app.locales%>}/setzt/{id<\d+>}
+        es: /{_locale<%app.locales%>}/lugares/{id<\d+>}
+        it: /{_locale<%app.locales%>}/luoghi/{id<\d+>}
+        nl: /{_locale<%app.locales%>}/plaatsen/{id<\d+>}
+        be: /{_locale<%app.locales%>}/lieux/{id<\d+>}
+    controller: 'App\Controller\MagasinController::magasin'
+    methods: [GET, POST]
+
+cartes:
+    path:
+        fr: /carte
+        en: /{_locale<%app.locales%>}/map
+        de: /{_locale<%app.locales%>}/karte
+        es: /{_locale<%app.locales%>}/mapa
+        it: /{_locale<%app.locales%>}/cartaGeografica
+        nl: /{_locale<%app.locales%>}/kaart
+        be: /{_locale<%app.locales%>}/carte
+    controller: 'App\Controller\CarteController::index'
+    methods: [GET, POST]
+
+albums:
+    path:
+        fr: /albums
+        en: /{_locale<%app.locales%>}/scrapbook
+        de: /{_locale<%app.locales%>}/sammelalbum
+        es: /{_locale<%app.locales%>}/albumDeRecortes
+        it: /{_locale<%app.locales%>}/album
+        nl: /{_locale<%app.locales%>}/plakboek
+        be: /{_locale<%app.locales%>}/albums
+    controller: 'App\Controller\AlbumController::index'
+    methods: [GET, POST]
+
+album:
+    path:
+        fr: /albums/{id<\d+>}-{name}
+        en: /{_locale<%app.locales%>}/scrapbook/{id<\d+>}-{name}
+        de: /{_locale<%app.locales%>}/sammelalbum/{id<\d+>}-{name}
+        es: /{_locale<%app.locales%>}/albumDeRecortes/{id<\d+>}-{name}
+        it: /{_locale<%app.locales%>}/album/{id<\d+>}-{name}
+        nl: /{_locale<%app.locales%>}/plakboek/{id<\d+>}-{name}
+        be: /{_locale<%app.locales%>}/albums/{id<\d+>}-{name}
+    controller: 'App\Controller\AlbumController::album'
+    methods: [GET, POST]
+
+galerie:
+    path:
+        fr: /galerie
+        en: /{_locale<%app.locales%>}/gallery
+        de: /{_locale<%app.locales%>}/galerie
+        es: /{_locale<%app.locales%>}/galeria
+        it: /{_locale<%app.locales%>}/galleria
+        nl: /{_locale<%app.locales%>}/galerij
+        be: /{_locale<%app.locales%>}/galerie
+    controller: 'App\Controller\GalerieController::index'
+    methods: [GET, POST]
+
+temoignage:
+    path:
+        fr: /temoignages
+        en: /{_locale<%app.locales%>}/testimonials
+        de: /{_locale<%app.locales%>}/referenzen
+        es: /{_locale<%app.locales%>}/testimonios
+        it: /{_locale<%app.locales%>}/testimonianze
+        nl: /{_locale<%app.locales%>}/getuigenissen
+        be: /{_locale<%app.locales%>}/temoignages
+    controller: 'App\Controller\TemoignageController::index'
+    methods: [GET, POST]
+
+temoigner:
+    path:
+        fr: /temoigner
+        en: /{_locale<%app.locales%>}/bearWitness
+        de: /{_locale<%app.locales%>}/zeugnisAblegen
+        es: /{_locale<%app.locales%>}/atestiguar
+        it: /{_locale<%app.locales%>}/testimoniare
+        nl: /{_locale<%app.locales%>}/getuigeZijnVan
+        be: /{_locale<%app.locales%>}/temoigner
+    controller: 'App\Controller\TemoignageController::temoigner'
+    methods: [GET, POST]
+
+video:
+    path:
+        fr: /video
+        en: /{_locale<%app.locales%>}/video
+        de: /{_locale<%app.locales%>}/video
+        es: /{_locale<%app.locales%>}/video
+        it: /{_locale<%app.locales%>}/video
+        nl: /{_locale<%app.locales%>}/video
+        be: /{_locale<%app.locales%>}/video
+    controller: 'App\Controller\VideoController::index'
+    methods: [GET, POST]
+
+blog:
+    path:
+        fr: /blog
+        en: /{_locale<%app.locales%>}/blog
+        de: /{_locale<%app.locales%>}/blog
+        es: /{_locale<%app.locales%>}/blog
+        it: /{_locale<%app.locales%>}/blog
+        nl: /{_locale<%app.locales%>}/bloggen
+        be: /{_locale<%app.locales%>}/blog
+    controller: 'App\Controller\BlogController::index'
+    methods: [GET, POST]
+
+blog_id:
+    path:
+        fr: /blog/{categorieBlog}/{id<\d+>}-{name}
+        en: /{_locale<%app.locales%>}/blog/{categorieBlog}/{id<\d+>}-{name}
+        de: /{_locale<%app.locales%>}/blog/{categorieBlog}/{id<\d+>}-{name}
+        es: /{_locale<%app.locales%>}/blog/{categorieBlog}/{id<\d+>}-{name}
+        it: /{_locale<%app.locales%>}/blog/{categorieBlog}/{id<\d+>}-{name}
+        nl: /{_locale<%app.locales%>}/bloggen/{categorieBlog}/{id<\d+>}-{name}
+        be: /{_locale<%app.locales%>}/blog/{categorieBlog}/{id<\d+>}-{name}
+    controller: 'App\Controller\BlogController::blog'
+    methods: [GET, POST]
+
+blog_cat:
+    path:
+        fr: /blog/{id<\d+>}-{categorieBlog}
+        en: /{_locale<%app.locales%>}/blog/{id<\d+>}-{categorieBlog}
+        de: /{_locale<%app.locales%>}/blog/{id<\d+>}-{categorieBlog}
+        es: /{_locale<%app.locales%>}/blog/{id<\d+>}-{categorieBlog}
+        it: /{_locale<%app.locales%>}/blog/{id<\d+>}-{categorieBlog}
+        nl: /{_locale<%app.locales%>}/bloggen/{id<\d+>}-{categorieBlog}
+        be: /{_locale<%app.locales%>}/blog/{id<\d+>}-{categorieBlog}
+    controller: 'App\Controller\BlogController::blogCat'
+    methods: [GET, POST]
+
+save_popup_session:
+    path:
+        fr: /save-popup-session/{popupId}
+        en: /{_locale<%app.locales%>}/save-popup-session/{popupId}
+        de: /{_locale<%app.locales%>}/save-popup-session/{popupId}
+        es: /{_locale<%app.locales%>}/save-popup-session/{popupId}
+        it: /{_locale<%app.locales%>}/save-popup-session/{popupId}
+        nl: /{_locale<%app.locales%>}/save-popup-session/{popupId}
+        be: /{_locale<%app.locales%>}/save-popup-session/{popupId}
+    controller: 'App\Controller\PopUpController::savePopupToSession'
+    methods: [GET, POST]
+
+agenda:
+    path:
+        fr: /agenda
+        en: /{_locale<%app.locales%>}/diary
+        de: /{_locale<%app.locales%>}/tagebuch
+        es: /{_locale<%app.locales%>}/diario
+        it: /{_locale<%app.locales%>}/diario
+        nl: /{_locale<%app.locales%>}/dagboek
+        be: /{_locale<%app.locales%>}/agenda
+    controller: 'App\Controller\AgendaController::index'
+    methods: [GET, POST]
+
+agenda_add:
+    path:
+        fr: /agenda/rendez-vous
+        en: /{_locale<%app.locales%>}/diary/appointment
+        de: /{_locale<%app.locales%>}/tagebuch/termin
+        es: /{_locale<%app.locales%>}/diario/cita
+        it: /{_locale<%app.locales%>}/diario/appuntamento
+        nl: /{_locale<%app.locales%>}/dagboek/afspraak
+        be: /{_locale<%app.locales%>}/agenda/rendez-vous
+    controller: 'App\Controller\AgendaController::agendaAdd'
+    methods: [GET, POST]
+
+agenda_confirmation:
+    path:
+        fr: /agenda/confirmation
+        en: /{_locale<%app.locales%>}/diary/confirmation
+        de: /{_locale<%app.locales%>}/tagebuch/bestatigung
+        es: /{_locale<%app.locales%>}/diario/confirmacion
+        it: /{_locale<%app.locales%>}/diario/conferma
+        nl: /{_locale<%app.locales%>}/dagboek/bevestiging
+        be: /{_locale<%app.locales%>}/agenda/confirmation
+    controller: 'App\Controller\AgendaController::confirmation'
+    methods: [GET, POST]
+
+contact:
+    path:
+        fr: /contact
+        en: /{_locale<%app.locales%>}/contact
+        de: /{_locale<%app.locales%>}/kontakt
+        es: /{_locale<%app.locales%>}/contactar
+        it: /{_locale<%app.locales%>}/contatto
+        nl: /{_locale<%app.locales%>}/contact
+        be: /{_locale<%app.locales%>}/contact
+    controller: 'App\Controller\ContactController::index'
+    methods: [GET, POST]
+
+contact_confirmation:
+    path:
+        fr: /contact/confirmation
+        en: /{_locale<%app.locales%>}/contact/confirmation
+        de: /{_locale<%app.locales%>}/kontakt/bestatigung
+        es: /{_locale<%app.locales%>}/contactar/confirmacion
+        it: /{_locale<%app.locales%>}/contatto/conferma
+        nl: /{_locale<%app.locales%>}/contact/bevestiging
+        be: /{_locale<%app.locales%>}/contact/confirmation
+    controller: 'App\Controller\ContactController::confirmation'
+    methods: [GET, POST]
+
+eligible_confirmation:
+    path:
+        fr: /eligible/confirmation
+        en: /{_locale<%app.locales%>}/eligible/confirmation
+        de: /{_locale<%app.locales%>}/eligible/bestatigung
+        es: /{_locale<%app.locales%>}/eligible/confirmacion
+        it: /{_locale<%app.locales%>}/eligible/conferma
+        nl: /{_locale<%app.locales%>}/eligible/bevestiging
+        be: /{_locale<%app.locales%>}/eligible/confirmation
+    controller: 'App\Controller\ClientEligibleController::confirmation'
+    methods: [GET, POST]
+
+eligible_non_confirmation:
+    path:
+        fr: /eligible/nonconfirmation
+        en: /{_locale<%app.locales%>}/eligible/nonconfirmation
+        de: /{_locale<%app.locales%>}/eligible/nonconfirmation
+        es: /{_locale<%app.locales%>}/eligible/nonconfirmation
+        it: /{_locale<%app.locales%>}/eligible/nonconfirmation
+        nl: /{_locale<%app.locales%>}/eligible/nonconfirmation
+        be: /{_locale<%app.locales%>}/eligible/nonconfirmation
+    controller: 'App\Controller\ClientEligibleController::nonconfirmation'
+    methods: [GET, POST]
+
+mentionsLegales:
+    path:
+        fr: /mentions-legales
+        en: /{_locale<%app.locales%>}/mentions-legales
+        de: /{_locale<%app.locales%>}/mentions-legales
+        es: /{_locale<%app.locales%>}/mentions-legales
+        it: /{_locale<%app.locales%>}/mentions-legales
+        nl: /{_locale<%app.locales%>}/mentions-legales
+        be: /{_locale<%app.locales%>}/mentions-legales
+    controller: 'App\Controller\MentionsLegalesController::index'
+    methods: [GET, POST]
+    
+avis_deces:
+    path:
+        fr: /avis-deces
+        en: /{_locale<%app.locales%>}/death-notice
+        de: /{_locale<%app.locales%>}/todesanzeige
+        es: /{_locale<%app.locales%>}/aviso-de-muerte
+        it: /{_locale<%app.locales%>}/avviso-di-morte
+        nl: /{_locale<%app.locales%>}/overlijdensbericht
+        be: /{_locale<%app.locales%>}/avis-deces
+    controller: 'App\Controller\AvisDecesController::index'
+    methods: [GET, POST]
+
+consulter_avis:
+    path:
+        fr: /avis-deces/{id<\d+>}-{nom}-{prenom}
+        en: /{_locale<%app.locales%>}/death-notice/{id<\d+>}-{nom}-{prenom}
+        de: /{_locale<%app.locales%>}/todesanzeige/{id<\d+>}-{nom}-{prenom}
+        es: /{_locale<%app.locales%>}/aviso-de-muerte/{id<\d+>}-{nom}-{prenom}
+        it: /{_locale<%app.locales%>}/avviso-di-morte/{id<\d+>}-{nom}-{prenom}
+        nl: /{_locale<%app.locales%>}/overlijdensbericht/{id<\d+>}-{nom}-{prenom}
+        be: /{_locale<%app.locales%>}/avis-deces/{id<\d+>}-{nom}-{prenom}
+    controller: 'App\Controller\AvisDecesController::avisDeces'
+    methods: [GET, POST]
+
+afficher_hommages:
+    path:
+        fr: /avis-deces/{id<\d+>}/afficher-hommages
+        en: /{_locale<%app.locales%>}/death-notice/{id<\d+>}/afficher-hommages
+        de: /{_locale<%app.locales%>}/todesanzeige/{id<\d+>}/afficher-hommages
+        es: /{_locale<%app.locales%>}/aviso-de-muerte/{id<\d+>}/afficher-hommages
+        it: /{_locale<%app.locales%>}/avviso-di-morte/{id<\d+>}/afficher-hommages
+        nl: /{_locale<%app.locales%>}/overlijdensbericht/{id<\d+>}/afficher-hommages
+        be: /{_locale<%app.locales%>}/avis-deces/{id<\d+>}/afficher-hommages
+    controller: 'App\Controller\AvisDecesController::afficherHommages'
+    methods: [GET, POST]
+
+#Catalogue
+#Compte Client
+app_connexion:
+    path:
+        fr: /connexion
+        en: /{_locale<%app.locales%>}/login
+        de: /{_locale<%app.locales%>}/verbindung
+        es: /{_locale<%app.locales%>}/conexion
+        it: /{_locale<%app.locales%>}/connessione
+        nl: /{_locale<%app.locales%>}/verbinding
+        be: /{_locale<%app.locales%>}/connexion
+    controller: 'App\Controller\SecurityClientController::login'
+    methods: [GET, POST]
+
+app_deconnexion:
+    path:
+        fr: /deconnexion
+        en: /{_locale<%app.locales%>}/logout
+        de: /{_locale<%app.locales%>}/ausloggen
+        es: /{_locale<%app.locales%>}/cerrarSesion
+        it: /{_locale<%app.locales%>}/disconnettersi
+        nl: /{_locale<%app.locales%>}/uitloggen
+        be: /{_locale<%app.locales%>}/deconnexion
+    controller: 'App\Controller\SecurityClientController::logout'
+    methods: [GET, POST]
+
+app_register:
+    path:
+        fr: /register
+        en: /{_locale<%app.locales%>}/register
+        de: /{_locale<%app.locales%>}/register
+        es: /{_locale<%app.locales%>}/register
+        it: /{_locale<%app.locales%>}/register
+        nl: /{_locale<%app.locales%>}/register
+        be: /{_locale<%app.locales%>}/register
+    controller: 'App\Controller\RegistrationController::register'
+    methods: [GET, POST]
+
+verify_user:
+    path:
+        fr: /verif/{idToken}
+        en: /{_locale<%app.locales%>}/verif/{idToken}
+        de: /{_locale<%app.locales%>}/verif/{idToken}
+        es: /{_locale<%app.locales%>}/verif/{idToken}
+        it: /{_locale<%app.locales%>}/verif/{idToken}
+        nl: /{_locale<%app.locales%>}/verif/{idToken}
+        be: /{_locale<%app.locales%>}/verif/{idToken}
+    controller: 'App\Controller\RegistrationController::verifyUser'
+    methods: [GET, POST]
+
+resend_verif:
+    path:
+        fr: /renvoiverif
+        en: /{_locale<%app.locales%>}/renvoiverif
+        de: /{_locale<%app.locales%>}/renvoiverif
+        es: /{_locale<%app.locales%>}/renvoiverif
+        it: /{_locale<%app.locales%>}/renvoiverif
+        nl: /{_locale<%app.locales%>}/renvoiverif
+        be: /{_locale<%app.locales%>}/renvoiverif
+    controller: 'App\Controller\RegistrationController::resendVerif'
+    methods: [GET, POST]
+
+compteClient:
+    path:
+        fr: /compte
+        en: /{_locale<%app.locales%>}/account
+        de: /{_locale<%app.locales%>}/konto
+        es: /{_locale<%app.locales%>}/cuenta
+        it: /{_locale<%app.locales%>}/account
+        nl: /{_locale<%app.locales%>}/rekening
+        be: /{_locale<%app.locales%>}/compte
+    controller: 'App\Controller\CompteController::index'
+    methods: [GET, POST]
+
+compte_commande:
+    path:
+        fr: /compte/commande/{id<\d+>}
+        en: /{_locale<%app.locales%>}/account/order/{id<\d+>}
+        de: /{_locale<%app.locales%>}/konto/befehl/{id<\d+>}
+        es: /{_locale<%app.locales%>}/cuenta/orden/{id<\d+>}
+        it: /{_locale<%app.locales%>}/account/ordine/{id<\d+>}
+        nl: /{_locale<%app.locales%>}/rekening/bestelling/{id<\d+>}
+        be: /{_locale<%app.locales%>}/compte/commande/{id<\d+>}
+    controller: 'App\Controller\CompteController::show'
+    methods: [GET, POST]
+
+telecharger_pdf:
+    path:
+        fr: /compte/facture/{id<\d+>}
+        en: /{_locale<%app.locales%>}/account/invoice/{id<\d+>}
+        de: /{_locale<%app.locales%>}/konto/rechnung/{id<\d+>}
+        es: /{_locale<%app.locales%>}/cuenta/factura/{id<\d+>}
+        it: /{_locale<%app.locales%>}/account/fattura/{id<\d+>}
+        nl: /{_locale<%app.locales%>}/rekening/factuur/{id<\d+>}
+        be: /{_locale<%app.locales%>}/compte/facture/{id<\d+>}
+    controller: 'App\Controller\CompteController::pdf'
+    methods: [GET, POST]
+
+#Adresse
+adresse:
+    path:
+        fr: /adresse
+        en: /{_locale<%app.locales%>}/address
+        de: /{_locale<%app.locales%>}/adresse
+        es: /{_locale<%app.locales%>}/direccion
+        it: /{_locale<%app.locales%>}/indirizzo
+        nl: /{_locale<%app.locales%>}/adres
+        be: /{_locale<%app.locales%>}/adresse
+    controller: 'App\Controller\AdresseController::index'
+    methods: [GET, POST]
+
+address_delete:
+    path:
+        fr: /adresse/{id<\d+>}/delete
+        en: /{_locale<%app.locales%>}/address/{id<\d+>}/delete
+        de: /{_locale<%app.locales%>}/adresse/{id<\d+>}/delete
+        es: /{_locale<%app.locales%>}/direccion/{id<\d+>}/delete
+        it: /{_locale<%app.locales%>}/indirizzo/{id<\d+>}/delete
+        nl: /{_locale<%app.locales%>}/adres/{id<\d+>}/delete
+        be: /{_locale<%app.locales%>}/adresse/{id<\d+>}/delete
+    controller: 'App\Controller\AdresseController::delete'
+    methods: [GET, POST]
+
+address_show:
+    path:
+        fr: /adresse/{id<\d+>}
+        en: /{_locale<%app.locales%>}/address/{id<\d+>}
+        de: /{_locale<%app.locales%>}/adresse/{id<\d+>}
+        es: /{_locale<%app.locales%>}/direccion/{id<\d+>}
+        it: /{_locale<%app.locales%>}/indirizzo/{id<\d+>}
+        nl: /{_locale<%app.locales%>}/adres/{id<\d+>}
+        be: /{_locale<%app.locales%>}/adresse/{id<\d+>}
+    controller: 'App\Controller\AdresseController::show'
+    methods: [GET, POST]
+
+address_new:
+    path:
+        fr: /new
+        en: /{_locale<%app.locales%>}/new
+        de: /{_locale<%app.locales%>}/new
+        es: /{_locale<%app.locales%>}/new
+        it: /{_locale<%app.locales%>}/new
+        nl: /{_locale<%app.locales%>}/new
+        be: /{_locale<%app.locales%>}/new
+    controller: 'App\Controller\AdresseController::new'
+    methods: [GET, POST]
+
+address_edit:
+    path:
+        fr: /adresse/{id<\d+>}/edit
+        en: /{_locale<%app.locales%>}/address/{id<\d+>}/edit
+        de: /{_locale<%app.locales%>}/adresse/{id<\d+>}/edit
+        es: /{_locale<%app.locales%>}/direccion/{id<\d+>}/edit
+        it: /{_locale<%app.locales%>}/indirizzo/{id<\d+>}/edit
+        nl: /{_locale<%app.locales%>}/adres/{id<\d+>}/edit
+        be: /{_locale<%app.locales%>}/adresse/{id<\d+>}/edit
+    controller: 'App\Controller\AdresseController::edit'
+    methods: [GET, POST]
+
+#Panier
+panier:
+    path:
+        fr: /panier
+        en: /{_locale<%app.locales%>}/cart
+        de: /{_locale<%app.locales%>}/korb
+        es: /{_locale<%app.locales%>}/cesta
+        it: /{_locale<%app.locales%>}/cestino
+        nl: /{_locale<%app.locales%>}/mand
+        be: /{_locale<%app.locales%>}/panier
+    controller: 'App\Controller\PanierController::index'
+    methods: [GET, POST]
+
+addPanier:
+    path:
+        fr: /panier/add/{id<\d+>}
+        en: /{_locale<%app.locales%>}/panier/add/{id<\d+>}
+        de: /{_locale<%app.locales%>}/panier/add/{id<\d+>}
+        es: /{_locale<%app.locales%>}/panier/add/{id<\d+>}
+        it: /{_locale<%app.locales%>}/panier/add/{id<\d+>}
+        nl: /{_locale<%app.locales%>}/panier/add/{id<\d+>}
+        be: /{_locale<%app.locales%>}/panier/add/{id<\d+>}
+    controller: 'App\Controller\PanierController::addToCart'
+    methods: [GET, POST]
+
+deletePanier:
+    path:
+        fr: /panier/delete/{id<\d+>}
+        en: /{_locale<%app.locales%>}/panier/delete/{id<\d+>}
+        de: /{_locale<%app.locales%>}/panier/delete/{id<\d+>}
+        es: /{_locale<%app.locales%>}/panier/delete/{id<\d+>}
+        it: /{_locale<%app.locales%>}/panier/delete/{id<\d+>}
+        nl: /{_locale<%app.locales%>}/panier/delete/{id<\d+>}
+        be: /{_locale<%app.locales%>}/panier/delete/{id<\d+>}
+    controller: 'App\Controller\PanierController::deleteFromCart'
+    methods: [GET, POST]
+
+deleteAllPanier:
+    path:
+        fr: /panier/deleteAll/{id<\d+>}
+        en: /{_locale<%app.locales%>}/panier/deleteAll/{id<\d+>}
+        de: /{_locale<%app.locales%>}/panier/deleteAll/{id<\d+>}
+        es: /{_locale<%app.locales%>}/panier/deleteAll/{id<\d+>}
+        it: /{_locale<%app.locales%>}/panier/deleteAll/{id<\d+>}
+        nl: /{_locale<%app.locales%>}/panier/deleteAll/{id<\d+>}
+        be: /{_locale<%app.locales%>}/panier/deleteAll/{id<\d+>}
+    controller: 'App\Controller\PanierController::deleteAllToCart'
+    methods: [GET, POST]
+
+checkout:
+    path:
+        fr: /checkout
+        en: /{_locale<%app.locales%>}/checkout
+        de: /{_locale<%app.locales%>}/checkout
+        es: /{_locale<%app.locales%>}/checkout
+        it: /{_locale<%app.locales%>}/checkout
+        nl: /{_locale<%app.locales%>}/checkout
+        be: /{_locale<%app.locales%>}/checkout
+    controller: 'App\Controller\CheckoutController::index'
+    methods: [GET, POST]
+
+checkoutConfirm:
+    path:
+        fr: /checkout/confirm
+        en: /{_locale<%app.locales%>}/checkout/confirm
+        de: /{_locale<%app.locales%>}/checkout/confirm
+        es: /{_locale<%app.locales%>}/checkout/confirm
+        it: /{_locale<%app.locales%>}/checkout/confirm
+        nl: /{_locale<%app.locales%>}/checkout/confirm
+        be: /{_locale<%app.locales%>}/checkout/confirm
+    controller: 'App\Controller\CheckoutController::confirm'
+    methods: [GET, POST]
+
+checkout_edit:
+    path:
+        fr: /checkout/edit
+        en: /{_locale<%app.locales%>}/checkout/edit
+        de: /{_locale<%app.locales%>}/checkout/edit
+        es: /{_locale<%app.locales%>}/checkout/edit
+        it: /{_locale<%app.locales%>}/checkout/edit
+        nl: /{_locale<%app.locales%>}/checkout/edit
+        be: /{_locale<%app.locales%>}/checkout/edit
+    controller: 'App\Controller\CheckoutController::checkoutEdit'
+    methods: [GET, POST]
+
+#Paiement
+create_checkout_session:
+    path:
+        fr: /create-checkout-session/{reference}
+        en: /{_locale<%app.locales%>}/create-checkout-session/{reference}
+        de: /{_locale<%app.locales%>}/create-checkout-session/{reference}
+        es: /{_locale<%app.locales%>}/create-checkout-session/{reference}
+        it: /{_locale<%app.locales%>}/create-checkout-session/{reference}
+        nl: /{_locale<%app.locales%>}/create-checkout-session/{reference}
+        be: /{_locale<%app.locales%>}/create-checkout-session/{reference}
+    controller: 'App\Controller\PaiementCheckoutController::index'
+    methods: [GET, POST]
+
+payment_success:
+    path:
+        fr: /payment-success/{reference}
+        en: /{_locale<%app.locales%>}/payment-success/{reference}
+        de: /{_locale<%app.locales%>}/payment-success/{reference}
+        es: /{_locale<%app.locales%>}/payment-success/{reference}
+        it: /{_locale<%app.locales%>}/payment-success/{reference}
+        nl: /{_locale<%app.locales%>}/payment-success/{reference}
+        be: /{_locale<%app.locales%>}/payment-success/{reference}
+    controller: 'App\Controller\PaiementCheckoutController::success'
+    methods: [GET, POST]
+
+payment_cancel:
+    path:
+        fr: /payment-cancel/{reference}
+        en: /{_locale<%app.locales%>}/payment-cancel/{reference}
+        de: /{_locale<%app.locales%>}/payment-cancel/{reference}
+        es: /{_locale<%app.locales%>}/payment-cancel/{reference}
+        it: /{_locale<%app.locales%>}/payment-cancel/{reference}
+        nl: /{_locale<%app.locales%>}/payment-cancel/{reference}
+        be: /{_locale<%app.locales%>}/payment-cancel/{reference}
+    controller: 'App\Controller\PaiementCheckoutController::cancel'
+    methods: [GET, POST]
+
+# Marque - Produit
+marques:
+    path:
+        fr: /marques
+        en: /{_locale<%app.locales%>}/brands
+        de: /{_locale<%app.locales%>}/marken
+        es: /{_locale<%app.locales%>}/marcas
+        it: /{_locale<%app.locales%>}/marche
+        nl: /{_locale<%app.locales%>}/merken
+        be: /{_locale<%app.locales%>}/marques
+    controller: 'App\Controller\MarqueController::index'
+    methods: [GET, POST]
+
+marqueProduits:
+    path:
+        fr: /marques/{id<\d+>}
+        en: /{_locale<%app.locales%>}/brands/{id<\d+>}
+        de: /{_locale<%app.locales%>}/marken/{id<\d+>}
+        es: /{_locale<%app.locales%>}/marcas/{id<\d+>}
+        it: /{_locale<%app.locales%>}/marche/{id<\d+>}
+        nl: /{_locale<%app.locales%>}/merken/{id<\d+>}
+        be: /{_locale<%app.locales%>}/marques/{id<\d+>}
+    controller: 'App\Controller\MarqueController::produitsMarque'
+    methods: [GET, POST]
+
+produits:
+    path:
+        fr: /produits
+        en: /{_locale<%app.locales%>}/products
+        de: /{_locale<%app.locales%>}/produkte
+        es: /{_locale<%app.locales%>}/productos
+        it: /{_locale<%app.locales%>}/prodotti
+        nl: /{_locale<%app.locales%>}/producten
+        be: /{_locale<%app.locales%>}/produits
+    controller: 'App\Controller\ProduitController::index'
+    methods: [GET, POST]
+
+produit:
+    path:
+        fr: /produits/{id<\d+>}-{name}
+        en: /{_locale<%app.locales%>}/products/{id<\d+>}-{name}
+        de: /{_locale<%app.locales%>}/produkte/{id<\d+>}-{name}
+        es: /{_locale<%app.locales%>}/productos/{id<\d+>}-{name}
+        it: /{_locale<%app.locales%>}/prodotti/{id<\d+>}-{name}
+        nl: /{_locale<%app.locales%>}/producten/{id<\d+>}-{name}
+        be: /{_locale<%app.locales%>}/produits/{id<\d+>}-{name}
+    controller: 'App\Controller\ProduitController::produit'
+    methods: [GET, POST]
+
+vehicules:
+    path:
+        fr: /vehicules
+        en: /{_locale<%app.locales%>}/vehicles
+        de: /{_locale<%app.locales%>}/fahrzeuge
+        es: /{_locale<%app.locales%>}/vehiculos
+        it: /{_locale<%app.locales%>}/veicoli
+        nl: /{_locale<%app.locales%>}/voertuigen
+        be: /{_locale<%app.locales%>}/vehicules
+    controller: 'App\Controller\VehiculeController::index'
+    methods: [GET, POST]
+
+vehicule:
+    path:
+        fr: /vehicules/{id<\d+>}-{name}
+        en: /{_locale<%app.locales%>}/vehicles/{id<\d+>}-{name}
+        de: /{_locale<%app.locales%>}/fahrzeuge/{id<\d+>}-{name}
+        es: /{_locale<%app.locales%>}/vehiculos/{id<\d+>}-{name}
+        it: /{_locale<%app.locales%>}/veicoli/{id<\d+>}-{name}
+        nl: /{_locale<%app.locales%>}/voertuigen/{id<\d+>}-{name}
+        be: /{_locale<%app.locales%>}/vehicules/{id<\d+>}-{name}
+    controller: 'App\Controller\VehiculeController::vehicule'
+    methods: [GET, POST]
+
+#Compteur de click telephone
+track_phone_click:
+    path:
+        fr: /track-phone-click
+        en: /{_locale<%app.locales%>}/track-phone-click
+        de: /{_locale<%app.locales%>}/track-phone-click
+        es: /{_locale<%app.locales%>}/track-phone-click
+        it: /{_locale<%app.locales%>}/track-phone-click
+        nl: /{_locale<%app.locales%>}/track-phone-click
+        be: /{_locale<%app.locales%>}/track-phone-click
+    controller: 'App\Controller\PhoneClickController::trackPhoneClick'
+    methods: [POST]
+    
+track_link_click:
+    path:
+        fr: /track-link-click
+        en: /{_locale<%app.locales%>}/track-link-click
+        de: /{_locale<%app.locales%>}/track-link-click
+        es: /{_locale<%app.locales%>}/track-link-click
+        it: /{_locale<%app.locales%>}/track-link-click
+        nl: /{_locale<%app.locales%>}/track-link-click
+        be: /{_locale<%app.locales%>}/track-link-click
+    controller: 'App\Controller\LinkClickController::trackLinkClick'
+    methods: [POST]
+
+# SEO programmatique
+# Route volontairement placee en dernier: elle sert les pages SEO a la racine,
+# sans prefixe technique, tout en laissant les routes classiques prioritaires.
+seo_programmatic_page:
+    path: /{slug}
+    controller: 'App\Controller\SeoProgrammaticController::show'
+    methods: [GET]
+    requirements:
+        slug: '[a-z0-9][a-z0-9-]*'

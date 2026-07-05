@@ -1,0 +1,404 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title %}Documentation SEO programmatique{% endblock %}
+
+{% block content %}
+<section class="content">
+    <div class="alert alert-info">
+        <strong>Objectif du module :</strong> creer des pages SEO locales avec Claude, a partir de donnees verifiees,
+        puis les publier seulement apres relecture humaine. Le module est semi-automatique pour eviter les pages faibles
+        ou les informations inventees.
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">Resume ultra simple</h2>
+            <ol>
+                <li>Remplir <strong>1. Faits verifies</strong> avec les vraies informations de l'entreprise.</li>
+                <li>Creer une page potentielle dans <strong>2. Seeds SEO</strong>.</li>
+                <li>Cliquer sur <strong>Generer avec Claude</strong>.</li>
+                <li>Relire la page dans <strong>3. Pages SEO</strong>.</li>
+                <li>Previsualiser la page.</li>
+                <li>Publier uniquement si le contenu est vrai, utile, local et que le score qualite est suffisant.</li>
+            </ol>
+            <p class="mb-0">
+                Ne commencez pas par Pages SEO. Commencez toujours par Faits verifies, puis Seeds SEO.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">Ordre d'utilisation des modules</h2>
+            <ol>
+                <li><strong>0. Documentation SEO</strong> : comprendre le fonctionnement global.</li>
+                <li><strong>1. Faits verifies</strong> : donner a Claude les informations vraies qu'il peut utiliser.</li>
+                <li><strong>2. Seeds SEO</strong> : definir les pages SEO a generer.</li>
+                <li><strong>3. Pages SEO</strong> : relire, corriger, previsualiser et publier.</li>
+                <li><strong>4. Prompts SEO</strong> : option avancee pour modifier les consignes envoyees a Claude.</li>
+                <li><strong>5. Historique Claude</strong> : diagnostiquer les generations et erreurs.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">1. Faits verifies</h2>
+            <p>
+                Les faits verifies sont la base du module. C'est ce que Claude a le droit d'utiliser pour rediger les
+                pages. Si les faits sont pauvres ou flous, les pages seront generiques.
+            </p>
+
+            <h3 class="h5">Que faut-il ajouter ?</h3>
+            <ul>
+                <li><strong>business</strong> : informations generales sur l'entreprise.</li>
+                <li><strong>service</strong> : services reels proposes.</li>
+                <li><strong>local</strong> : villes, departements, zones vraiment couvertes.</li>
+                <li><strong>proof</strong> : preuves, engagements, avantages reels.</li>
+                <li><strong>forbidden_claim</strong> : choses a ne jamais inventer ou promettre.</li>
+                <li><strong>brand</strong> : marques reellement prises en charge.</li>
+                <li><strong>faq</strong> : questions/reponses frequentes reelles.</li>
+                <li><strong>pricing</strong> : informations tarifaires uniquement si elles sont fiables.</li>
+            </ul>
+
+            <h3 class="h5">Champs du formulaire</h3>
+            <ul>
+                <li><strong>Nom</strong> : nom court pour reconnaitre le fait dans l'admin. Exemple : "Zone Lille", "Devis", "Entretien chaudiere".</li>
+                <li><strong>Type</strong> : categorie du fait. Elle aide Claude a comprendre comment utiliser l'information.</li>
+                <li><strong>Langue</strong> : langue du fait. Mettre <code>fr</code> pour le francais. Si le site devient multilingue, ajouter des faits par langue.</li>
+                <li><strong>Priorite</strong> : importance du fait. Plus le chiffre est haut, plus le fait remonte dans le contexte donne a Claude. Utiliser par exemple <code>100</code> pour les informations essentielles, <code>50</code> pour les informations utiles, <code>10</code> pour les details secondaires.</li>
+                <li><strong>Actif</strong> : si active, le fait peut etre donne a Claude. Si desactive, il reste en base mais n'est plus utilise pour les nouvelles generations.</li>
+                <li><strong>Fait verifie</strong> : le contenu exact que Claude peut utiliser. Ecrire une information claire, vraie et exploitable.</li>
+            </ul>
+
+            <h3 class="h5">Exemples de faits verifies</h3>
+            <pre class="bg-light p-3"><code>Type: business
+Nom: Activite principale
+Langue: fr
+Priorite: 100
+Actif: oui
+Fait verifie: Top Chauffe intervient pour l'installation, l'entretien et le depannage de systemes de chauffage.
+
+Type: service
+Nom: Entretien chaudiere
+Langue: fr
+Priorite: 90
+Actif: oui
+Fait verifie: L'entreprise propose l'entretien de chaudiere gaz et le diagnostic en cas de panne.
+
+Type: local
+Nom: Zone Lille
+Langue: fr
+Priorite: 100
+Actif: oui
+Fait verifie: L'entreprise intervient a Lille, Roubaix, Tourcoing et dans plusieurs communes du Nord.
+
+Type: proof
+Nom: Devis
+Langue: fr
+Priorite: 70
+Actif: oui
+Fait verifie: Un devis clair est fourni avant intervention lorsque la situation le permet.
+
+Type: forbidden_claim
+Nom: Delai non garanti
+Langue: fr
+Priorite: 100
+Actif: oui
+Fait verifie: Ne pas promettre une intervention en moins de 30 minutes si ce delai n'est pas garanti.
+
+Type: pricing
+Nom: Prix
+Langue: fr
+Priorite: 80
+Actif: oui
+Fait verifie: Ne pas annoncer de tarif fixe si aucun prix officiel n'est fourni.</code></pre>
+
+            <div class="alert alert-warning mb-0">
+                Important : ne mettez jamais une promesse incertaine. Claude ne doit pas inventer de prix, certification,
+                garantie, avis client, delai ou ville couverte.
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">2. Seeds SEO</h2>
+            <p>
+                Un seed est une page potentielle. Exemple : une page pour le mot cle
+                <strong>chauffagiste a Lille</strong>.
+            </p>
+
+            <h3 class="h5">Champs a remplir</h3>
+            <ul>
+                <li><strong>Mot cle principal</strong> : la requete cible principale.</li>
+                <li><strong>Service</strong> : le service vendu ou presente.</li>
+                <li><strong>URL page prestation liee</strong> : lien interne vers la page pilier de la prestation.</li>
+                <li><strong>Libelle lien prestation</strong> : texte du lien vers la page pilier.</li>
+                <li><strong>Ville</strong> : la ville cible.</li>
+                <li><strong>Departement</strong> : utile pour renforcer le contexte local.</li>
+                <li><strong>Mots cles secondaires</strong> : un mot cle par ligne pour enrichir cette page uniquement.</li>
+                <li><strong>Mots cles pages a generer</strong> : un mot cle par ligne pour creer plusieurs seeds/pages separes.</li>
+                <li><strong>Intention utilisateur</strong> : ce que la personne cherche vraiment.</li>
+                <li><strong>Notes</strong> : informations utiles specifiques a cette page.</li>
+                <li><strong>Valeur business</strong> : importance commerciale de 0 a 100.</li>
+                <li><strong>Priorite</strong> : ordre de traitement si vous genereez en batch.</li>
+                <li><strong>Modele Claude</strong> : choisir le niveau de modele pour cette page.</li>
+            </ul>
+
+            <h3 class="h5">Choisir le modele Claude</h3>
+            <ul>
+                <li><strong>Auto</strong> : choix recommande. Le module utilise Sonnet pour les pages normales et le modele premium si <strong>Valeur business</strong> ou <strong>Priorite</strong> est au moins a <code>80</code>.</li>
+                <li><strong>Sonnet 4.6</strong> : meilleur choix pour generer beaucoup de pages avec un bon rapport qualite/cout.</li>
+                <li><strong>Sonnet 5</strong> : utile pour tester le modele Sonnet le plus recent ou optimiser une page sans passer sur Opus/Fable.</li>
+                <li><strong>Opus</strong> : utile pour les pages importantes, concurrentielles ou qui doivent etre plus differenciees.</li>
+                <li><strong>Fable</strong> : a reserver aux pages les plus strategiques, car le cout est plus eleve.</li>
+            </ul>
+
+            <h3 class="h5">Mots cles secondaires ou pages ?</h3>
+            <ul>
+                <li><strong>Mots cles secondaires</strong> : ils restent dans la meme page. Exemple : "devis remplacement chaudiere Lille", "prix remplacement chaudiere Lille".</li>
+                <li><strong>Mots cles pages a generer</strong> : ils creent des pages differentes. Exemple : "entretien chaudiere Lille", "depannage chaudiere Lille", "remplacement chaudiere Roubaix".</li>
+            </ul>
+            <p>
+                Format simple : un mot cle par ligne. Format avance si besoin :
+                <code>mot cle | service | ville | departement | intention</code>.
+            </p>
+
+            <h3 class="h5">Exemple complet</h3>
+<pre class="bg-light p-3"><code>Mot cle principal: remplacement chaudiere Lille
+Service: remplacement chaudiere
+URL page prestation liee: /remplacement-chaudiere
+Libelle lien prestation: Remplacement de chaudiere
+Ville: Lille
+Departement: Nord
+
+Mots cles secondaires:
+depannage chaudiere Lille
+entretien chauffage Lille
+reparation chaudiere gaz Lille
+
+Mots cles pages a generer:
+entretien chaudiere Lille
+depannage chaudiere Lille
+remplacement chaudiere Roubaix | remplacement chaudiere | Roubaix | Nord | Trouver un professionnel pour remplacer une chaudiere a Roubaix.
+
+Intention utilisateur:
+Trouver un chauffagiste fiable a Lille pour une panne, un entretien ou un remplacement de chauffage.
+
+Notes:
+Mettre en avant la proximite, le diagnostic, le devis clair et les interventions autour de Lille.
+
+Valeur business: 90
+Priorite: 100
+Modele Claude: Auto</code></pre>
+
+            <p class="mb-0">
+                Apres avoir cree le seed, cliquez sur <strong>Generer avec Claude</strong> pour utiliser le choix du
+                seed. Les boutons d'optimisation <strong>Sonnet 5</strong>, <strong>Opus</strong> et <strong>Fable</strong> permettent de
+                forcer un modele pour une generation precise. Si le champ <strong>Mots cles pages a generer</strong>
+                est rempli, le bouton <strong>Generer pages mots cles</strong> genere la page principale si elle manque,
+                puis cree et genere les pages separees.
+            </p>
+            <p class="mb-0">
+                Remplir <strong>URL page prestation liee</strong> est recommande. Chaque page locale fera alors un lien
+                interne vers la page prestation principale, ce qui renforce le maillage SEO.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">3. Pages SEO</h2>
+            <p>
+                C'est ici que vous relisez les pages generees. Une page ne doit pas etre publiee automatiquement.
+                Il faut toujours verifier le contenu.
+            </p>
+
+            <h3 class="h5">A verifier avant publication</h3>
+            <ul>
+                <li>Le <strong>Title SEO</strong> est clair et naturel.</li>
+                <li>La <strong>Meta description</strong> donne envie de cliquer sans fausse promesse.</li>
+                <li>Le <strong>H1</strong> correspond bien a la recherche ciblee.</li>
+                <li>L'introduction parle du besoin de l'utilisateur.</li>
+                <li>Les sections sont utiles, pas seulement du remplissage.</li>
+                <li>La FAQ repond a de vraies questions.</li>
+                <li>Les <strong>Textes template JSON</strong> restent courts, naturels et adaptes a la page.</li>
+                <li>Les liens internes sont pertinents.</li>
+                <li>Les alertes qualite sont corrigees.</li>
+                <li>Les donnees manquantes critiques sont corrigees ou acceptees.</li>
+                <li>Le score qualite est au moins de <strong>75</strong>.</li>
+            </ul>
+            <p>
+                Le champ <strong>Donnees manquantes</strong> est editable. Une ligne correspond a une information que
+                Claude n'a pas pu verifier. Telephone, adresse, delai, forfait, aides, prix, marque ou garantie sont des
+                ameliorations utiles, mais ne bloquent pas automatiquement la publication.
+            </p>
+            <p>
+                Les manques critiques peuvent bloquer : service non confirme, zone non couverte, faits locaux
+                insuffisants, preuves metier insuffisantes ou generation Claude echouee. Quand le point est corrige dans
+                la page, ou accepte apres relecture humaine, supprimer la ligne puis sauvegarder avant de publier.
+            </p>
+            <p>
+                Le champ <strong>Canonical forcee</strong> est optionnel. Dans le cas normal, le laisser vide : la page
+                utilise automatiquement sa propre URL publique comme canonical.
+            </p>
+            <p>
+                Le champ <strong>Textes template JSON</strong> pilote les petits textes du design : points sous le hero,
+                bloc situation, etapes du parcours, introduction des sections et CTA final. Les anciennes pages utilisent
+                des textes par defaut si ce champ est vide.
+            </p>
+
+            <h3 class="h5">Statuts</h3>
+            <ul>
+                <li><strong>draft</strong> : brouillon, non publiable.</li>
+                <li><strong>review</strong> : a relire.</li>
+                <li><strong>published</strong> : publie.</li>
+                <li><strong>archived</strong> : archive.</li>
+            </ul>
+
+            <h3 class="h5">Indexation Google</h3>
+            <p>
+                Une page apparait dans le sitemap uniquement si elle est <strong>publiee</strong> et
+                <strong>indexable</strong>.
+            </p>
+            <p>
+                L'URL publique utilise directement le slug a la racine, par exemple
+                <code>/remplacement-chaudiere-marcq-en-baroeul</code>. Les anciennes URLs
+                <code>/seo-local/...</code> sont redirigees automatiquement en 301.
+            </p>
+
+            <h3 class="h5">Optimisation premium</h3>
+            <p>
+                Sur une page non publiee liee a un seed, les boutons <strong>Optimiser Sonnet 5</strong>,
+                <strong>Optimiser Opus</strong> et <strong>Optimiser Fable</strong> permettent de retravailler la page avec un modele plus puissant. A
+                utiliser pour les pages a forte valeur avant publication.
+            </p>
+
+            <h3 class="h5">Limiter la similarite entre pages locales</h3>
+            <p>
+                Quand plusieurs pages sont generees pour le meme service dans des villes differentes, Claude recoit
+                aussi un resume des pages deja generees. Il doit varier l'introduction, les H2, les exemples, la FAQ,
+                l'angle local, les textes SEO et la conclusion. L'objectif est de rester sous 55 % de similarite
+                editoriale quand les donnees le permettent.
+            </p>
+
+            <div class="alert alert-danger mb-0">
+                Ne publiez pas une page si elle est trop generale, si elle invente des informations, ou si elle pourrait
+                etre identique a une autre ville en changeant seulement le nom de la ville.
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">4. Prompts SEO</h2>
+            <p>
+                Ce module est optionnel. Vous pouvez l'ignorer au debut. Le systeme possede deja un prompt par defaut.
+            </p>
+            <p>
+                Utilisez les prompts seulement si vous voulez changer la maniere dont Claude redige les pages :
+            </p>
+            <ul>
+                <li>ton plus commercial ;</li>
+                <li>ton plus technique ;</li>
+                <li>sections differentes ;</li>
+                <li>consignes specifiques par client ;</li>
+                <li>style de FAQ different.</li>
+            </ul>
+            <div class="alert alert-warning mb-0">
+                Si vous creez un prompt utilisateur, gardez toujours <code>{{ '{{context_json}}' }}</code> dedans. C'est
+                ce qui injecte les donnees du seed et les faits verifies.
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">5. Historique Claude</h2>
+            <p>
+                Ce module sert au diagnostic. Il permet de comprendre ce qui s'est passe pendant une generation.
+            </p>
+            <ul>
+                <li>modele utilise ;</li>
+                <li>statut de la generation ;</li>
+                <li>erreur API si Claude n'a pas repondu ;</li>
+                <li>tokens consommes ;</li>
+                <li>payload de reponse.</li>
+            </ul>
+            <p class="mb-0">
+                Vous ne publiez rien depuis ce module. La publication se fait depuis <strong>Pages SEO</strong>.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">Configuration Claude</h2>
+            <p>
+                La vraie cle API doit etre dans <code>.env.local</code> ou dans les variables serveur, jamais dans
+                <code>.env</code>.
+            </p>
+            <pre class="bg-light p-3"><code>CLAUDE_API_KEY=sk-ant-...
+CLAUDE_MODEL=claude-sonnet-4-6
+CLAUDE_MODEL_SONNET=claude-sonnet-4-6
+CLAUDE_MODEL_SONNET_5=claude-sonnet-5
+CLAUDE_MODEL_PREMIUM=claude-opus-4-8
+CLAUDE_MODEL_OPUS=claude-opus-4-8
+CLAUDE_MODEL_FABLE=claude-fable-5
+CLAUDE_MAX_TOKENS_SONNET=7000
+CLAUDE_MAX_TOKENS_OPUS=9000
+CLAUDE_MAX_TOKENS_FABLE=9000
+CLAUDE_TIMEOUT_SECONDS=180</code></pre>
+            <p class="mb-0">
+                Par defaut, Sonnet est conseille pour le meilleur compromis qualite, vitesse et cout.
+                <code>CLAUDE_MODEL_PREMIUM</code> est utilise automatiquement pour les seeds en mode Auto avec valeur
+                business ou priorite au moins a <code>80</code>.
+            </p>
+            <p class="mb-0">
+                Le module demande par defaut <strong>7000 tokens output</strong> avec Sonnet et
+                <strong>9000 tokens output</strong> avec Opus/Fable. Dans Historique Claude, si
+                <strong>Tokens output</strong> est egal a <strong>Max tokens</strong> avec un
+                <strong>Stop reason</strong> a <code>max_tokens</code>, la generation a probablement ete coupee.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">Commandes utiles</h2>
+            <pre class="bg-light p-3"><code>php bin/console doctrine:migrations:migrate
+php bin/console cache:clear
+php bin/console app:seo:generate --limit=5
+php bin/console app:seo:generate --limit=5 --model=sonnet
+php bin/console app:seo:generate --limit=3 --model=opus
+php bin/console app:seo:generate --limit=1 --model=fable</code></pre>
+            <p class="mb-0">
+                Sans <code>--model</code>, la commande respecte le modele choisi dans chaque seed. Avec
+                <code>--model</code>, elle force le meme modele sur tout le lot. Elle ne publie rien automatiquement.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">Checklist avant de publier</h2>
+            <ul>
+                <li>La ville ou la zone est vraiment couverte.</li>
+                <li>Le service est reellement propose.</li>
+                <li>Aucune certification, marque, garantie, prix ou delai n'est invente.</li>
+                <li>La page repond a une intention claire.</li>
+                <li>Le contenu est different des autres pages.</li>
+                <li>La FAQ est utile.</li>
+                <li>Le CTA est clair.</li>
+                <li>Le score qualite est au moins de 75.</li>
+                <li>La previsualisation est correcte.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="alert alert-secondary">
+        La documentation complete est aussi disponible dans <code>docs/seo-programmatique.md</code>.
+    </div>
+</section>
+{% endblock %}

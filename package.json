@@ -1,0 +1,19 @@
+{
+  "name": "seo-prog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Installateur local du module SEO programmatique Webtime",
+  "bin": {
+    "seo-prog": "./bin/install.js",
+    "seo-programmatique-install": "./bin/install.js"
+  },
+  "scripts": {
+    "install:seo-programmatique": "node ./bin/install.js"
+  },
+  "files": [
+    "bin",
+    "files",
+    "references",
+    "README.md"
+  ]
+}
