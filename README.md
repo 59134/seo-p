@@ -11,6 +11,7 @@ Ce package installe le module SEO programmatique dans un projet Symfony/Webtime 
 - Ajoute le menu admin SEO programmatique dans `DashboardController.php` si absent.
 - Ajoute les pages SEO publiees dans `SitemapController.php` si absent.
 - Ajoute l'exclusion TinyMCE pour les champs JSON SEO dans `assets/js/back/script.js` si absent.
+- Ajoute les variables CSS `--wt-primary` et `--wt-primary-light` dans `assets/styles/front/custom.scss` si absentes.
 - Cree des sauvegardes `.seo-programmatique.bak-YYYYMMDDHHMMSS` avant de modifier un fichier existant.
 
 ## Commande recommandee
@@ -66,3 +67,4 @@ Les fichiers sensibles ne sont pas remplaces en entier :
 - `src/Controller/Admin/DashboardController.php`
 - `src/Controller/SitemapController.php`
 - `assets/js/back/script.js`
+- `assets/styles/front/custom.scss`

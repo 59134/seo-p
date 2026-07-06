@@ -2,711 +2,712 @@
 
 {% block title %}{{ page.title }}{% endblock %}
 {% block meta_description %}{{ page.metaDescription }}{% endblock %}
-{% block canonical_url %}{{ page.canonicalUrl ?: absolute_url(path('seo_programmatic_page', {'slug': page.slug})) }}{% endblock %}
+{% block canonical_url %}{{ page.canonicalUrl ?: absolute_url(path('seo_programmatic_page', {'slug': page.slug})) }}{%
+endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .seo-programmatic-page {
-            --seo-bg: var(--wt-bg, #18171B);
-            --seo-bg-strong: var(--wt-bg, #18171B);
-            --seo-panel: var(--wt-panel, #26242b);
-            --seo-panel-soft: var(--wt-panel, #26242b);
-            --seo-text: var(--wt-text, #ffffff);
-            --seo-muted: rgba(255, 255, 255, .74);
-            --seo-soft: rgba(255, 255, 255, .09);
-            --seo-line: rgba(255, 255, 255, .12);
-            --seo-primary: var(--wt-primary, #F88233);
-            --seo-green: #87d5a2;
-            background: var(--seo-bg);
-            color: var(--seo-text);
-            overflow: hidden;
-        }
+{{ parent() }}
+<style>
+    .seo-programmatic-page {
+        --seo-bg: var(--wt-bg, #18171B);
+        --seo-bg-strong: var(--wt-bg, #18171B);
+        --seo-panel: var(--wt-panel, #26242b);
+        --seo-panel-soft: var(--wt-panel, #26242b);
+        --seo-text: var(--wt-text, #ffffff);
+        --seo-muted: rgba(255, 255, 255, .74);
+        --seo-soft: rgba(255, 255, 255, .09);
+        --seo-line: rgba(255, 255, 255, .12);
+        --seo-primary: var(--wt-primary-light, #F88233);
+        --seo-green: #87d5a2;
+        background: var(--seo-bg);
+        color: var(--seo-text);
+        overflow: hidden;
+    }
 
-        .seo-programmatic-page * {
-            box-sizing: border-box;
-            color: inherit;
-        }
+    .seo-programmatic-page * {
+        box-sizing: border-box;
+        color: inherit;
+    }
 
-        .seo-programmatic-page a {
-            color: inherit;
-            text-decoration: none;
-        }
+    .seo-programmatic-page a {
+        color: inherit;
+        text-decoration: none;
+    }
 
-        .seo-wrap {
-            width: min(1350px, calc(100% - 40px));
-            margin: 0 auto;
-        }
+    .seo-wrap {
+        width: min(1350px, calc(100% - 40px));
+        margin: 0 auto;
+    }
 
-        .seo-preview-alert {
-            margin: 24px auto 0;
-            border: 1px solid color-mix(in srgb, var(--seo-primary) 35%, transparent);
-            background: color-mix(in srgb, var(--seo-primary) 13%, transparent);
-            color: var(--seo-primary);
-            border-radius: 8px;
-            padding: 14px 18px;
-        }
+    .seo-preview-alert {
+        margin: 24px auto 0;
+        border: 1px solid color-mix(in srgb, var(--seo-primary) 35%, transparent);
+        background: color-mix(in srgb, var(--seo-primary) 13%, transparent);
+        color: var(--seo-primary);
+        border-radius: 8px;
+        padding: 14px 18px;
+    }
 
+    .seo-hero {
+        position: relative;
+        isolation: isolate;
+        min-height: 520px;
+        display: flex;
+        align-items: center;
+        padding: 70px 0 94px;
+        background: linear-gradient(135deg, var(--seo-bg) 0%, var(--seo-bg) 48%, var(--seo-panel) 100%);
+    }
+
+    .seo-hero::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 0;
+        height: 130px;
+        background: linear-gradient(180deg, rgba(21, 19, 23, 0), var(--seo-bg));
+        z-index: -1;
+    }
+
+    .seo-hero-content {
+        max-width: 860px;
+    }
+
+    .seo-hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 370px;
+        gap: 64px;
+        align-items: center;
+    }
+
+    .seo-brand-panel {
+        border: 1px solid var(--seo-line);
+        background: rgba(255, 255, 255, .055);
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+    }
+
+    .seo-brand-visual {
+        min-height: 185px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .seo-brand-visual img {
+        display: block;
+        max-width: 210px;
+        max-height: 105px;
+        object-fit: contain;
+    }
+
+    .seo-brand-panel dl {
+        display: grid;
+        gap: 14px;
+        margin: 22px 0 0;
+    }
+
+    .seo-brand-panel dl>div {
+        border-left: 2px solid var(--seo-primary);
+        padding-left: 13px;
+    }
+
+    .seo-brand-panel dt {
+        color: var(--seo-muted);
+        font-size: .82rem;
+        font-weight: 400;
+        margin-bottom: 2px;
+    }
+
+    .seo-brand-panel dd {
+        margin: 0;
+        color: #fff;
+        font-family: "semi", Arial, sans-serif;
+        line-height: 1.35;
+    }
+
+    .seo-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+        color: var(--seo-primary);
+        font-family: "semi", Arial, sans-serif;
+        font-size: .95rem;
+        text-transform: uppercase;
+    }
+
+    .seo-kicker::before {
+        content: "";
+        width: 34px;
+        height: 2px;
+        background: var(--seo-primary);
+        display: inline-block;
+    }
+
+    .seo-hero h1 {
+        max-width: 860px;
+        margin: 0;
+        font-family: "titre", Arial, sans-serif;
+        font-size: clamp(2.15rem, 4vw, 3.35rem);
+        line-height: 1.1;
+    }
+
+    .seo-intro {
+        max-width: 760px;
+        margin-top: 24px;
+        color: rgba(255, 255, 255, .86);
+        font-size: 1.13rem;
+        line-height: 1.74;
+    }
+
+    .seo-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 30px;
+    }
+
+    .seo-programmatic-page .btn-wt,
+    .seo-anchor-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        border-radius: 7px;
+        padding: 13px 20px;
+        font-family: "semi", Arial, sans-serif;
+        transition: background .18s ease, border-color .18s ease, color .18s ease;
+    }
+
+    .seo-programmatic-page .btn-wt {
+        max-width: 100%;
+        margin-top: 0 !important;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .seo-anchor-link {
+        border: 1px solid rgba(255, 255, 255, .22);
+        background: rgba(255, 255, 255, .06);
+        color: #fff !important;
+    }
+
+    .seo-anchor-link:hover {
+        border-color: color-mix(in srgb, var(--seo-primary) 55%, transparent);
+        color: var(--seo-primary) !important;
+    }
+
+    .seo-hero-points {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 28px;
+        padding: 0;
+        list-style: none;
+    }
+
+    .seo-hero-points li {
+        border: 1px solid var(--seo-line);
+        background: rgba(255, 255, 255, .06);
+        border-radius: 999px;
+        padding: 9px 14px;
+        color: rgba(255, 255, 255, .84);
+        font-size: .92rem;
+        line-height: 1.3;
+    }
+
+    .seo-decision-band {
+        position: relative;
+        z-index: 2;
+        margin-top: -54px;
+    }
+
+    .seo-decision-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border: 1px solid var(--seo-line);
+        background: rgba(33, 31, 37, .96);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, .28);
+    }
+
+    .seo-decision-item {
+        min-height: 132px;
+        padding: 24px;
+        border-right: 1px solid var(--seo-line);
+    }
+
+    .seo-decision-item:last-child {
+        border-right: 0;
+    }
+
+    .seo-decision-item span {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--seo-primary);
+        font-family: "semi", Arial, sans-serif;
+        font-size: .82rem;
+        text-transform: uppercase;
+    }
+
+    .seo-decision-item strong {
+        display: block;
+        font-family: "semi", Arial, sans-serif;
+        font-size: 1.08rem;
+        line-height: 1.35;
+    }
+
+    .seo-decision-item p {
+        margin: 8px 0 0;
+        color: var(--seo-muted);
+        font-size: .94rem;
+        line-height: 1.5;
+    }
+
+    .seo-section {
+        padding: 76px 0;
+    }
+
+    .seo-section-alt {
+        background: var(--seo-bg-strong);
+    }
+
+    .seo-section-head {
+        max-width: 780px;
+        margin-bottom: 30px;
+    }
+
+    .seo-eyebrow {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--seo-primary);
+        font-family: "semi", Arial, sans-serif;
+        font-size: .88rem;
+        text-transform: uppercase;
+    }
+
+    .seo-section-head h2,
+    .seo-flow-head h2,
+    .seo-faq-heading h2,
+    .seo-final-cta h2 {
+        margin: 0;
+        font-family: "titre", Arial, sans-serif;
+        line-height: 1.1;
+    }
+
+    .seo-section-head h2,
+    .seo-flow-head h2 {
+        font-size: clamp(1.65rem, 2.2vw, 2.05rem);
+    }
+
+    .seo-section-head p,
+    .seo-flow-head p {
+        margin: 14px 0 0;
+        color: var(--seo-muted);
+        font-size: 1.02rem;
+        line-height: 1.7;
+    }
+
+    .seo-offer-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(360px, .78fr);
+        gap: 44px;
+        align-items: stretch;
+    }
+
+    .seo-offer-main {
+        border: 1px solid var(--seo-line);
+        background: var(--seo-panel);
+        border-radius: 8px;
+        padding: 34px;
+    }
+
+    .seo-offer-main h2 {
+        margin: 0 0 16px;
+        font-family: "titre", Arial, sans-serif;
+        font-size: clamp(1.45rem, 2vw, 1.8rem);
+        line-height: 1.15;
+    }
+
+    .seo-offer-main p {
+        margin: 0;
+        color: rgba(255, 255, 255, .82);
+        font-size: 1.02rem;
+        line-height: 1.76;
+    }
+
+    .seo-offer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .seo-check-list {
+        display: grid;
+        gap: 12px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .seo-check-list li {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 12px;
+        border: 1px solid var(--seo-line);
+        background: var(--seo-panel-soft);
+        border-radius: 8px;
+        padding: 16px;
+        color: rgba(255, 255, 255, .84);
+        line-height: 1.55;
+    }
+
+    .seo-check-list li::before {
+        content: "";
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(135, 213, 162, .18);
+        border: 1px solid rgba(135, 213, 162, .38);
+        box-shadow: inset 0 0 0 7px rgba(135, 213, 162, .11);
+    }
+
+    .seo-flow {
+        display: grid;
+        grid-template-columns: 370px minmax(0, 1fr);
+        gap: 58px;
+        align-items: start;
+    }
+
+    .seo-flow-head {
+        position: sticky;
+        top: 96px;
+    }
+
+    .seo-flow-head .btn-wt {
+        margin-top: 22px !important;
+    }
+
+    .seo-steps {
+        display: grid;
+        gap: 14px;
+    }
+
+    .seo-step {
+        display: grid;
+        grid-template-columns: 74px 1fr;
+        gap: 20px;
+        border: 1px solid var(--seo-line);
+        background: rgba(255, 255, 255, .045);
+        border-radius: 8px;
+        padding: 24px;
+    }
+
+    .seo-step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 58px;
+        height: 58px;
+        border: 1px solid color-mix(in srgb, var(--seo-primary) 38%, transparent);
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--seo-primary) 12%, transparent);
+        color: var(--seo-primary);
+        font-family: "semi", Arial, sans-serif;
+        font-size: 1.18rem;
+    }
+
+    .seo-step h3 {
+        margin: 0 0 8px;
+        font-family: "semi", Arial, sans-serif;
+        font-size: 1.2rem;
+    }
+
+    .seo-step p {
+        margin: 0;
+        color: var(--seo-muted);
+        line-height: 1.7;
+    }
+
+    .seo-content-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .seo-content-card {
+        min-height: 260px;
+        border: 1px solid var(--seo-line);
+        background: var(--seo-panel);
+        border-radius: 8px;
+        padding: 28px;
+    }
+
+    .seo-content-number {
+        display: inline-flex;
+        margin-bottom: 16px;
+        color: var(--seo-primary);
+        font-family: "semi", Arial, sans-serif;
+        font-size: .95rem;
+    }
+
+    .seo-content-card h2 {
+        margin: 0 0 12px;
+        font-family: "titre", Arial, sans-serif;
+        font-size: clamp(1.25rem, 1.7vw, 1.5rem);
+        line-height: 1.16;
+    }
+
+    .seo-content-card p {
+        margin: 0;
+        color: rgba(255, 255, 255, .82);
+        font-size: 1rem;
+        line-height: 1.76;
+    }
+
+    .seo-links-band {
+        display: grid;
+        grid-template-columns: 210px minmax(0, 1fr);
+        gap: 18px;
+        align-items: center;
+        border: 1px solid color-mix(in srgb, var(--seo-primary) 28%, transparent);
+        background: color-mix(in srgb, var(--seo-primary) 10%, transparent);
+        border-radius: 8px;
+        padding: 18px 20px;
+        margin-top: 28px;
+    }
+
+    .seo-links-band h2 {
+        margin: 0;
+        font-family: "titre", Arial, sans-serif;
+        font-size: 1.28rem;
+        line-height: 1.18;
+    }
+
+    .seo-link-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .seo-link-list a {
+        display: block;
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, .18);
+        background: rgba(255, 255, 255, .07);
+        border-radius: 6px;
+        padding: 7px 10px;
+        color: #fff !important;
+        font-family: "semi", Arial, sans-serif;
+        font-size: .86rem;
+        line-height: 1.32;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .seo-link-list a:hover {
+        border-color: color-mix(in srgb, var(--seo-primary) 55%, transparent);
+        color: var(--seo-primary);
+    }
+
+    .seo-faq-section {
+        padding: 76px 0;
+        background: var(--seo-bg-strong);
+        color: #fff;
+    }
+
+    .seo-faq-heading {
+        display: grid;
+        grid-template-columns: minmax(0, .8fr) minmax(300px, .55fr);
+        gap: 30px;
+        align-items: end;
+        margin-bottom: 24px;
+    }
+
+    .seo-faq-heading h2 {
+        font-size: clamp(1.65rem, 2.2vw, 2.05rem);
+        color: #fff;
+    }
+
+    .seo-faq-heading p {
+        margin: 0;
+        color: var(--seo-muted);
+        line-height: 1.65;
+    }
+
+    .seo-programmatic-page .accordion {
+        display: grid;
+        gap: 10px;
+    }
+
+    .seo-programmatic-page .accordion-item {
+        border: 1px solid var(--seo-line) !important;
+        background: #fff !important;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .seo-programmatic-page .accordion-button {
+        background: #fff !important;
+        color: #211b17 !important;
+        font-family: "semi", Arial, sans-serif;
+        padding: 19px 20px;
+        box-shadow: none;
+    }
+
+    .seo-programmatic-page .accordion-button:not(.collapsed) {
+        background: #fff8f1 !important;
+        color: #211b17 !important;
+    }
+
+    .seo-programmatic-page .accordion-button::after {
+        filter: none !important;
+        opacity: .75;
+    }
+
+    .seo-programmatic-page .accordion-body {
+        background: #fff;
+        color: rgba(33, 27, 23, .78);
+        line-height: 1.75;
+        padding: 0 20px 20px;
+    }
+
+    .seo-final-cta {
+        padding: 68px 0;
+        background: linear-gradient(135deg, var(--seo-bg), var(--seo-panel));
+    }
+
+    .seo-final-cta-box {
+        max-width: 840px;
+    }
+
+    .seo-final-cta h2 {
+        font-size: clamp(1.65rem, 2.2vw, 2.05rem);
+    }
+
+    .seo-final-cta p {
+        max-width: 700px;
+        margin: 14px 0 0;
+        color: rgba(255, 255, 255, .80);
+        line-height: 1.7;
+    }
+
+    .seo-final-cta .btn-wt {
+        margin-top: 24px !important;
+    }
+
+    @media (max-width: 991px) {
         .seo-hero {
-            position: relative;
-            isolation: isolate;
-            min-height: 520px;
-            display: flex;
-            align-items: center;
-            padding: 70px 0 94px;
-            background: linear-gradient(135deg, var(--seo-bg) 0%, var(--seo-bg) 48%, var(--seo-panel) 100%);
-        }
-
-        .seo-hero::after {
-            content: "";
-            position: absolute;
-            inset: auto 0 0;
-            height: 130px;
-            background: linear-gradient(180deg, rgba(21, 19, 23, 0), var(--seo-bg));
-            z-index: -1;
-        }
-
-        .seo-hero-content {
-            max-width: 860px;
-        }
-
-        .seo-hero-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 370px;
-            gap: 64px;
-            align-items: center;
-        }
-
-        .seo-brand-panel {
-            border: 1px solid var(--seo-line);
-            background: rgba(255, 255, 255, .055);
-            border-radius: 8px;
-            padding: 24px;
-            box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
-        }
-
-        .seo-brand-visual {
-            min-height: 185px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .seo-brand-visual img {
-            display: block;
-            max-width: 210px;
-            max-height: 105px;
-            object-fit: contain;
-        }
-
-        .seo-brand-panel dl {
-            display: grid;
-            gap: 14px;
-            margin: 22px 0 0;
-        }
-
-        .seo-brand-panel dl > div {
-            border-left: 2px solid var(--seo-primary);
-            padding-left: 13px;
-        }
-
-        .seo-brand-panel dt {
-            color: var(--seo-muted);
-            font-size: .82rem;
-            font-weight: 400;
-            margin-bottom: 2px;
-        }
-
-        .seo-brand-panel dd {
-            margin: 0;
-            color: #fff;
-            font-family: "semi", Arial, sans-serif;
-            line-height: 1.35;
-        }
-
-        .seo-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 18px;
-            color: var(--seo-primary);
-            font-family: "semi", Arial, sans-serif;
-            font-size: .95rem;
-            text-transform: uppercase;
-        }
-
-        .seo-kicker::before {
-            content: "";
-            width: 34px;
-            height: 2px;
-            background: var(--seo-primary);
-            display: inline-block;
+            min-height: auto;
+            padding: 64px 0 92px;
         }
 
         .seo-hero h1 {
-            max-width: 860px;
-            margin: 0;
-            font-family: "titre", Arial, sans-serif;
-            font-size: clamp(2.15rem, 4vw, 3.35rem);
-            line-height: 1.1;
+            font-size: 2.55rem;
         }
 
-        .seo-intro {
-            max-width: 760px;
-            margin-top: 24px;
-            color: rgba(255, 255, 255, .86);
-            font-size: 1.13rem;
-            line-height: 1.74;
-        }
-
-        .seo-hero-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 30px;
-        }
-
-        .seo-programmatic-page .btn-wt,
-        .seo-anchor-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 48px;
-            border-radius: 7px;
-            padding: 13px 20px;
-            font-family: "semi", Arial, sans-serif;
-            transition: background .18s ease, border-color .18s ease, color .18s ease;
-        }
-
-        .seo-programmatic-page .btn-wt {
-            max-width: 100%;
-            margin-top: 0 !important;
-            white-space: normal;
-            text-align: center;
-        }
-
-        .seo-anchor-link {
-            border: 1px solid rgba(255, 255, 255, .22);
-            background: rgba(255, 255, 255, .06);
-            color: #fff !important;
-        }
-
-        .seo-anchor-link:hover {
-            border-color: color-mix(in srgb, var(--seo-primary) 55%, transparent);
-            color: var(--seo-primary) !important;
-        }
-
-        .seo-hero-points {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 28px;
-            padding: 0;
-            list-style: none;
-        }
-
-        .seo-hero-points li {
-            border: 1px solid var(--seo-line);
-            background: rgba(255, 255, 255, .06);
-            border-radius: 999px;
-            padding: 9px 14px;
-            color: rgba(255, 255, 255, .84);
-            font-size: .92rem;
-            line-height: 1.3;
-        }
-
-        .seo-decision-band {
-            position: relative;
-            z-index: 2;
-            margin-top: -54px;
+        .seo-decision-grid,
+        .seo-hero-grid,
+        .seo-offer-grid,
+        .seo-flow,
+        .seo-content-grid,
+        .seo-faq-heading {
+            grid-template-columns: 1fr;
         }
 
         .seo-decision-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            border: 1px solid var(--seo-line);
-            background: rgba(33, 31, 37, .96);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 22px 60px rgba(0, 0, 0, .28);
+            margin-top: 0;
         }
 
         .seo-decision-item {
-            min-height: 132px;
-            padding: 24px;
-            border-right: 1px solid var(--seo-line);
+            border-right: 0;
+            border-bottom: 1px solid var(--seo-line);
         }
 
         .seo-decision-item:last-child {
-            border-right: 0;
+            border-bottom: 0;
         }
 
-        .seo-decision-item span {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--seo-primary);
-            font-family: "semi", Arial, sans-serif;
-            font-size: .82rem;
-            text-transform: uppercase;
+        .seo-flow-head {
+            position: static;
         }
 
-        .seo-decision-item strong {
-            display: block;
-            font-family: "semi", Arial, sans-serif;
-            font-size: 1.08rem;
-            line-height: 1.35;
+        .seo-links-band {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 575px) {
+        .seo-wrap {
+            width: min(100% - 22px, 1350px);
         }
 
-        .seo-decision-item p {
-            margin: 8px 0 0;
-            color: var(--seo-muted);
-            font-size: .94rem;
-            line-height: 1.5;
+        .seo-hero {
+            padding: 48px 0 84px;
         }
 
-        .seo-section {
-            padding: 76px 0;
+        .seo-hero h1 {
+            font-size: 2.28rem;
         }
 
-        .seo-section-alt {
-            background: var(--seo-bg-strong);
+        .seo-intro {
+            font-size: 1rem;
         }
 
-        .seo-section-head {
-            max-width: 780px;
-            margin-bottom: 30px;
-        }
-
-        .seo-eyebrow {
-            display: block;
-            margin-bottom: 10px;
-            color: var(--seo-primary);
-            font-family: "semi", Arial, sans-serif;
-            font-size: .88rem;
-            text-transform: uppercase;
+        .seo-section,
+        .seo-faq-section,
+        .seo-final-cta {
+            padding: 54px 0;
         }
 
         .seo-section-head h2,
         .seo-flow-head h2,
         .seo-faq-heading h2,
         .seo-final-cta h2 {
-            margin: 0;
-            font-family: "titre", Arial, sans-serif;
-            line-height: 1.1;
+            font-size: 1.55rem;
         }
 
-        .seo-section-head h2,
-        .seo-flow-head h2 {
-            font-size: clamp(1.65rem, 2.2vw, 2.05rem);
-        }
-
-        .seo-section-head p,
-        .seo-flow-head p {
-            margin: 14px 0 0;
-            color: var(--seo-muted);
-            font-size: 1.02rem;
-            line-height: 1.7;
-        }
-
-        .seo-offer-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(360px, .78fr);
-            gap: 44px;
-            align-items: stretch;
-        }
-
-        .seo-offer-main {
-            border: 1px solid var(--seo-line);
-            background: var(--seo-panel);
-            border-radius: 8px;
-            padding: 34px;
-        }
-
-        .seo-offer-main h2 {
-            margin: 0 0 16px;
-            font-family: "titre", Arial, sans-serif;
-            font-size: clamp(1.45rem, 2vw, 1.8rem);
-            line-height: 1.15;
-        }
-
-        .seo-offer-main p {
-            margin: 0;
-            color: rgba(255, 255, 255, .82);
-            font-size: 1.02rem;
-            line-height: 1.76;
-        }
-
-        .seo-offer-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 24px;
-        }
-
-        .seo-check-list {
-            display: grid;
-            gap: 12px;
-            padding: 0;
-            margin: 0;
-            list-style: none;
-        }
-
-        .seo-check-list li {
-            display: grid;
-            grid-template-columns: 28px 1fr;
-            gap: 12px;
-            border: 1px solid var(--seo-line);
-            background: var(--seo-panel-soft);
-            border-radius: 8px;
-            padding: 16px;
-            color: rgba(255, 255, 255, .84);
-            line-height: 1.55;
-        }
-
-        .seo-check-list li::before {
-            content: "";
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: rgba(135, 213, 162, .18);
-            border: 1px solid rgba(135, 213, 162, .38);
-            box-shadow: inset 0 0 0 7px rgba(135, 213, 162, .11);
-        }
-
-        .seo-flow {
-            display: grid;
-            grid-template-columns: 370px minmax(0, 1fr);
-            gap: 58px;
-            align-items: start;
-        }
-
-        .seo-flow-head {
-            position: sticky;
-            top: 96px;
-        }
-
-        .seo-flow-head .btn-wt {
-            margin-top: 22px !important;
-        }
-
-        .seo-steps {
-            display: grid;
-            gap: 14px;
+        .seo-offer-main,
+        .seo-content-card,
+        .seo-links-band,
+        .seo-step {
+            padding: 20px;
         }
 
         .seo-step {
-            display: grid;
-            grid-template-columns: 74px 1fr;
-            gap: 20px;
-            border: 1px solid var(--seo-line);
-            background: rgba(255, 255, 255, .045);
-            border-radius: 8px;
-            padding: 24px;
+            grid-template-columns: 1fr;
         }
 
-        .seo-step-number {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 58px;
-            height: 58px;
-            border: 1px solid color-mix(in srgb, var(--seo-primary) 38%, transparent);
-            border-radius: 50%;
-            background: color-mix(in srgb, var(--seo-primary) 12%, transparent);
-            color: var(--seo-primary);
-            font-family: "semi", Arial, sans-serif;
-            font-size: 1.18rem;
-        }
-
-        .seo-step h3 {
-            margin: 0 0 8px;
-            font-family: "semi", Arial, sans-serif;
-            font-size: 1.2rem;
-        }
-
-        .seo-step p {
-            margin: 0;
-            color: var(--seo-muted);
-            line-height: 1.7;
-        }
-
-        .seo-content-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 22px;
-        }
-
-        .seo-content-card {
-            min-height: 260px;
-            border: 1px solid var(--seo-line);
-            background: var(--seo-panel);
-            border-radius: 8px;
-            padding: 28px;
-        }
-
-        .seo-content-number {
-            display: inline-flex;
-            margin-bottom: 16px;
-            color: var(--seo-primary);
-            font-family: "semi", Arial, sans-serif;
-            font-size: .95rem;
-        }
-
-        .seo-content-card h2 {
-            margin: 0 0 12px;
-            font-family: "titre", Arial, sans-serif;
-            font-size: clamp(1.25rem, 1.7vw, 1.5rem);
-            line-height: 1.16;
-        }
-
-        .seo-content-card p {
-            margin: 0;
-            color: rgba(255, 255, 255, .82);
-            font-size: 1rem;
-            line-height: 1.76;
-        }
-
-        .seo-links-band {
-            display: grid;
-            grid-template-columns: 210px minmax(0, 1fr);
-            gap: 18px;
-            align-items: center;
-            border: 1px solid color-mix(in srgb, var(--seo-primary) 28%, transparent);
-            background: color-mix(in srgb, var(--seo-primary) 10%, transparent);
-            border-radius: 8px;
-            padding: 18px 20px;
-            margin-top: 28px;
-        }
-
-        .seo-links-band h2 {
-            margin: 0;
-            font-family: "titre", Arial, sans-serif;
-            font-size: 1.28rem;
-            line-height: 1.18;
-        }
-
-        .seo-link-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 8px;
-            padding: 0;
-            margin: 0;
-            list-style: none;
-        }
-
-        .seo-link-list a {
-            display: block;
-            width: 100%;
-            border: 1px solid rgba(255, 255, 255, .18);
-            background: rgba(255, 255, 255, .07);
-            border-radius: 6px;
-            padding: 7px 10px;
-            color: #fff;
-            font-family: "semi", Arial, sans-serif;
-            font-size: .86rem;
-            line-height: 1.32;
-            white-space: normal;
-            overflow-wrap: anywhere;
-        }
-
-        .seo-link-list a:hover {
-            border-color: color-mix(in srgb, var(--seo-primary) 55%, transparent);
-            color: var(--seo-primary);
-        }
-
-        .seo-faq-section {
-            padding: 76px 0;
-            background: var(--seo-bg-strong);
-            color: #fff;
-        }
-
-        .seo-faq-heading {
-            display: grid;
-            grid-template-columns: minmax(0, .8fr) minmax(300px, .55fr);
-            gap: 30px;
-            align-items: end;
-            margin-bottom: 24px;
-        }
-
-        .seo-faq-heading h2 {
-            font-size: clamp(1.65rem, 2.2vw, 2.05rem);
-            color: #fff;
-        }
-
-        .seo-faq-heading p {
-            margin: 0;
-            color: var(--seo-muted);
-            line-height: 1.65;
-        }
-
-        .seo-programmatic-page .accordion {
-            display: grid;
-            gap: 10px;
-        }
-
-        .seo-programmatic-page .accordion-item {
-            border: 1px solid var(--seo-line) !important;
-            background: #fff !important;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .seo-programmatic-page .accordion-button {
-            background: #fff !important;
-            color: #211b17 !important;
-            font-family: "semi", Arial, sans-serif;
-            padding: 19px 20px;
-            box-shadow: none;
-        }
-
-        .seo-programmatic-page .accordion-button:not(.collapsed) {
-            background: #fff8f1 !important;
-            color: #211b17 !important;
-        }
-
-        .seo-programmatic-page .accordion-button::after {
-            filter: none !important;
-            opacity: .75;
-        }
-
-        .seo-programmatic-page .accordion-body {
-            background: #fff;
-            color: rgba(33, 27, 23, .78);
-            line-height: 1.75;
-            padding: 0 20px 20px;
-        }
-
-        .seo-final-cta {
-            padding: 68px 0;
-            background: linear-gradient(135deg, var(--seo-bg), var(--seo-panel));
-        }
-
-        .seo-final-cta-box {
-            max-width: 840px;
-        }
-
-        .seo-final-cta h2 {
-            font-size: clamp(1.65rem, 2.2vw, 2.05rem);
-        }
-
-        .seo-final-cta p {
-            max-width: 700px;
-            margin: 14px 0 0;
-            color: rgba(255, 255, 255, .80);
-            line-height: 1.7;
-        }
-
-        .seo-final-cta .btn-wt {
-            margin-top: 24px !important;
-        }
-
-        @media (max-width: 991px) {
-            .seo-hero {
-                min-height: auto;
-                padding: 64px 0 92px;
-            }
-
-            .seo-hero h1 {
-                font-size: 2.55rem;
-            }
-
-            .seo-decision-grid,
-            .seo-hero-grid,
-            .seo-offer-grid,
-            .seo-flow,
-            .seo-content-grid,
-            .seo-faq-heading {
-                grid-template-columns: 1fr;
-            }
-
-            .seo-decision-grid {
-                margin-top: 0;
-            }
-
-            .seo-decision-item {
-                border-right: 0;
-                border-bottom: 1px solid var(--seo-line);
-            }
-
-            .seo-decision-item:last-child {
-                border-bottom: 0;
-            }
-
-            .seo-flow-head {
-                position: static;
-            }
-
-            .seo-links-band {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 575px) {
-            .seo-wrap {
-                width: min(100% - 22px, 1350px);
-            }
-
-            .seo-hero {
-                padding: 48px 0 84px;
-            }
-
-            .seo-hero h1 {
-                font-size: 2.28rem;
-            }
-
-            .seo-intro {
-                font-size: 1rem;
-            }
-
-            .seo-section,
-            .seo-faq-section,
-            .seo-final-cta {
-                padding: 54px 0;
-            }
-
-            .seo-section-head h2,
-            .seo-flow-head h2,
-            .seo-faq-heading h2,
-            .seo-final-cta h2 {
-                font-size: 1.55rem;
-            }
-
-            .seo-offer-main,
-            .seo-content-card,
-            .seo-links-band,
-            .seo-step {
-                padding: 20px;
-            }
-
-            .seo-step {
-                grid-template-columns: 1fr;
-            }
-
-        }
-    </style>
+    }
+</style>
 {% endblock %}
 
 {% block robots_meta %}
-    {% if preview|default(false) or not page.indexable %}
-        <meta name="robots" content="noindex, nofollow">
-    {% else %}
-        {{ parent() }}
-    {% endif %}
+{% if preview|default(false) or not page.indexable %}
+<meta name="robots" content="noindex, nofollow">
+{% else %}
+{{ parent() }}
+{% endif %}
 {% endblock %}
 
 {% block extra_schema %}
-    {% set faq_schema = [] %}
-    {% for item in page.faq %}
-        {% set faq_schema = faq_schema|merge([{
-            '@type': 'Question',
-            'name': item.question|default(''),
-            'acceptedAnswer': {
-                '@type': 'Answer',
-                'text': item.answer|default('')|striptags
-            }
-        }]) %}
-    {% endfor %}
-    <script type="application/ld+json">
+{% set faq_schema = [] %}
+{% for item in page.faq %}
+{% set faq_schema = faq_schema|merge([{
+'@type': 'Question',
+'name': item.question|default(''),
+'acceptedAnswer': {
+'@type': 'Answer',
+'text': item.answer|default('')|striptags
+}
+}]) %}
+{% endfor %}
+<script type="application/ld+json">
         {{ {
             '@context': 'https://schema.org',
             '@graph': [
@@ -745,63 +746,51 @@
 {% set department = page.seed and page.seed.department ? page.seed.department : null %}
 {% set service = page.seed and page.seed.service ? page.seed.service : page.mainKeyword %}
 {% set service_page_url = page.seed and page.seed.servicePageUrl ? page.seed.servicePageUrl : null %}
-{% set service_page_label = page.seed and page.seed.servicePageLabel ? page.seed.servicePageLabel : (service ? service : 'Voir la prestation') %}
+{% set service_page_label = page.seed and page.seed.servicePageLabel ? page.seed.servicePageLabel : (service ? service :
+'Voir la prestation') %}
 {% set brand = config().raisonSociale %}
 {% set phone = coordonnees().tel1|default('')|trim %}
 {% set phone_href = phone|replace({' ': '', '.': '', '-': '', '(': '', ')': ''}) %}
 {% set generated_cta = page.cta|default('')|striptags|trim %}
-{% if generated_cta and generated_cta|length <= 38 %}
-    {% set contact_label = generated_cta %}
-{% else %}
-    {% set contact_label = 'Faire une demande' %}
-{% endif %}
-{% set template_copy = page.templateCopy|default({}) %}
-{% set default_hero_points = [
-    'Réponse claire avant engagement',
-    'Accompagnement adapté à votre besoin',
-    city ? 'Présence locale à ' ~ city : 'Présence locale'
-] %}
-{% set hero_points = template_copy.hero_points|default([]) %}
-{% if hero_points is empty %}
-    {% set hero_points = default_hero_points %}
-{% endif %}
-{% set situation_title = template_copy.situation_title|default('Un point de départ clair pour votre recherche.') %}
-{% set situation_text = template_copy.situation_text|default("Cette page rassemble les informations utiles pour comprendre si " ~ brand ~ " correspond à votre besoin, à votre secteur et à votre situation. L'objectif est simple : savoir quoi faire, dans quel ordre, et avec quelles informations avancer.") %}
-{% set default_situation_bullets = [
-    'Vous recherchez une prestation précise et localisée.',
-    "Vous voulez comprendre les étapes avant de contacter l'entreprise.",
-    city ? 'Votre demande concerne ' ~ city ~ ' ou un secteur proche.' : 'Votre demande concerne le secteur couvert par ' ~ brand ~ '.',
-    'Vous préférez transmettre les bonnes informations dès le premier échange.'
-] %}
-{% set situation_bullets = template_copy.situation_bullets|default([]) %}
-{% if situation_bullets is empty %}
-    {% set situation_bullets = default_situation_bullets %}
-{% endif %}
-{% set flow_title = template_copy.flow_title|default('Comment ça se passe concrètement ?') %}
-{% set flow_text = template_copy.flow_text|default('Le parcours reste volontairement court pour éviter les échanges inutiles et avancer avec les bonnes informations dès le départ.') %}
-{% set default_steps = [
-    {'title': 'Vous décrivez votre besoin', 'text': 'Vous indiquez le service recherché, le secteur concerné et les informations utiles pour comprendre votre demande.'},
-    {'title': "L'équipe vous recontacte", 'text': "L'échange sert à comprendre votre situation, vos contraintes et le niveau d'urgence réel."},
-    {'title': 'Vous avancez avec une suite claire', 'text': "La réponse proposée dépend de votre situation. Les éléments incertains restent à confirmer avec l'entreprise."}
-] %}
-{% set flow_steps = template_copy.steps|default([]) %}
-{% if flow_steps is empty %}
-    {% set flow_steps = default_steps %}
-{% endif %}
-{% set content_eyebrow = template_copy.content_eyebrow|default('À savoir') %}
-{% set content_title = template_copy.content_title|default('Les points utiles avant de faire votre demande') %}
-{% set content_text = template_copy.content_text|default('Ces informations complètent votre décision avec un angle local, pratique et adapté à la prestation recherchée.') %}
-{% set final_eyebrow = template_copy.final_eyebrow|default('Prochaine étape') %}
-{% set final_title = template_copy.final_title|default('Voyons si votre demande peut avancer simplement.') %}
-{% set final_text = template_copy.final_text|default("Remplissez le formulaire, indiquez votre secteur et votre besoin. L'équipe " ~ brand ~ " vous recontacte pour étudier la suite avec vous.") %}
-
-<main class="seo-programmatic-page">
+{% if generated_cta and generated_cta|length <= 38 %} {% set contact_label=generated_cta %} {% else %} {% set
+    contact_label='Faire une demande' %} {% endif %} {% set template_copy=page.templateCopy|default({}) %} {% set
+    default_hero_points=[ 'Réponse claire avant engagement' , 'Accompagnement adapté à votre besoin' , city
+    ? 'Présence locale à ' ~ city : 'Présence locale' ] %} {% set hero_points=template_copy.hero_points|default([]) %}
+    {% if hero_points is empty %} {% set hero_points=default_hero_points %} {% endif %} {% set
+    situation_title=template_copy.situation_title|default('Un point de départ clair pour votre recherche.') %} {% set
+    situation_text=template_copy.situation_text|default("Cette page rassemble les informations utiles pour comprendre
+    si " ~ brand ~ " correspond à votre besoin, à votre secteur et à votre situation. L'objectif est simple : savoir
+    quoi faire, dans quel ordre, et avec quelles informations avancer.") %} {% set
+    default_situation_bullets=[ 'Vous recherchez une prestation précise et localisée.'
+    , "Vous voulez comprendre les étapes avant de contacter l'entreprise." , city ? 'Votre demande concerne ' ~ city
+    ~ ' ou un secteur proche.' : 'Votre demande concerne le secteur couvert par ' ~ brand ~ '.'
+    , 'Vous préférez transmettre les bonnes informations dès le premier échange.' ] %} {% set
+    situation_bullets=template_copy.situation_bullets|default([]) %} {% if situation_bullets is empty %} {% set
+    situation_bullets=default_situation_bullets %} {% endif %} {% set
+    flow_title=template_copy.flow_title|default('Comment ça se passe concrètement ?') %} {% set
+    flow_text=template_copy.flow_text|default('Le parcours reste volontairement court pour éviter les échanges inutiles
+    et avancer avec les bonnes informations dès le départ.') %} {% set default_steps=[
+    {'title': 'Vous décrivez votre besoin' , 'text'
+    : 'Vous indiquez le service recherché, le secteur concerné et les informations utiles pour comprendre votre demande.'
+    }, {'title': "L'équipe vous recontacte" , 'text'
+    : "L'échange sert à comprendre votre situation, vos contraintes et le niveau d'urgence réel." },
+    {'title': 'Vous avancez avec une suite claire' , 'text'
+    : "La réponse proposée dépend de votre situation. Les éléments incertains restent à confirmer avec l'entreprise." }
+    ] %} {% set flow_steps=template_copy.steps|default([]) %} {% if flow_steps is empty %} {% set
+    flow_steps=default_steps %} {% endif %} {% set content_eyebrow=template_copy.content_eyebrow|default('À savoir') %}
+    {% set content_title=template_copy.content_title|default('Les points utiles avant de faire votre demande') %} {% set
+    content_text=template_copy.content_text|default('Ces informations complètent votre décision avec un angle local,
+    pratique et adapté à la prestation recherchée.') %} {% set
+    final_eyebrow=template_copy.final_eyebrow|default('Prochaine étape') %} {% set
+    final_title=template_copy.final_title|default('Voyons si votre demande peut avancer simplement.') %} {% set
+    final_text=template_copy.final_text|default("Remplissez le formulaire, indiquez votre secteur et votre besoin.
+    L'équipe " ~ brand ~ " vous recontacte pour étudier la suite avec vous.") %} <main class="seo-programmatic-page">
     {% if preview|default(false) %}
-        <div class="seo-wrap">
-            <div class="seo-preview-alert">
-                Prévisualisation admin - cette page n'est pas indexable dans ce mode.
-            </div>
+    <div class="seo-wrap">
+        <div class="seo-preview-alert">
+            Prévisualisation admin - cette page n'est pas indexable dans ce mode.
         </div>
+    </div>
     {% endif %}
 
     <section class="seo-hero">
@@ -809,38 +798,39 @@
             <div class="seo-hero-content">
                 <div class="seo-kicker">
                     {% if city %}
-                        {{ city }}{% if department %} - {{ department }}{% endif %}
+                    {{ city }}{% if department %} - {{ department }}{% endif %}
                     {% else %}
-                        Service local
+                    Service local
                     {% endif %}
                 </div>
 
                 <h1>{{ page.h1 }}</h1>
 
                 {% if page.intro %}
-                    <div class="seo-intro">{{ page.intro|striptags|nl2br }}</div>
+                <div class="seo-intro">{{ page.intro|striptags|nl2br }}</div>
                 {% endif %}
 
                 <div class="seo-hero-actions">
                     <a href="{{ config().lienContact }}" class="btn-wt">{{ contact_label }}</a>
                     {% if service_page_url %}
-                        <a href="{{ service_page_url }}" class="btn-wt">{{ service_page_label }}</a>
+                    <a href="{{ service_page_url }}" class="btn-wt">{{ service_page_label }}</a>
                     {% endif %}
                     {% if page.faq is not empty %}
-                        <a href="#faq" class="seo-anchor-link">Voir les questions fréquentes</a>
+                    <a href="#faq" class="seo-anchor-link">Voir les questions fréquentes</a>
                     {% endif %}
                 </div>
 
                 <ul class="seo-hero-points" aria-label="Points forts">
                     {% for hero_point in hero_points %}
-                        <li>{{ hero_point|striptags }}</li>
+                    <li>{{ hero_point|striptags }}</li>
                     {% endfor %}
                 </ul>
             </div>
 
             <aside class="seo-brand-panel" aria-label="Informations du service">
                 <div class="seo-brand-visual">
-                    <img src="{{ asset(pathImage().get('elementFront_images') ~ '/' ~ designFront()['logo']['logo']) }}" alt="{{ brand }}">
+                    <img src="{{ asset(pathImage().get('elementFront_images') ~ '/' ~ designFront()['logo']['logo']) }}"
+                        alt="{{ brand }}">
                 </div>
                 <dl>
                     <div>
@@ -848,16 +838,16 @@
                         <dd><a href="{{ path('app_main') }}">{{ brand }}</a></dd>
                     </div>
                     {% if service %}
-                        <div>
-                            <dt>Service</dt>
-                            <dd>{{ service }}</dd>
-                        </div>
+                    <div>
+                        <dt>Service</dt>
+                        <dd>{{ service }}</dd>
+                    </div>
                     {% endif %}
                     {% if city %}
-                        <div>
-                            <dt>Secteur</dt>
-                            <dd>{{ city }}</dd>
-                        </div>
+                    <div>
+                        <dt>Secteur</dt>
+                        <dd>{{ city }}</dd>
+                    </div>
                     {% endif %}
                 </dl>
             </aside>
@@ -875,7 +865,7 @@
                     <span>Secteur</span>
                     <strong>{{ city ?: coordonnees().ville }}</strong>
                     {% if department %}
-                        <p>{{ department }}</p>
+                    <p>{{ department }}</p>
                     {% endif %}
                 </div>
                 <div class="seo-decision-item">
@@ -901,14 +891,14 @@
                 <div class="seo-offer-actions">
                     <a href="{{ config().lienContact }}" class="btn-wt">{{ contact_label }}</a>
                     {% if phone %}
-                        <a href="tel:{{ phone_href }}" class="btn-wt">Appeler {{ phone }}</a>
+                    <a href="tel:{{ phone_href }}" class="btn-wt">Appeler {{ phone }}</a>
                     {% endif %}
                 </div>
             </div>
 
             <ul class="seo-check-list">
                 {% for situation_bullet in situation_bullets %}
-                    <li>{{ situation_bullet|striptags }}</li>
+                <li>{{ situation_bullet|striptags }}</li>
                 {% endfor %}
             </ul>
         </div>
@@ -921,90 +911,91 @@
                 <h2>{{ flow_title|striptags }}</h2>
                 <p>{{ flow_text|striptags|nl2br }}</p>
                 {% if phone %}
-                    <a href="tel:{{ phone_href }}" class="btn-wt">Appeler {{ phone }}</a>
+                <a href="tel:{{ phone_href }}" class="btn-wt">Appeler {{ phone }}</a>
                 {% endif %}
             </div>
 
             <div class="seo-steps">
                 {% for step in flow_steps %}
-                    <div class="seo-step">
-                        <div class="seo-step-number">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</div>
-                        <div>
-                            <h3>{{ step.title|default('Étape')|striptags }}</h3>
-                            <p>{{ step.text|default('')|striptags|nl2br }}</p>
+                <div class="seo-step">
+                    <div class="seo-step-number">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</div>
+                            <div>
+                                <h3>{{ step.title|default('Étape')|striptags }}</h3>
+                                <p>{{ step.text|default('')|striptags|nl2br }}</p>
+                            </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+    </section>
+
+    {% if page.content is not empty %}
+    <section class="seo-section">
+        <div class="seo-wrap">
+            <div class="seo-section-head">
+                <span class="seo-eyebrow">{{ content_eyebrow|striptags }}</span>
+                <h2>{{ content_title|striptags }}</h2>
+                <p>{{ content_text|striptags|nl2br }}</p>
+            </div>
+
+            <div class="seo-content-grid">
+                {% for section in page.content %}
+                <article class="seo-content-card" id="section-{{ loop.index }}">
+                    <span class="seo-content-number">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</span>
+                            <h2>{{ section.h2|default('') }}</h2>
+                            <p>{{ section.body|default('')|striptags|nl2br }}</p>
+                </article>
+                {% endfor %}
+            </div>
+
+            {% if relatedPages|default([]) is not empty %}
+            <nav class="seo-links-band" aria-label="Pages SEO liées">
+                <h2>Continuer votre recherche</h2>
+                <ul class="seo-link-list">
+                    {% for relatedPage in relatedPages %}
+                    {% set related_label = relatedPage.cleanMainKeyword ?: relatedPage.cleanH1 %}
+                    <li>
+                        <a href="{% if preview|default(false) %}{{ path('admin_seo_page_preview', {'id': relatedPage.id}) }}{% else %}{{ path('seo_programmatic_page', {'slug': relatedPage.slug}) }}{% endif %}"
+                            title="{{ related_label }}">
+                            {{ related_label }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if page.faq is not empty %}
+    <section id="faq" class="seo-faq-section">
+        <div class="seo-wrap">
+            <div class="seo-faq-heading">
+                <h2>Questions fréquentes</h2>
+                <p>Des réponses courtes pour lever les derniers doutes avant de faire votre demande en ligne.</p>
+            </div>
+            <div class="accordion" id="seoFaq">
+                {% for item in page.faq %}
+                <div class="accordion-item">
+                    <h3 class="accordion-header" id="faqHeading{{ loop.index }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#faqCollapse{{ loop.index }}" aria-expanded="false"
+                            aria-controls="faqCollapse{{ loop.index }}">
+                            {{ item.question|default('Question') }}
+                        </button>
+                    </h3>
+                    <div id="faqCollapse{{ loop.index }}" class="accordion-collapse collapse"
+                        aria-labelledby="faqHeading{{ loop.index }}" data-bs-parent="#seoFaq">
+                        <div class="accordion-body">
+                            {{ item.answer|default('')|striptags|nl2br }}
                         </div>
                     </div>
+                </div>
                 {% endfor %}
             </div>
         </div>
     </section>
-
-    {% if page.content is not empty %}
-        <section class="seo-section">
-            <div class="seo-wrap">
-                <div class="seo-section-head">
-                    <span class="seo-eyebrow">{{ content_eyebrow|striptags }}</span>
-                    <h2>{{ content_title|striptags }}</h2>
-                    <p>{{ content_text|striptags|nl2br }}</p>
-                </div>
-
-                <div class="seo-content-grid">
-                    {% for section in page.content %}
-                        <article class="seo-content-card" id="section-{{ loop.index }}">
-                            <span class="seo-content-number">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</span>
-                            <h2>{{ section.h2|default('') }}</h2>
-                            <p>{{ section.body|default('')|striptags|nl2br }}</p>
-                        </article>
-                    {% endfor %}
-                </div>
-
-                {% if relatedPages|default([]) is not empty %}
-                    <nav class="seo-links-band" aria-label="Pages SEO liées">
-                        <h2>Continuer votre recherche</h2>
-                        <ul class="seo-link-list">
-                            {% for relatedPage in relatedPages %}
-                                {% set related_label = relatedPage.cleanMainKeyword ?: relatedPage.cleanH1 %}
-                                <li>
-                                    <a href="{% if preview|default(false) %}{{ path('admin_seo_page_preview', {'id': relatedPage.id}) }}{% else %}{{ path('seo_programmatic_page', {'slug': relatedPage.slug}) }}{% endif %}" title="{{ related_label }}">
-                                        {{ related_label }}
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </nav>
-                {% endif %}
-            </div>
-        </section>
-    {% endif %}
-
-    {% if page.faq is not empty %}
-        <section id="faq" class="seo-faq-section">
-            <div class="seo-wrap">
-                <div class="seo-faq-heading">
-                    <h2>Questions fréquentes</h2>
-                    <p>Des réponses courtes pour lever les derniers doutes avant de faire votre demande en ligne.</p>
-                </div>
-                <div class="accordion" id="seoFaq">
-                    {% for item in page.faq %}
-                        <div class="accordion-item">
-                            <h3 class="accordion-header" id="faqHeading{{ loop.index }}">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#faqCollapse{{ loop.index }}" aria-expanded="false"
-                                    aria-controls="faqCollapse{{ loop.index }}">
-                                    {{ item.question|default('Question') }}
-                                </button>
-                            </h3>
-                            <div id="faqCollapse{{ loop.index }}" class="accordion-collapse collapse"
-                                aria-labelledby="faqHeading{{ loop.index }}" data-bs-parent="#seoFaq">
-                                <div class="accordion-body">
-                                    {{ item.answer|default('')|striptags|nl2br }}
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
     {% endif %}
 
     <section class="seo-final-cta">
@@ -1017,5 +1008,5 @@
             <a href="{{ config().lienContact }}" class="btn-wt">{{ contact_label }}</a>
         </div>
     </section>
-</main>
-{% endblock %}
+    </main>
+    {% endblock %}

@@ -109,6 +109,35 @@ plainTextareaFieldNames.forEach(function (fieldName) {
 
 `;
 
+function scssVariableValue(args, variableName, fallback) {
+    const variablesFile = path.join(args.target, 'assets/styles/front/_variables.scss');
+
+    if (!fs.existsSync(variablesFile)) {
+        return fallback;
+    }
+
+    const variablesContent = read(variablesFile);
+    const variablePattern = new RegExp(`\\$${variableName}\\s*:`);
+
+    return variablePattern.test(variablesContent) ? `#{$${variableName}}` : fallback;
+}
+
+function frontColorVariableDeclarations(args) {
+    const primary = scssVariableValue(args, 'primary', '#F88233');
+    const primaryLight = scssVariableValue(args, 'primary-light', primary);
+
+    return [
+        {
+            key: '--wt-primary',
+            line: `  --wt-primary: ${primary};`,
+        },
+        {
+            key: '--wt-primary-light',
+            line: `  --wt-primary-light: ${primaryLight};`,
+        },
+    ];
+}
+
 function parseArgs(argv) {
     const args = {
         target: process.cwd(),
@@ -143,9 +172,9 @@ function showHelp() {
     console.log(`Installateur SEO programmatique
 
 Usage:
-  npx seo-programmatique-install
-  npx seo-programmatique-install --dry-run
-  npx seo-programmatique-install --target=/chemin/projet --env=.env.local
+  npx seo-prog
+  npx seo-prog --dry-run
+  npx seo-prog --target=/chemin/projet --env=.env.local
 
 Options:
   --dry-run     Affiche les actions sans modifier les fichiers
@@ -499,6 +528,38 @@ function patchTinyMce(args) {
     });
 }
 
+function patchFrontColorVariables(args) {
+    patchTextFile('assets/styles/front/custom.scss', args, (content) => {
+        const declarations = frontColorVariableDeclarations(args);
+        const missingDeclarations = declarations.filter((declaration) => !content.includes(`${declaration.key}:`));
+
+        if (missingDeclarations.length === 0) {
+            return { content, message: 'assets/styles/front/custom.scss contient deja les variables couleur SEO' };
+        }
+
+        const rootMatch = content.match(/:root\s*\{[\s\S]*?\}/);
+
+        if (rootMatch && rootMatch.index !== undefined) {
+            const insertAt = rootMatch.index + rootMatch[0].lastIndexOf('}');
+            const insertion = `${missingDeclarations.map((declaration) => `\n${declaration.line}`).join('')}`;
+
+            return {
+                content: `${content.slice(0, insertAt)}${insertion}${content.slice(insertAt)}`,
+            };
+        }
+
+        const imports = [...content.matchAll(/^@import .+;$/gm)];
+        const insertAt = imports.length > 0
+            ? imports[imports.length - 1].index + imports[imports.length - 1][0].length
+            : 0;
+        const rootBlock = `\n\n:root {\n${missingDeclarations.map((declaration) => declaration.line).join('\n')}\n}\n`;
+
+        return {
+            content: `${content.slice(0, insertAt)}${rootBlock}${content.slice(insertAt)}`,
+        };
+    });
+}
+
 function main() {
     const args = parseArgs(process.argv.slice(2));
 
@@ -520,6 +581,7 @@ function main() {
     patchDashboard(args);
     patchSitemap(args);
     patchTinyMce(args);
+    patchFrontColorVariables(args);
 
     log('ok', 'installation terminee');
     log('ok', 'prochaine etape: php bin/console doctrine:migrations:migrate puis npm run build et cache Symfony');
