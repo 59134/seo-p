@@ -145,6 +145,7 @@ function parseArgs(argv) {
         dryRun: false,
         force: false,
         backup: true,
+        cleanBackups: false,
         help: false,
     };
 
@@ -155,6 +156,8 @@ function parseArgs(argv) {
             args.force = true;
         } else if (arg === '--no-backup') {
             args.backup = false;
+        } else if (arg === '--clean-backups') {
+            args.cleanBackups = true;
         } else if (arg === '--help' || arg === '-h') {
             args.help = true;
         } else if (arg.startsWith('--target=')) {
@@ -174,14 +177,16 @@ function showHelp() {
 Usage:
   npx seo-prog
   npx seo-prog --dry-run
+  npx seo-prog --clean-backups
   npx seo-prog --target=/chemin/projet --env=.env.local
 
 Options:
-  --dry-run     Affiche les actions sans modifier les fichiers
-  --force       Remplace les fichiers du module deja presents
-  --no-backup   Ne cree pas de sauvegarde avant patch
-  --env=FILE    Fichier env cible, par defaut .env.local
-  --target=DIR  Projet Symfony cible, par defaut le dossier courant
+  --dry-run        Affiche les actions sans modifier les fichiers
+  --force          Remplace les fichiers du module deja presents
+  --no-backup      Ne cree pas de sauvegarde avant patch
+  --clean-backups  Supprime les sauvegardes .seo-programmatique.bak-*
+  --env=FILE       Fichier env cible, par defaut .env.local
+  --target=DIR     Projet Symfony cible, par defaut le dossier courant
 `);
 }
 
@@ -193,6 +198,7 @@ function log(kind, message) {
         skip: '[SKIP]',
         warn: '[WARN]',
         dry: '[DRY]',
+        delete: '[DEL]',
     };
 
     console.log(`${labels[kind] || '[INFO]'} ${message}`);
@@ -243,6 +249,45 @@ function backup(file, args) {
     const backupFile = `${file}.seo-programmatique.bak-${stamp}`;
     fs.copyFileSync(file, backupFile);
     return backupFile;
+}
+
+function listBackupFiles(dir, base = dir) {
+    if (!fs.existsSync(dir)) {
+        return [];
+    }
+
+    const ignoredDirectories = new Set(['.git', 'node_modules', 'vendor', 'var']);
+    const backupPattern = /\.seo-programmatique\.bak-\d{14}$/;
+
+    return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const fullPath = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+            return ignoredDirectories.has(entry.name) ? [] : listBackupFiles(fullPath, base);
+        }
+
+        return backupPattern.test(entry.name) ? [fullPath] : [];
+    });
+}
+
+function cleanBackupFiles(args) {
+    const backupFiles = listBackupFiles(args.target);
+
+    if (backupFiles.length === 0) {
+        log('skip', 'aucune sauvegarde SEO programmatique trouvee');
+        return;
+    }
+
+    for (const file of backupFiles) {
+        const relative = path.relative(args.target, file);
+        log(args.dryRun ? 'dry' : 'delete', `suppression sauvegarde ${relative}`);
+
+        if (!args.dryRun) {
+            fs.unlinkSync(file);
+        }
+    }
+
+    log('ok', `${backupFiles.length} sauvegarde(s) SEO programmatique ${args.dryRun ? 'trouvee(s)' : 'supprimee(s)'}`);
 }
 
 function copyModuleFiles(args) {
@@ -573,6 +618,11 @@ function main() {
     log('ok', `projet cible: ${args.target}`);
     if (args.dryRun) {
         log('dry', 'mode simulation actif, aucun fichier ne sera modifie');
+    }
+
+    if (args.cleanBackups) {
+        cleanBackupFiles(args);
+        return;
     }
 
     copyModuleFiles(args);

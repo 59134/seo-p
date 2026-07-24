@@ -9,7 +9,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.0.3.tgz
+npm install ./seo-prog-1.0.4.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -29,13 +29,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.0.3
+npm install git+https://github.com/59134/seo-p.git#v1.0.4
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.3
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.4
 ```
 
 Puis lancer l'installation :
@@ -68,6 +68,7 @@ Sur certains serveurs, `npx seo-prog` peut chercher `seo-prog` sur le registre n
 ./node_modules/.bin/seo-prog --target=/chemin/vers/projet
 ./node_modules/.bin/seo-prog --force
 ./node_modules/.bin/seo-prog --no-backup
+./node_modules/.bin/seo-prog --clean-backups
 ```
 
 ## Apres installation
@@ -91,7 +92,21 @@ Ensuite verifier dans l'admin :
 
 ## Nettoyage apres installation
 
-Retirer uniquement le package d'installation du projet :
+Supprimer d'abord les sauvegardes `.seo-programmatique.bak-*` creees par l'installateur :
+
+```bash
+./node_modules/.bin/seo-prog --clean-backups --dry-run
+./node_modules/.bin/seo-prog --clean-backups
+```
+
+La commande courte suivante fait la meme chose :
+
+```bash
+./node_modules/.bin/seo-prog-clean-backups --dry-run
+./node_modules/.bin/seo-prog-clean-backups
+```
+
+Ensuite retirer uniquement le package d'installation du projet :
 
 ```bash
 npm remove seo-prog
@@ -103,7 +118,7 @@ Elle ne supprime pas les fichiers Symfony installes par le module.
 Si le fichier `.tgz` a ete copie a la racine du projet, tu peux aussi le supprimer :
 
 ```bash
-rm seo-prog-1.0.3.tgz
+rm seo-prog-1.0.4.tgz
 ```
 
 Si un ancien essai a copie le fichier d'exemple `.env.seo-programmatique.example` dans le projet et que tu n'en as plus besoin :
@@ -112,7 +127,7 @@ Si un ancien essai a copie le fichier d'exemple `.env.seo-programmatique.example
 rm .env.seo-programmatique.example
 ```
 
-Pour voir les sauvegardes creees par l'installateur :
+Pour voir manuellement les sauvegardes creees par l'installateur :
 
 ```bash
 find . -name "*.seo-programmatique.bak-*" -type f
