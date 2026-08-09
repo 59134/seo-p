@@ -9,7 +9,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.0.4.tgz
+npm install ./seo-prog-1.0.5.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -29,13 +29,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.0.4
+npm install git+https://github.com/59134/seo-p.git#v1.0.5
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.4
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.5
 ```
 
 Puis lancer l'installation :
@@ -90,6 +90,24 @@ Ensuite verifier dans l'admin :
 - `4. Prompts SEO`
 - `5. Historique Claude`
 
+## Import JSON SEO
+
+Depuis l'admin, utiliser le bouton `Importer JSON` dans :
+
+- `1. Faits verifies`
+- `2. Seeds SEO`
+
+Le bouton des faits importe uniquement la cle `facts`.
+Le bouton des seeds importe uniquement la cle `seeds`.
+
+Le meme import existe aussi en ligne de commande :
+
+```bash
+php bin/console app:seo:import fichier.json --dry-run
+php bin/console app:seo:import fichier.json --scope=facts
+php bin/console app:seo:import fichier.json --scope=seeds --update
+```
+
 ## Nettoyage apres installation
 
 Supprimer d'abord les sauvegardes `.seo-programmatique.bak-*` creees par l'installateur :
@@ -118,7 +136,7 @@ Elle ne supprime pas les fichiers Symfony installes par le module.
 Si le fichier `.tgz` a ete copie a la racine du projet, tu peux aussi le supprimer :
 
 ```bash
-rm seo-prog-1.0.4.tgz
+rm seo-prog-1.0.5.tgz
 ```
 
 Si un ancien essai a copie le fichier d'exemple `.env.seo-programmatique.example` dans le projet et que tu n'en as plus besoin :
@@ -142,6 +160,7 @@ find . -name "*.seo-programmatique.bak-*" -type f -delete
 ## Ce que l'installateur fait
 
 - Copie les nouveaux fichiers du module : entites, repositories, services, controllers SEO, templates, documentation et migrations SEO.
+- Ajoute l'import JSON SEO dans les modules Faits verifies et Seeds SEO.
 - Ajoute les variables manquantes dans `.env.local` ou dans le fichier choisi avec `--env`.
 - Garde `.env.seo-programmatique.example` en interne dans le package : ce fichier n'est pas copie dans le projet cible.
 - Ajoute la route front `seo_programmatic_page` dans `config/routes.yaml` si elle n'existe pas.

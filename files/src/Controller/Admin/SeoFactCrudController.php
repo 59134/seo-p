@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\SeoFact;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -72,6 +74,17 @@ class SeoFactCrudController extends AbstractCrudController
             ->setHelp(Crud::PAGE_INDEX, 'ETAPE 1 - Ajouter ici les informations vraies que Claude a le droit d utiliser: services reels, villes couvertes, marques, garanties, preuves, process, limites, prix verifies. Plus ces faits sont precis, meilleures seront les pages.')
             ->setHelp(Crud::PAGE_NEW, 'Ajouter un fait verifie. Ne pas mettre de promesse incertaine: Claude ne doit utiliser que ce qui est vrai.')
             ->setHelp(Crud::PAGE_EDIT, 'Modifier ce fait verifie. Il sera reutilise par Claude pour les prochaines generations.');
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        $import = Action::new('importJson', 'Importer JSON', 'fa fa-file-import')
+            ->linkToRoute('admin_seo_import_json', ['type' => 'facts'])
+            ->addCssClass('btn btn-info')
+            ->createAsGlobalAction();
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, $import);
     }
 
     public function configureFilters(Filters $filters): Filters

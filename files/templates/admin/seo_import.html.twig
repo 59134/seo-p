@@ -1,0 +1,98 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <section class="content-panel">
+        <div class="content-panel-body">
+            <div class="alert alert-info">
+                <strong>Format attendu :</strong>
+                {% if type == 'facts' %}
+                    le fichier doit contenir une cle <code>facts</code>. Les entrees <code>seeds</code> seront ignorees depuis ce bouton.
+                {% elseif type == 'seeds' %}
+                    le fichier doit contenir une cle <code>seeds</code>. Les entrees <code>facts</code> seront ignorees depuis ce bouton.
+                {% else %}
+                    le fichier peut contenir <code>facts</code> et/ou <code>seeds</code>.
+                {% endif %}
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="mb-4">
+                <input type="hidden" name="_token" value="{{ csrf_token('seo_import_' ~ type) }}">
+
+                <div class="mb-3">
+                    <label for="json_file" class="form-label">Fichier JSON</label>
+                    <input id="json_file" class="form-control" type="file" name="json_file" accept=".json,application/json" required>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input id="update" class="form-check-input" type="checkbox" name="update" value="1">
+                    <label class="form-check-label" for="update">
+                        Mettre a jour les entrees existantes
+                    </label>
+                    <div class="form-text">
+                        Si cette case n est pas cochee, les faits/seeds deja presents seront ignores.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-file-import"></i> Importer le JSON
+                </button>
+                <a href="{{ returnUrl }}" class="btn btn-secondary">Retour au listing</a>
+            </form>
+
+            {% if result %}
+                <h2 class="h4">Resume de l import</h2>
+
+                {% if result.client %}
+                    <p>Client detecte : <strong>{{ result.client }}</strong></p>
+                {% endif %}
+
+                <table class="table table-sm table-bordered">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th>Crees</th>
+                        <th>Mis a jour</th>
+                        <th>Ignores</th>
+                        <th>Erreurs</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th>Faits verifies</th>
+                        <td>{{ result.stats.facts.created }}</td>
+                        <td>{{ result.stats.facts.updated }}</td>
+                        <td>{{ result.stats.facts.skipped }}</td>
+                        <td>{{ result.stats.facts.errors }}</td>
+                    </tr>
+                    <tr>
+                        <th>Seeds SEO</th>
+                        <td>{{ result.stats.seeds.created }}</td>
+                        <td>{{ result.stats.seeds.updated }}</td>
+                        <td>{{ result.stats.seeds.skipped }}</td>
+                        <td>{{ result.stats.seeds.errors }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                {% for group, messages in result.messages %}
+                    {% if messages is not empty %}
+                        <h3 class="h5 mt-4">{{ group == 'facts' ? 'Faits verifies' : 'Seeds SEO' }}</h3>
+                        <ul class="list-group">
+                            {% for item in messages %}
+                                {% set class = {
+                                    created: 'list-group-item-success',
+                                    updated: 'list-group-item-info',
+                                    skipped: 'list-group-item-secondary',
+                                    warning: 'list-group-item-warning',
+                                    error: 'list-group-item-danger'
+                                }[item.level]|default('list-group-item-light') %}
+                                <li class="list-group-item {{ class }}">{{ item.message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
