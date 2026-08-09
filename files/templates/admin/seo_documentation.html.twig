@@ -349,7 +349,8 @@ CLAUDE_MODEL_FABLE=claude-fable-5
 CLAUDE_MAX_TOKENS_SONNET=7000
 CLAUDE_MAX_TOKENS_OPUS=9000
 CLAUDE_MAX_TOKENS_FABLE=9000
-CLAUDE_TIMEOUT_SECONDS=180</code></pre>
+CLAUDE_TIMEOUT_SECONDS=180
+SEO_ELFSIGHT_REVIEWS_APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code></pre>
             <p class="mb-0">
                 Par defaut, Sonnet est conseille pour le meilleur compromis qualite, vitesse et cout.
                 <code>CLAUDE_MODEL_PREMIUM</code> est utilise automatiquement pour les seeds en mode Auto avec valeur
@@ -360,6 +361,29 @@ CLAUDE_TIMEOUT_SECONDS=180</code></pre>
                 <strong>9000 tokens output</strong> avec Opus/Fable. Dans Historique Claude, si
                 <strong>Tokens output</strong> est egal a <strong>Max tokens</strong> avec un
                 <strong>Stop reason</strong> a <code>max_tokens</code>, la generation a probablement ete coupee.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h4">Afficher les avis clients Elfsight</h2>
+            <p>
+                Le bloc d'avis est optionnel. Dans Elfsight, copiez l'identifiant du widget contenu dans la classe
+                <code>elfsight-app-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>, puis ajoutez-le dans
+                <code>.env.local</code> :
+            </p>
+            <pre class="bg-light p-3"><code>SEO_ELFSIGHT_REVIEWS_APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code></pre>
+            <ul>
+                <li>si la variable est vide, aucun bloc d'avis n'est affiche ;</li>
+                <li>l'identifiant seul ou la classe complete <code>elfsight-app-...</code> sont acceptes ;</li>
+                <li>le widget apparait avant la FAQ sur toutes les pages SEO, y compris en previsualisation ;</li>
+                <li>le module charge Elfsight uniquement si le layout du site ne l'a pas deja charge ;</li>
+                <li>utilisez de preference un widget en liste, grille ou carrousel plutot qu'un bouton flottant.</li>
+            </ul>
+            <p class="mb-0">
+                Videz ensuite le cache avec <code>php bin/console cache:clear</code>. Le module n'invente jamais d'avis,
+                de note ou de nombre d'avis dans le contenu ou le JSON-LD.
             </p>
         </div>
     </div>

@@ -515,6 +515,37 @@ endblock %}
         color: var(--seo-primary);
     }
 
+    .seo-reviews-section {
+        padding: 76px 0;
+        background: var(--seo-bg-strong);
+    }
+
+    .seo-reviews-heading {
+        display: grid;
+        grid-template-columns: minmax(0, .8fr) minmax(300px, .55fr);
+        gap: 30px;
+        align-items: end;
+        margin-bottom: 28px;
+    }
+
+    .seo-reviews-heading h2 {
+        margin: 0;
+        font-family: "titre", Arial, sans-serif;
+        font-size: clamp(1.65rem, 2.2vw, 2.05rem);
+        line-height: 1.1;
+    }
+
+    .seo-reviews-heading p {
+        margin: 0;
+        color: var(--seo-muted);
+        line-height: 1.65;
+    }
+
+    .seo-reviews-widget {
+        min-height: 180px;
+        width: 100%;
+    }
+
     .seo-faq-section {
         padding: 76px 0;
         background: var(--seo-bg-strong);
@@ -616,6 +647,7 @@ endblock %}
         .seo-offer-grid,
         .seo-flow,
         .seo-content-grid,
+        .seo-reviews-heading,
         .seo-faq-heading {
             grid-template-columns: 1fr;
         }
@@ -660,6 +692,7 @@ endblock %}
         }
 
         .seo-section,
+        .seo-reviews-section,
         .seo-faq-section,
         .seo-final-cta {
             padding: 54px 0;
@@ -667,6 +700,7 @@ endblock %}
 
         .seo-section-head h2,
         .seo-flow-head h2,
+        .seo-reviews-heading h2,
         .seo-faq-heading h2,
         .seo-final-cta h2 {
             font-size: 1.55rem;
@@ -828,6 +862,7 @@ endblock %}
 {% set service_page_label = page.seed and page.seed.servicePageLabel ? page.seed.servicePageLabel : (service ? service :
 'Voir la prestation') %}
 {% set brand = config().raisonSociale %}
+{% set elfsight_reviews_app_id = seo_elfsight_reviews_app_id() %}
 {% set phone = coordonnees().tel1|default('')|trim %}
 {% set phone_href = phone|replace({' ': '', '.': '', '-': '', '(': '', ')': ''}) %}
 {% set generated_cta = page.cta|default('')|striptags|trim %}
@@ -1045,6 +1080,36 @@ endblock %}
             {% endif %}
         </div>
     </section>
+    {% endif %}
+
+    {% if elfsight_reviews_app_id %}
+        <section id="avis-clients" class="seo-reviews-section" aria-labelledby="seoReviewsTitle">
+            <div class="seo-wrap">
+                <div class="seo-reviews-heading">
+                    <div>
+                        <span class="seo-eyebrow">Avis clients</span>
+                        <h2 id="seoReviewsTitle">Les clients partagent leur expérience avec {{ brand }}</h2>
+                    </div>
+                    <p>Consultez des retours authentiques pour mieux évaluer l’accompagnement et la qualité du service.</p>
+                </div>
+                <div class="seo-reviews-widget">
+                    <div class="elfsight-app-{{ elfsight_reviews_app_id }}" data-elfsight-app-lazy></div>
+                </div>
+            </div>
+            <script>
+                (() => {
+                    if (document.querySelector('script[src*="elfsight.com/platform/platform.js"]')) {
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = 'https://static.elfsight.com/platform/platform.js';
+                    script.defer = true;
+                    script.dataset.useServiceCore = '';
+                    document.head.appendChild(script);
+                })();
+            </script>
+        </section>
     {% endif %}
 
     {% if page.faq is not empty %}

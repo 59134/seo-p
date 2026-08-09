@@ -9,7 +9,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.0.7.tgz
+npm install ./seo-prog-1.0.8.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -29,13 +29,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.0.7
+npm install git+https://github.com/59134/seo-p.git#v1.0.8
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.7
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.8
 ```
 
 Puis lancer l'installation :
@@ -108,6 +108,22 @@ php bin/console app:seo:import fichier.json --scope=facts
 php bin/console app:seo:import fichier.json --scope=seeds --update
 ```
 
+## Avis clients Elfsight
+
+Pour afficher les vrais avis du client avant la FAQ des pages SEO, renseigner dans `.env.local` l'identifiant du widget Elfsight :
+
+```env
+SEO_ELFSIGHT_REVIEWS_APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+
+L'identifiant correspond a la partie situee apres `elfsight-app-` dans le code fourni par Elfsight. La classe complete est aussi acceptee. Laisser la variable vide masque entierement le bloc.
+
+Utiliser de preference un widget en liste, grille ou carrousel. Puis vider le cache :
+
+```bash
+php bin/console cache:clear
+```
+
 ## Nettoyage apres installation
 
 Supprimer d'abord les sauvegardes `.seo-programmatique.bak-*` creees par l'installateur :
@@ -136,7 +152,7 @@ Elle ne supprime pas les fichiers Symfony installes par le module.
 Si le fichier `.tgz` a ete copie a la racine du projet, tu peux aussi le supprimer :
 
 ```bash
-rm seo-prog-1.0.7.tgz
+rm seo-prog-1.0.8.tgz
 ```
 
 Si un ancien essai a copie le fichier d'exemple `.env.seo-programmatique.example` dans le projet et que tu n'en as plus besoin :
@@ -162,6 +178,7 @@ find . -name "*.seo-programmatique.bak-*" -type f -delete
 - Copie les nouveaux fichiers du module : entites, repositories, services, controllers SEO, templates, documentation et migrations SEO.
 - Ajoute l'import JSON SEO dans les modules Faits verifies et Seeds SEO.
 - Ajoute un JSON-LD SEO renforce sur le template front: WebPage, Service, LocalBusiness et FAQPage uniquement si la FAQ est visible.
+- Ajoute un bloc d'avis clients Elfsight optionnel avant la FAQ quand `SEO_ELFSIGHT_REVIEWS_APP_ID` est renseigne.
 - Ajoute les variables manquantes dans `.env.local` ou dans le fichier choisi avec `--env`.
 - Garde `.env.seo-programmatique.example` en interne dans le package : ce fichier n'est pas copie dans le projet cible.
 - Ajoute la route front `seo_programmatic_page` dans `config/routes.yaml` si elle n'existe pas.

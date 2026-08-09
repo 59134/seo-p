@@ -407,7 +407,26 @@ CLAUDE_MAX_TOKENS_SONNET=7000
 CLAUDE_MAX_TOKENS_OPUS=9000
 CLAUDE_MAX_TOKENS_FABLE=9000
 CLAUDE_TIMEOUT_SECONDS=180
+SEO_ELFSIGHT_REVIEWS_APP_ID=
 ```
+
+### Avis clients Elfsight
+
+Le template peut afficher un widget d'avis Elfsight avant la FAQ. Dans le code d'integration Elfsight, reperer la classe:
+
+```html
+<div class="elfsight-app-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+```
+
+Copier l'identifiant situe apres `elfsight-app-` dans `.env.local`:
+
+```env
+SEO_ELFSIGHT_REVIEWS_APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+
+La classe complete `elfsight-app-...` est egalement acceptee. Si la variable reste vide, le bloc d'avis n'est pas rendu. Apres une modification, lancer `php bin/console cache:clear`.
+
+Pour une page SEO, utiliser de preference un widget en liste, grille ou carrousel. Un widget flottant deja affiche dans le layout global risquerait d'apparaitre deux fois. Le module ne transforme pas les avis Elfsight en `AggregateRating` et n'invente aucune note dans le JSON-LD.
 
 Le fichier `.env` contient seulement des ids de modeles non secrets:
 
@@ -505,6 +524,7 @@ Le template ajoute:
 - noindex en preview;
 - contenu structure;
 - FAQ visible;
+- avis clients Elfsight quand `SEO_ELFSIGHT_REVIEWS_APP_ID` est configure;
 - JSON-LD WebPage, Service, LocalBusiness et FAQPage quand une FAQ visible existe.
 
 ## Commande batch
