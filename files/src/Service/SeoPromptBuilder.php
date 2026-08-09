@@ -188,7 +188,10 @@ class SeoPromptBuilder
                         'type' => 'array',
                         'items' => ['type' => 'string'],
                     ],
-                    'schema_json_ld' => ['type' => 'object'],
+                    'schema_json_ld' => [
+                        'type' => 'object',
+                        'description' => 'JSON-LD indicatif. Doit proposer un @graph avec WebPage, Service, LocalBusiness si les donnees entreprise/adresse existent, et FAQPage uniquement si la FAQ est visible et non vide.',
+                    ],
                     'quality_flags' => [
                         'type' => 'array',
                         'items' => ['type' => 'string'],
@@ -276,6 +279,23 @@ class SeoPromptBuilder
                     'Do not stuff keywords; adapt wording naturally to the user intent.',
                 ],
                 'publication_rule' => 'Recommend noindex or review if local facts or proof are too thin.',
+                'structured_data' => [
+                    'format' => 'JSON-LD',
+                    'required_graph_nodes' => [
+                        'WebPage for the current generated page',
+                        'Service for the local service intent',
+                        'LocalBusiness for the real business when name and address are available',
+                        'FAQPage only when FAQ questions and answers are visible on the page',
+                    ],
+                    'do_not_invent' => [
+                        'street address',
+                        'postal code',
+                        'phone number',
+                        'opening hours',
+                        'geo coordinates',
+                        'reviews or aggregate ratings',
+                    ],
+                ],
             ],
             'anti_duplication' => [
                 'target_editorial_similarity_percent' => 55,
@@ -407,7 +427,8 @@ Contraintes:
 - cta doit etre uniquement un libellé court de bouton, 2 à 4 mots, maximum 38 caractères. Ne mets jamais une phrase complète. Exemples: "Faire une demande", "Tester mon éligibilité", "Demander un devis";
 - template_copy contient les textes courts du design. Ils doivent être génériques pour un site vitrine mais adaptés au service, à la ville et à l'intention. Ne mets pas de promesse inventée. Varie ces textes d'une page locale à l'autre;
 - si page_intent.linked_service_page.url est renseigne, ajoute ce lien dans internal_links avec un libelle naturel;
-- schema_json_ld doit contenir au minimum Service et FAQPage si les donnees sont suffisantes;
+- schema_json_ld doit contenir un @graph JSON-LD coherent avec WebPage, Service, LocalBusiness si les donnees entreprise/adresse existent, et FAQPage uniquement si la FAQ visible contient des questions/reponses;
+- ne jamais inventer adresse, telephone, horaires, coordonnees geo, avis ou note dans schema_json_ld;
 - indexation_recommendation doit etre "index" uniquement si la page a assez de valeur specifique.
 
 Objectif anti-duplication:

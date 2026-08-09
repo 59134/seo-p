@@ -696,47 +696,126 @@ endblock %}
 {% endblock %}
 
 {% block extra_schema %}
-{% set faq_schema = [] %}
-{% for item in page.faq %}
-{% set faq_schema = faq_schema|merge([{
-'@type': 'Question',
-'name': item.question|default(''),
-'acceptedAnswer': {
-'@type': 'Answer',
-'text': item.answer|default('')|striptags
-}
-}]) %}
-{% endfor %}
-<script type="application/ld+json">
+    {% set page_url = absolute_url(path('seo_programmatic_page', {'slug': page.slug})) %}
+    {% set homepage_url = absolute_url(path('app_main')) %}
+    {% set logo_url = absolute_url(asset(pathImage().get('elementFront_images') ~ '/' ~ designFront()['logo']['logo'])) %}
+    {% set business_id = homepage_url ~ '#localbusiness' %}
+    {% set webpage_id = page_url ~ '#webpage' %}
+    {% set service_id = page_url ~ '#service' %}
+    {% set faq_id = page_url ~ '#faq' %}
+    {% set schema_city = page.seed and page.seed.city ? page.seed.city : coordonnees().ville %}
+    {% set schema_department = page.seed and page.seed.department ? page.seed.department : null %}
+    {% set schema_service = page.seed and page.seed.service ? page.seed.service : page.mainKeyword %}
+    {% set address_country = coordonnees().pays|default('FR')|striptags|trim %}
+    {% if address_country is empty %}
+        {% set address_country = 'FR' %}
+    {% endif %}
+    {% set postal_address = {
+        '@type': 'PostalAddress',
+        'addressCountry': address_country
+    } %}
+    {% if coordonnees().adresse|default('')|striptags|trim is not empty %}
+        {% set postal_address = postal_address|merge({'streetAddress': coordonnees().adresse|striptags|trim}) %}
+    {% endif %}
+    {% if coordonnees().ville|default('')|striptags|trim is not empty %}
+        {% set postal_address = postal_address|merge({'addressLocality': coordonnees().ville|striptags|trim}) %}
+    {% endif %}
+    {% if coordonnees().cp|default('')|striptags|trim is not empty %}
+        {% set postal_address = postal_address|merge({'postalCode': coordonnees().cp|striptags|trim}) %}
+    {% endif %}
+    {% set same_as_links = [] %}
+    {% if coordonnees().facebook|default('') is not empty and coordonnees().facebook != 'https://www.facebook.com' %}
+        {% set same_as_links = same_as_links|merge([coordonnees().facebook]) %}
+    {% endif %}
+    {% if coordonnees().instagram|default('') is not empty and coordonnees().instagram != 'https://www.instagram.com' %}
+        {% set same_as_links = same_as_links|merge([coordonnees().instagram]) %}
+    {% endif %}
+    {% if coordonnees().linkedin|default('') is not empty and coordonnees().linkedin != 'https://www.linkedin.com' %}
+        {% set same_as_links = same_as_links|merge([coordonnees().linkedin]) %}
+    {% endif %}
+    {% if coordonnees().youtube|default('') is not empty and coordonnees().youtube != 'https://www.youtube.com' %}
+        {% set same_as_links = same_as_links|merge([coordonnees().youtube]) %}
+    {% endif %}
+    {% set local_business = {
+        '@type': 'LocalBusiness',
+        '@id': business_id,
+        'name': config().raisonSociale,
+        'url': homepage_url,
+        'image': logo_url,
+        'logo': logo_url,
+        'address': postal_address
+    } %}
+    {% if coordonnees().tel1|default('')|striptags|trim is not empty %}
+        {% set local_business = local_business|merge({'telephone': coordonnees().tel1|striptags|trim}) %}
+    {% endif %}
+    {% if coordonnees().email|default('')|striptags|trim is not empty %}
+        {% set local_business = local_business|merge({'email': coordonnees().email|striptags|trim}) %}
+    {% endif %}
+    {% if coordonnees().horaires|default('')|striptags|trim is not empty %}
+        {% set local_business = local_business|merge({'openingHours': coordonnees().horaires|striptags|trim}) %}
+    {% endif %}
+    {% if same_as_links is not empty %}
+        {% set local_business = local_business|merge({'sameAs': same_as_links}) %}
+    {% endif %}
+    {% set area_served = [] %}
+    {% if schema_city %}
+        {% set area_served = area_served|merge([{'@type': 'City', 'name': schema_city}]) %}
+    {% endif %}
+    {% if schema_department %}
+        {% set area_served = area_served|merge([{'@type': 'AdministrativeArea', 'name': schema_department}]) %}
+    {% endif %}
+    {% set faq_schema = [] %}
+    {% for item in page.faq %}
+        {% set faq_question = item.question|default('')|striptags|trim %}
+        {% set faq_answer = item.answer|default('')|striptags|trim %}
+        {% if faq_question is not empty and faq_answer is not empty %}
+            {% set faq_schema = faq_schema|merge([{
+                '@type': 'Question',
+                'name': faq_question,
+                'acceptedAnswer': {
+                    '@type': 'Answer',
+                    'text': faq_answer
+                }
+            }]) %}
+        {% endif %}
+    {% endfor %}
+    {% set schema_graph = [
+        local_business,
+        {
+            '@type': 'WebPage',
+            '@id': webpage_id,
+            'url': page_url,
+            'name': page.title,
+            'description': page.metaDescription,
+            'inLanguage': page.locale,
+            'about': {'@id': service_id},
+            'publisher': {'@id': business_id}
+        },
+        {
+            '@type': 'Service',
+            '@id': service_id,
+            'name': schema_service ?: page.h1,
+            'serviceType': schema_service ?: page.mainKeyword,
+            'description': page.intro|default(page.metaDescription)|striptags|trim,
+            'url': page_url,
+            'provider': {'@id': business_id},
+            'areaServed': area_served is not empty ? area_served : schema_city
+        }
+    ] %}
+    {% if faq_schema is not empty %}
+        {% set schema_graph = schema_graph|merge([{
+            '@type': 'FAQPage',
+            '@id': faq_id,
+            'url': page_url ~ '#faq',
+            'inLanguage': page.locale,
+            'isPartOf': {'@id': webpage_id},
+            'mainEntity': faq_schema
+        }]) %}
+    {% endif %}
+    <script type="application/ld+json">
         {{ {
             '@context': 'https://schema.org',
-            '@graph': [
-                {
-                    '@type': 'WebPage',
-                    '@id': app.request.uri ~ '#webpage',
-                    'url': app.request.uri,
-                    'name': page.title,
-                    'description': page.metaDescription,
-                    'inLanguage': page.locale
-                },
-                {
-                    '@type': 'Service',
-                    '@id': app.request.uri ~ '#service',
-                    'name': page.h1,
-                    'description': page.intro|striptags,
-                    'areaServed': page.seed and page.seed.city ? page.seed.city : coordonnees().ville,
-                    'provider': {
-                        '@type': 'LocalBusiness',
-                        'name': config().raisonSociale,
-                        'telephone': coordonnees().tel1
-                    }
-                },
-                {
-                    '@type': 'FAQPage',
-                    '@id': app.request.uri ~ '#faq',
-                    'mainEntity': faq_schema
-                }
-            ]
+            '@graph': schema_graph
         }|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }}
     </script>
 {% endblock %}

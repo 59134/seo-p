@@ -9,7 +9,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.0.6.tgz
+npm install ./seo-prog-1.0.7.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -29,13 +29,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.0.6
+npm install git+https://github.com/59134/seo-p.git#v1.0.7
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.6
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.7
 ```
 
 Puis lancer l'installation :
@@ -136,7 +136,7 @@ Elle ne supprime pas les fichiers Symfony installes par le module.
 Si le fichier `.tgz` a ete copie a la racine du projet, tu peux aussi le supprimer :
 
 ```bash
-rm seo-prog-1.0.6.tgz
+rm seo-prog-1.0.7.tgz
 ```
 
 Si un ancien essai a copie le fichier d'exemple `.env.seo-programmatique.example` dans le projet et que tu n'en as plus besoin :
@@ -161,6 +161,7 @@ find . -name "*.seo-programmatique.bak-*" -type f -delete
 
 - Copie les nouveaux fichiers du module : entites, repositories, services, controllers SEO, templates, documentation et migrations SEO.
 - Ajoute l'import JSON SEO dans les modules Faits verifies et Seeds SEO.
+- Ajoute un JSON-LD SEO renforce sur le template front: WebPage, Service, LocalBusiness et FAQPage uniquement si la FAQ est visible.
 - Ajoute les variables manquantes dans `.env.local` ou dans le fichier choisi avec `--env`.
 - Garde `.env.seo-programmatique.example` en interne dans le package : ce fichier n'est pas copie dans le projet cible.
 - Ajoute la route front `seo_programmatic_page` dans `config/routes.yaml` si elle n'existe pas.

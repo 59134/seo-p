@@ -505,7 +505,7 @@ Le template ajoute:
 - noindex en preview;
 - contenu structure;
 - FAQ visible;
-- JSON-LD WebPage, Service et FAQPage.
+- JSON-LD WebPage, Service, LocalBusiness et FAQPage quand une FAQ visible existe.
 
 ## Commande batch
 
