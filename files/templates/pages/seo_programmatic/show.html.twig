@@ -2,8 +2,11 @@
 
 {% block title %}{{ page.title }}{% endblock %}
 {% block meta_description %}{{ page.metaDescription }}{% endblock %}
-{% block canonical_url %}{{ page.canonicalUrl ?: absolute_url(path('seo_programmatic_page', {'slug': page.slug})) }}{%
+{% block canonical_url %}{{ page.canonicalUrl ?: absolute_url(path('seo_programmatic_page', {'slug': page.slug, '_locale': page.locale})) }}{%
 endblock %}
+{% block og_image %}{{ page.imageUrl ? absolute_url(page.imageUrl) : parent() }}{% endblock %}
+{% block og_image_alt %}{{ page.imageAlt ?: page.h1 }}{% endblock %}
+{% block structured_data %}{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
@@ -807,7 +810,7 @@ endblock %}
 {% endblock %}
 
 {% block extra_schema %}
-    {% set page_url = absolute_url(path('seo_programmatic_page', {'slug': page.slug})) %}
+    {% set page_url = page.canonicalUrl ?: absolute_url(path('seo_programmatic_page', {'slug': page.slug, '_locale': page.locale})) %}
     {% set homepage_url = absolute_url(path('app_main')) %}
     {% set logo_url = absolute_url(asset(pathImage().get('elementFront_images') ~ '/' ~ designFront()['logo']['logo'])) %}
     {% set business_id = homepage_url ~ '#localbusiness' %}
@@ -1152,12 +1155,21 @@ endblock %}
                 </article>
                 {% endfor %}
                 {% if page.imageUrl %}
-                <a href="/albums" class="seo-page-visual-link{{ page.content|length is even ? ' seo-page-visual-link-wide' : '' }}" title="Voir les albums de {{ brand }}" aria-label="Voir les albums de {{ brand }}">
+                {% set image_target_url = page.imageSource == 'service_page' and service_page_url ? service_page_url : null %}
+                {% if image_target_url %}
+                <a href="{{ image_target_url }}" class="seo-page-visual-link{{ page.content|length is even ? ' seo-page-visual-link-wide' : '' }}" title="En savoir plus sur {{ service ?: brand }}" aria-label="En savoir plus sur {{ service ?: brand }}">
+                {% else %}
+                <div class="seo-page-visual-link{{ page.content|length is even ? ' seo-page-visual-link-wide' : '' }}">
+                {% endif %}
                     <span class="seo-page-visual-backdrop" aria-hidden="true">
                         <img src="{{ page.imageUrl }}" alt="" loading="lazy" decoding="async">
                     </span>
                     <img class="seo-page-visual-image" src="{{ page.imageUrl }}" alt="{{ page.imageAlt ?: service ?: page.h1 }}" loading="lazy" decoding="async">
+                {% if image_target_url %}
                 </a>
+                {% else %}
+                </div>
+                {% endif %}
                 {% endif %}
             </div>
 

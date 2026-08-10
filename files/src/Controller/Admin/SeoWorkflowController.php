@@ -4,10 +4,12 @@ namespace App\Controller\Admin;
 
 use App\Entity\SeoPage;
 use App\Entity\SeoSeed;
+use App\Repository\ModuleRepository;
 use App\Repository\SeoPageRepository;
 use App\Repository\SeoSeedRepository;
 use App\Service\ClaudeSeoGenerator;
 use App\Service\SeoPageImageResolver;
+use App\Service\SeoQualityScorer;
 use App\Service\SeoSeedExpander;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -22,13 +24,24 @@ class SeoWorkflowController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private AdminUrlGenerator $adminUrlGenerator,
-        private SeoPageRepository $seoPageRepository
+        private SeoPageRepository $seoPageRepository,
+        private ModuleRepository $moduleRepository,
+        private SeoQualityScorer $qualityScorer
     ) {
     }
 
-    #[Route('/admin/seo-seed/{id}/generate', name: 'admin_seo_seed_generate', methods: ['GET'])]
+    #[Route('/admin/seo-seed/{id}/generate', name: 'admin_seo_seed_generate', methods: ['POST'])]
     public function generate(SeoSeed $seed, ClaudeSeoGenerator $generator, Request $request): Response
     {
+        $this->assertSeedGenerationAccess();
+        $this->assertCsrf($request, 'seo_seed_generate');
+
+        if ($existingPage = $this->seoPageRepository->findActiveForSeed($seed)) {
+            $this->addFlash('warning', 'Une page existe deja pour ce seed. Utilise le bouton Optimiser depuis la page SEO.');
+
+            return $this->redirectToSeoPage($existingPage);
+        }
+
         $seed->refreshDataCompletenessScore();
         $this->entityManager->flush();
 
@@ -49,9 +62,12 @@ class SeoWorkflowController extends AbstractController
             ->generateUrl());
     }
 
-    #[Route('/admin/seo-seed/{id}/generate-keyword-pages', name: 'admin_seo_seed_generate_keyword_pages', methods: ['GET'])]
+    #[Route('/admin/seo-seed/{id}/generate-keyword-pages', name: 'admin_seo_seed_generate_keyword_pages', methods: ['POST'])]
     public function generateKeywordPages(SeoSeed $seed, SeoSeedExpander $seedExpander, ClaudeSeoGenerator $generator, Request $request): Response
     {
+        $this->assertSeedGenerationAccess();
+        $this->assertCsrf($request, 'seo_seed_generate_keyword_pages');
+
         $seed->refreshDataCompletenessScore();
         $this->entityManager->flush();
 
@@ -130,9 +146,12 @@ class SeoWorkflowController extends AbstractController
             ->generateUrl());
     }
 
-    #[Route('/admin/seo-seed/generate-batch', name: 'admin_seo_seed_generate_batch', methods: ['GET'])]
-    public function generateBatch(SeoSeedRepository $seedRepository, SeoSeedExpander $seedExpander): Response
+    #[Route('/admin/seo-seed/generate-batch', name: 'admin_seo_seed_generate_batch', methods: ['POST'])]
+    public function generateBatch(SeoSeedRepository $seedRepository, SeoSeedExpander $seedExpander, Request $request): Response
     {
+        $this->assertSeedGenerationAccess();
+        $this->assertCsrf($request, 'seo_seed_generate_batch_setup');
+
         $itemsBySeedId = [];
         $createdChildren = 0;
         $updatedChildren = 0;
@@ -198,6 +217,7 @@ class SeoWorkflowController extends AbstractController
         SeoSeedExpander $seedExpander,
         Request $request
     ): JsonResponse {
+        $this->assertSeedGenerationAccess();
         $payload = json_decode($request->getContent(), true);
 
         if (!is_array($payload) || !$this->isCsrfTokenValid('seo_seed_generate_batch', $payload['_token'] ?? null)) {
@@ -253,10 +273,13 @@ class SeoWorkflowController extends AbstractController
         }
     }
 
-    #[Route('/admin/seo-page/{id}/improve', name: 'admin_seo_page_improve', methods: ['GET'])]
-    #[Route('/admin/seo-page/{id}/improve/{model}', name: 'admin_seo_page_improve_model', methods: ['GET'])]
+    #[Route('/admin/seo-page/{id}/improve', name: 'admin_seo_page_improve', methods: ['POST'])]
+    #[Route('/admin/seo-page/{id}/improve/{model}', name: 'admin_seo_page_improve_model', methods: ['POST'])]
     public function improve(SeoPage $page, ClaudeSeoGenerator $generator, Request $request): Response
     {
+        $this->assertPageEditAccess();
+        $this->assertCsrf($request, 'seo_page_improve');
+
         $seed = $page->getSeed();
 
         if (!$seed) {
@@ -285,10 +308,15 @@ class SeoWorkflowController extends AbstractController
         return $this->redirectToSeoPage($page);
     }
 
-    #[Route('/admin/seo-page/{id}/publish', name: 'admin_seo_page_publish', methods: ['GET'])]
-    public function publish(SeoPage $page): Response
+    #[Route('/admin/seo-page/{id}/publish', name: 'admin_seo_page_publish', methods: ['POST'])]
+    public function publish(SeoPage $page, Request $request): Response
     {
+        $this->assertPageEditAccess();
+        $this->assertCsrf($request, 'seo_page_publish');
+        $this->refreshQuality($page);
+
         if ($page->getQualityScore() < 75) {
+            $this->entityManager->flush();
             $this->addFlash('danger', 'Publication refusee: le score qualite doit etre au moins de 75.');
 
             return $this->redirectToSeoPage($page);
@@ -297,6 +325,7 @@ class SeoWorkflowController extends AbstractController
         $blockingMissingData = $this->blockingMissingData($page->getMissingData());
 
         if (count($blockingMissingData) > 0) {
+            $this->entityManager->flush();
             $this->addFlash('danger', sprintf(
                 'Publication refusee: %d donnee(s) critique(s) manquante(s). Corrige ou supprime les lignes dans "Donnees manquantes" puis sauvegarde. Canonical forcee vide = OK. Blocages: %s',
                 count($blockingMissingData),
@@ -327,9 +356,12 @@ class SeoWorkflowController extends AbstractController
         return $this->redirectToSeoPage($page);
     }
 
-    #[Route('/admin/seo-page/{id}/unpublish', name: 'admin_seo_page_unpublish', methods: ['GET'])]
-    public function unpublish(SeoPage $page): Response
+    #[Route('/admin/seo-page/{id}/unpublish', name: 'admin_seo_page_unpublish', methods: ['POST'])]
+    public function unpublish(SeoPage $page, Request $request): Response
     {
+        $this->assertPageEditAccess();
+        $this->assertCsrf($request, 'seo_page_unpublish');
+
         $page
             ->setStatus(SeoPage::STATUS_REVIEW)
             ->setIndexable(false);
@@ -343,6 +375,8 @@ class SeoWorkflowController extends AbstractController
     #[Route('/admin/seo-page/{id}/preview', name: 'admin_seo_page_preview', methods: ['GET'])]
     public function preview(SeoPage $page): Response
     {
+        $this->assertPageEditAccess();
+
         return $this->render('pages/seo_programmatic/show.html.twig', [
             'page' => $page,
             'relatedPages' => $this->seoPageRepository->findRelatedPublishedPages($page, null, false),
@@ -350,9 +384,12 @@ class SeoWorkflowController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/seo-page/{id}/resolve-image', name: 'admin_seo_page_resolve_image', methods: ['GET'])]
-    public function resolveImage(SeoPage $page, SeoPageImageResolver $imageResolver): Response
+    #[Route('/admin/seo-page/{id}/resolve-image', name: 'admin_seo_page_resolve_image', methods: ['POST'])]
+    public function resolveImage(SeoPage $page, SeoPageImageResolver $imageResolver, Request $request): Response
     {
+        $this->assertPageEditAccess();
+        $this->assertCsrf($request, 'seo_page_resolve_image');
+
         $result = $imageResolver->resolve($page, true);
 
         if ($result['resolved']) {
@@ -368,6 +405,7 @@ class SeoWorkflowController extends AbstractController
     #[Route('/admin/seo-page/bulk-publish', name: 'admin_seo_page_bulk_publish', methods: ['GET', 'POST'])]
     public function bulkPublish(Request $request): Response
     {
+        $this->assertPageEditAccess();
         $repository = $this->entityManager->getRepository(SeoPage::class);
 
         if ($request->isMethod('POST')) {
@@ -394,6 +432,8 @@ class SeoWorkflowController extends AbstractController
             $cleanedSlugs = 0;
 
             foreach ($repository->findBy(['id' => $selectedIds]) as $page) {
+                $this->refreshQuality($page);
+
                 if (!in_array($page->getStatus(), [SeoPage::STATUS_DRAFT, SeoPage::STATUS_REVIEW], true)) {
                     $blocked[] = sprintf('%s : statut non publiable', $page->getMainKeyword());
                     continue;
@@ -428,6 +468,8 @@ class SeoWorkflowController extends AbstractController
                     break;
                 }
             }
+
+            $this->entityManager->flush();
 
             if ($published > 0) {
                 $this->addFlash('success', sprintf(
@@ -679,6 +721,42 @@ class SeoWorkflowController extends AbstractController
             'certification',
             'garantie',
         ];
+    }
+
+    private function assertSeedGenerationAccess(): void
+    {
+        $this->assertModuleEnabled('SeoSeed');
+        $this->assertModuleEnabled('SeoPage');
+        $this->denyAccessUnlessGranted('m_edit', SeoSeed::class);
+        $this->denyAccessUnlessGranted('m_create', SeoPage::class);
+    }
+
+    private function assertPageEditAccess(): void
+    {
+        $this->assertModuleEnabled('SeoPage');
+        $this->denyAccessUnlessGranted('m_edit', SeoPage::class);
+    }
+
+    private function assertModuleEnabled(string $moduleName): void
+    {
+        if (!$this->moduleRepository->findOneBy(['name' => $moduleName, 'valid' => true])) {
+            throw $this->createNotFoundException(sprintf('Module %s indisponible.', $moduleName));
+        }
+    }
+
+    private function assertCsrf(Request $request, string $tokenId): void
+    {
+        if (!$this->isCsrfTokenValid($tokenId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton de securite invalide. Recharge la page puis recommence.');
+        }
+    }
+
+    private function refreshQuality(SeoPage $page): void
+    {
+        $result = $this->qualityScorer->scorePage($page);
+        $page
+            ->setQualityScore($result['score'])
+            ->setQualityFlags($result['flags']);
     }
 
     private function normalizeForSearch(string $value): string

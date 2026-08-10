@@ -50,6 +50,20 @@ class SeoPageRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findActiveForSeed(SeoSeed $seed): ?SeoPage
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.seed = :seed')
+            ->andWhere('p.status != :archived')
+            ->setParameter('seed', $seed)
+            ->setParameter('archived', SeoPage::STATUS_ARCHIVED)
+            ->orderBy('p.updated_at', 'DESC')
+            ->addOrderBy('p.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /**
      * @return SeoPage[]
      */

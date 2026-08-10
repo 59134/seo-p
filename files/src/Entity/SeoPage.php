@@ -7,6 +7,7 @@ use App\Entity\Trait\UpdatedAtTrait;
 use App\Repository\SeoPageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SeoPageRepository::class)]
 #[ORM\Table(name: 'seo_page')]
@@ -31,6 +32,9 @@ class SeoPage
     private ?SeoSeed $seed = null;
 
     #[ORM\Column(length: 180)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 180)]
+    #[Assert\Regex(pattern: '/^[a-z0-9][a-z0-9-]*$/', message: 'Le slug doit contenir uniquement des minuscules, chiffres et tirets.')]
     private ?string $slug = null;
 
     #[ORM\Column(length: 5)]
@@ -94,6 +98,7 @@ class SeoPage
     private bool $indexable = false;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(message: 'La canonical doit etre une URL absolue valide.')]
     private ?string $canonicalUrl = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -245,7 +250,7 @@ class SeoPage
     {
         $decoded = $this->decodeJsonArrayField($contentJson);
 
-        if ($decoded === null || ($decoded === [] && $this->content !== [])) {
+        if ($decoded === null) {
             return $this;
         }
 
@@ -275,7 +280,7 @@ class SeoPage
     {
         $decoded = $this->decodeJsonArrayField($faqJson);
 
-        if ($decoded === null || ($decoded === [] && $this->faq !== [])) {
+        if ($decoded === null) {
             return $this;
         }
 
@@ -305,7 +310,7 @@ class SeoPage
     {
         $decoded = $this->decodeJsonArrayField($schemaJsonText);
 
-        if ($decoded === null || ($decoded === [] && $this->schemaJson !== [])) {
+        if ($decoded === null) {
             return $this;
         }
 
@@ -335,7 +340,7 @@ class SeoPage
     {
         $decoded = $this->decodeJsonArrayField($internalLinksJson);
 
-        if ($decoded === null || ($decoded === [] && $this->internalLinks !== [])) {
+        if ($decoded === null) {
             return $this;
         }
 
@@ -365,7 +370,7 @@ class SeoPage
     {
         $decoded = $this->decodeJsonArrayField($templateCopyJson);
 
-        if ($decoded === null || ($decoded === [] && $this->templateCopy !== [])) {
+        if ($decoded === null) {
             return $this;
         }
 

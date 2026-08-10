@@ -39,12 +39,25 @@ class SeoFactRepository extends ServiceEntityRepository
      */
     public function findActiveForPrompt(string $locale = 'fr'): array
     {
+        $facts = $this->findActiveForLocale($locale);
+
+        if ($facts || $locale === 'fr') {
+            return $facts;
+        }
+
+        return $this->findActiveForLocale('fr');
+    }
+
+    /**
+     * @return SeoFact[]
+     */
+    private function findActiveForLocale(string $locale): array
+    {
         return $this->createQueryBuilder('f')
             ->andWhere('f.valid = :valid')
-            ->andWhere('f.locale = :locale OR f.locale = :fallback')
+            ->andWhere('f.locale = :locale')
             ->setParameter('valid', true)
             ->setParameter('locale', $locale)
-            ->setParameter('fallback', 'fr')
             ->orderBy('f.priority', 'DESC')
             ->addOrderBy('f.type', 'ASC')
             ->getQuery()

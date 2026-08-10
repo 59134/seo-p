@@ -4,8 +4,11 @@ namespace App\Controller\Admin;
 
 use App\Entity\SeoPage;
 use App\Entity\SeoSeed;
+use App\Service\SeoQualityScorer;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -18,9 +21,16 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class SeoPageCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private CsrfTokenManagerInterface $csrfTokenManager,
+        private SeoQualityScorer $qualityScorer
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return SeoPage::class;
@@ -43,7 +53,7 @@ class SeoPageCrudController extends AbstractCrudController
                     $isPublic = $page->isPublishedIndexable();
                     $url = $this->generateUrl(
                         $isPublic ? 'seo_programmatic_page' : 'admin_seo_page_preview',
-                        $isPublic ? ['slug' => $value] : ['id' => $page->getId()]
+                        $isPublic ? ['slug' => $value, '_locale' => $page->getLocale()] : ['id' => $page->getId()]
                     );
                     $title = $isPublic ? 'Ouvrir la page front' : 'Ouvrir la previsualisation admin';
 
@@ -62,11 +72,11 @@ class SeoPageCrudController extends AbstractCrudController
                 'A relire' => SeoPage::STATUS_REVIEW,
                 'Publie' => SeoPage::STATUS_PUBLISHED,
                 'Archive' => SeoPage::STATUS_ARCHIVED,
-            ])->setColumns(4),
+            ])->hideOnForm()->setColumns(4),
             TextField::new('title', 'Title SEO')->setColumns(6),
             TextField::new('metaDescription', 'Meta description')->setColumns(6),
-            BooleanField::new('indexable', 'Indexable')->setColumns(2),
-            IntegerField::new('qualityScore', 'Score qualité')->setColumns(4),
+            BooleanField::new('indexable', 'Indexable')->hideOnForm()->setColumns(2),
+            IntegerField::new('qualityScore', 'Score qualité')->hideOnForm()->setColumns(4),
             TextField::new('h1', 'H1')->hideOnIndex()->setColumns(12),
             TextareaField::new('intro', 'Introduction')
                 ->setRequired(false)
@@ -129,6 +139,7 @@ class SeoPageCrudController extends AbstractCrudController
             TextareaField::new('schemaJsonText', 'Schema JSON-LD')
                 ->setRequired(false)
                 ->hideOnIndex()
+                ->hideOnForm()
                 ->setFormTypeOption('attr', [
                     'class' => 'form-control seo-plain-text',
                     'rows' => 8,
@@ -170,6 +181,12 @@ class SeoPageCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $postAttributes = static fn (string $token, string $confirmation): array => [
+            'data-seo-post-action' => 'true',
+            'data-csrf-token' => $token,
+            'data-confirm' => $confirmation,
+        ];
+
         $bulkPublish = Action::new('bulkPublishSeoPages', 'Publication en masse', 'fa fa-list-check')
             ->linkToRoute('admin_seo_page_bulk_publish')
             ->addCssClass('btn btn-success')
@@ -184,14 +201,26 @@ class SeoPageCrudController extends AbstractCrudController
 
         $publish = Action::new('publishSeoPage', 'Publier', 'fa fa-check')
             ->linkToRoute('admin_seo_page_publish', static fn (SeoPage $page): array => ['id' => $page->getId()])
+            ->setHtmlAttributes($postAttributes(
+                (string) $this->csrfTokenManager->getToken('seo_page_publish'),
+                'Publier cette page et l ajouter au sitemap ?'
+            ))
             ->displayIf(static fn (SeoPage $page): bool => $page->getStatus() !== SeoPage::STATUS_PUBLISHED);
 
         $unpublish = Action::new('unpublishSeoPage', 'Retirer', 'fa fa-ban')
             ->linkToRoute('admin_seo_page_unpublish', static fn (SeoPage $page): array => ['id' => $page->getId()])
+            ->setHtmlAttributes($postAttributes(
+                (string) $this->csrfTokenManager->getToken('seo_page_unpublish'),
+                'Retirer cette page de l indexation ?'
+            ))
             ->displayIf(static fn (SeoPage $page): bool => $page->getStatus() === SeoPage::STATUS_PUBLISHED);
 
         $resolveImage = Action::new('resolveSeoImage', 'Trouver une image', 'fa fa-image')
             ->linkToRoute('admin_seo_page_resolve_image', static fn (SeoPage $page): array => ['id' => $page->getId()])
+            ->setHtmlAttributes($postAttributes(
+                (string) $this->csrfTokenManager->getToken('seo_page_resolve_image'),
+                'Rechercher une nouvelle image pour cette page ?'
+            ))
             ->displayIf(static fn (SeoPage $page): bool => $page->getSeed() !== null);
 
         $improveSonnet5 = Action::new('improveSeoPageSonnet5', 'Optimiser Sonnet 5', 'fa fa-bolt')
@@ -199,6 +228,10 @@ class SeoPageCrudController extends AbstractCrudController
                 'id' => $page->getId(),
                 'model' => SeoSeed::CLAUDE_MODEL_SONNET_5,
             ])
+            ->setHtmlAttributes($postAttributes(
+                (string) $this->csrfTokenManager->getToken('seo_page_improve'),
+                'Optimiser cette page avec Claude ?'
+            ))
             ->displayIf(static fn (SeoPage $page): bool => $page->getSeed() !== null && $page->getStatus() !== SeoPage::STATUS_PUBLISHED);
 
         $improveOpus = Action::new('improveSeoPageOpus', 'Optimiser Opus', 'fa fa-gem')
@@ -206,6 +239,10 @@ class SeoPageCrudController extends AbstractCrudController
                 'id' => $page->getId(),
                 'model' => SeoSeed::CLAUDE_MODEL_OPUS,
             ])
+            ->setHtmlAttributes($postAttributes(
+                (string) $this->csrfTokenManager->getToken('seo_page_improve'),
+                'Optimiser cette page avec Claude ?'
+            ))
             ->displayIf(static fn (SeoPage $page): bool => $page->getSeed() !== null && $page->getStatus() !== SeoPage::STATUS_PUBLISHED);
 
         $improveFable = Action::new('improveSeoPageFable', 'Optimiser Fable', 'fa fa-star')
@@ -213,20 +250,90 @@ class SeoPageCrudController extends AbstractCrudController
                 'id' => $page->getId(),
                 'model' => SeoSeed::CLAUDE_MODEL_FABLE,
             ])
+            ->setHtmlAttributes($postAttributes(
+                (string) $this->csrfTokenManager->getToken('seo_page_improve'),
+                'Optimiser cette page avec Claude ?'
+            ))
             ->displayIf(static fn (SeoPage $page): bool => $page->getSeed() !== null && $page->getStatus() !== SeoPage::STATUS_PUBLISHED);
 
-        return $actions
-            ->add(Crud::PAGE_INDEX, $bulkPublish)
-            ->add(Crud::PAGE_INDEX, $preview)
-            ->add(Crud::PAGE_INDEX, $publish)
-            ->add(Crud::PAGE_INDEX, $unpublish)
-            ->add(Crud::PAGE_EDIT, $preview)
-            ->add(Crud::PAGE_EDIT, $publish)
-            ->add(Crud::PAGE_EDIT, $unpublish)
-            ->add(Crud::PAGE_EDIT, $resolveImage)
-            ->add(Crud::PAGE_EDIT, $improveSonnet5)
-            ->add(Crud::PAGE_EDIT, $improveOpus)
-            ->add(Crud::PAGE_EDIT, $improveFable);
+        if ($this->isGranted('m_edit', SeoPage::class)) {
+            $actions
+                ->add(Crud::PAGE_INDEX, $bulkPublish)
+                ->add(Crud::PAGE_INDEX, $preview)
+                ->add(Crud::PAGE_INDEX, $publish)
+                ->add(Crud::PAGE_INDEX, $unpublish)
+                ->add(Crud::PAGE_EDIT, $preview)
+                ->add(Crud::PAGE_EDIT, $publish)
+                ->add(Crud::PAGE_EDIT, $unpublish)
+                ->add(Crud::PAGE_EDIT, $resolveImage)
+                ->add(Crud::PAGE_EDIT, $improveSonnet5)
+                ->add(Crud::PAGE_EDIT, $improveOpus)
+                ->add(Crud::PAGE_EDIT, $improveFable);
+        } else {
+            $actions
+                ->remove(Crud::PAGE_INDEX, Action::EDIT)
+                ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN)
+                ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
+        }
+
+        if (!$this->isGranted('m_create', SeoPage::class)) {
+            $actions->remove(Crud::PAGE_INDEX, Action::NEW);
+        }
+
+        if (!$this->isGranted('m_delete', SeoPage::class)) {
+            $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions;
+    }
+
+    public function configureAssets(Assets $assets): Assets
+    {
+        return $assets->addJsFile('js/seo-admin-actions.js');
+    }
+
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $this->denyAccessUnlessGranted('m_create', SeoPage::class);
+
+        if ($entityInstance instanceof SeoPage) {
+            $this->refreshQuality($entityInstance);
+            $entityInstance->setStatus(SeoPage::STATUS_DRAFT)->setIndexable(false);
+        }
+
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $this->denyAccessUnlessGranted('m_edit', SeoPage::class);
+
+        if ($entityInstance instanceof SeoPage) {
+            $this->refreshQuality($entityInstance);
+
+            if ($entityInstance->getStatus() === SeoPage::STATUS_PUBLISHED) {
+                $entityInstance->setStatus(SeoPage::STATUS_REVIEW)->setIndexable(false);
+                $this->addFlash('warning', 'La page modifiee repasse en relecture. Publie-la de nouveau apres verification.');
+            }
+        }
+
+        parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    public function deleteEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $this->denyAccessUnlessGranted('m_delete', SeoPage::class);
+        parent::deleteEntity($entityManager, $entityInstance);
+    }
+
+    private function refreshQuality(SeoPage $page): int
+    {
+        $result = $this->qualityScorer->scorePage($page);
+        $page
+            ->setQualityScore($result['score'])
+            ->setQualityFlags($result['flags']);
+
+        return $result['score'];
     }
 
     public function configureFilters(Filters $filters): Filters

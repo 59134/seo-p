@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\SeoGenerationRun;
 use App\Entity\SeoPage;
 use App\Entity\SeoSeed;
+use App\Repository\SeoPageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -15,6 +16,7 @@ class ClaudeSeoGenerator
     public function __construct(
         private HttpClientInterface $httpClient,
         private EntityManagerInterface $entityManager,
+        private SeoPageRepository $seoPageRepository,
         private SeoPromptBuilder $promptBuilder,
         private SeoQualityScorer $qualityScorer,
         private SeoPageImageResolver $imageResolver
@@ -23,6 +25,10 @@ class ClaudeSeoGenerator
 
     public function generate(SeoSeed $seed, ?string $modelPreference = null): SeoPage
     {
+        if ($existingPage = $this->seoPageRepository->findActiveForSeed($seed)) {
+            return $existingPage;
+        }
+
         return $this->generateFromSeed($seed, $modelPreference);
     }
 

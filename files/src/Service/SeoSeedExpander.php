@@ -74,7 +74,7 @@ class SeoSeedExpander
 
     public function findPageForSeed(SeoSeed $seed): ?SeoPage
     {
-        return $this->entityManager->getRepository(SeoPage::class)->findOneBy(['seed' => $seed]);
+        return $this->entityManager->getRepository(SeoPage::class)->findActiveForSeed($seed);
     }
 
     /**

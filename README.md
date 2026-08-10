@@ -4,12 +4,22 @@ Ce package installe le module SEO programmatique dans un projet Symfony/Webtime 
 
 Il est prevu pour etre installe temporairement dans le projet cible, lancer l'installation du module, puis etre retire du `package.json` apres verification.
 
+## Version 1.0.17
+
+- Securise les actions admin sensibles avec POST, CSRF et controles de droits.
+- Rend la generation idempotente afin de reutiliser une page active plutot que creer un doublon.
+- Renforce les validations, l'import JSON, le recalcul du score qualite et le verrouillage des statuts.
+- Localise les routes, canonicales et URLs du sitemap selon la langue de chaque page.
+- Masque le front et le sitemap lorsque le module SEO programmatique est desactive.
+- Ajoute les index SQL utiles aux lectures publiques et au maillage.
+- Affiche toutes les pages associees dans le maillage interne, sans limite arbitraire.
+
 ## Installation depuis un fichier local
 
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.0.16.tgz
+npm install ./seo-prog-1.0.17.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -29,13 +39,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.0.16
+npm install git+https://github.com/59134/seo-p.git#v1.0.17
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.16
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.17
 ```
 
 Puis lancer l'installation :
@@ -156,7 +166,7 @@ php bin/console cache:clear
 
 Lors d'une generation, le module cherche d'abord l'`og:image` de la page prestation liee, puis une photo dans un album actif pertinent. Claude fournit l'ALT descriptif. Si aucune image fiable n'est trouvee, la page reste sans image.
 
-Pour une page deja generee, ouvrir `3. Pages SEO`, modifier la page puis cliquer sur `Trouver une image`. Il n'est pas necessaire de regenerer les textes. L'image front renvoie vers `/albums`.
+Pour une page deja generee, ouvrir `3. Pages SEO`, modifier la page puis cliquer sur `Trouver une image`. Il n'est pas necessaire de regenerer les textes. Une image issue d'une prestation renvoie vers sa page source ; une image d'album reste non cliquable.
 
 Pendant une generation en ligne de commande, renseigner `SEO_SITE_URL=https://www.exemple.fr` dans `.env.local` si l'URL page prestation liee est relative.
 
@@ -196,7 +206,7 @@ Elle ne supprime pas les fichiers Symfony installes par le module.
 Si le fichier `.tgz` a ete copie a la racine du projet, tu peux aussi le supprimer :
 
 ```bash
-rm seo-prog-1.0.16.tgz
+rm seo-prog-1.0.17.tgz
 ```
 
 Si un ancien essai a copie le fichier d'exemple `.env.seo-programmatique.example` dans le projet et que tu n'en as plus besoin :
@@ -223,7 +233,7 @@ find . -name "*.seo-programmatique.bak-*" -type f -delete
 - Ajoute l'import JSON SEO dans les modules Faits verifies et Seeds SEO.
 - Ajoute un JSON-LD SEO renforce sur le template front: WebPage, Service, LocalBusiness et FAQPage uniquement si la FAQ est visible.
 - Cherche une vraie image SEO depuis l'`og:image` de la prestation liee, puis dans les albums pertinents, et ajoute son `ImageObject` au JSON-LD.
-- Ajoute le bouton `Trouver une image` dans Pages SEO. L'image affichee renvoie vers `/albums` et utilise un ALT descriptif propose par Claude quand la source n'en fournit pas.
+- Ajoute le bouton `Trouver une image` dans Pages SEO. Une image de prestation renvoie vers sa page source, une image d'album reste non cliquable, et toutes utilisent un ALT descriptif propose par Claude quand la source n'en fournit pas.
 - Ajoute un bloc d'avis clients Elfsight optionnel avant la FAQ quand `SEO_ELFSIGHT_REVIEWS_APP_ID` est renseigne.
 - Ajoute les variables manquantes dans `.env.local` ou dans le fichier choisi avec `--env`.
 - Garde `.env.seo-programmatique.example` en interne dans le package : ce fichier n'est pas copie dans le projet cible.

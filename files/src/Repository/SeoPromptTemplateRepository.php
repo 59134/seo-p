@@ -37,6 +37,7 @@ class SeoPromptTemplateRepository extends ServiceEntityRepository
     public function findActive(string $type = 'service_city', string $locale = 'fr'): ?SeoPromptTemplate
     {
         return $this->createQueryBuilder('t')
+            ->addSelect('CASE WHEN t.locale = :locale THEN 0 ELSE 1 END AS HIDDEN localePriority')
             ->andWhere('t.active = :active')
             ->andWhere('t.type = :type')
             ->andWhere('t.locale = :locale OR t.locale = :fallback')
@@ -44,7 +45,8 @@ class SeoPromptTemplateRepository extends ServiceEntityRepository
             ->setParameter('type', $type)
             ->setParameter('locale', $locale)
             ->setParameter('fallback', 'fr')
-            ->orderBy('t.locale', 'DESC')
+            ->orderBy('localePriority', 'ASC')
+            ->addOrderBy('t.updated_at', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();

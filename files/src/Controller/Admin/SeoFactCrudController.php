@@ -19,6 +19,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class SeoFactCrudController extends AbstractCrudController
 {
+    use SeoCrudPermissionsTrait;
+
     public static function getEntityFqcn(): string
     {
         return SeoFact::class;
@@ -83,8 +85,24 @@ class SeoFactCrudController extends AbstractCrudController
             ->addCssClass('btn btn-info')
             ->createAsGlobalAction();
 
-        return $actions
-            ->add(Crud::PAGE_INDEX, $import);
+        if ($this->isGranted('m_create', SeoFact::class)) {
+            $actions->add(Crud::PAGE_INDEX, $import);
+        } else {
+            $actions->remove(Crud::PAGE_INDEX, Action::NEW);
+        }
+
+        if (!$this->isGranted('m_edit', SeoFact::class)) {
+            $actions
+                ->remove(Crud::PAGE_INDEX, Action::EDIT)
+                ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN)
+                ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
+        }
+
+        if (!$this->isGranted('m_delete', SeoFact::class)) {
+            $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions;
     }
 
     public function configureFilters(Filters $filters): Filters

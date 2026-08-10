@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\SeoPromptTemplate;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -15,6 +17,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class SeoPromptTemplateCrudController extends AbstractCrudController
 {
+    use SeoCrudPermissionsTrait;
+
     public static function getEntityFqcn(): string
     {
         return SeoPromptTemplate::class;
@@ -60,5 +64,25 @@ class SeoPromptTemplateCrudController extends AbstractCrudController
             ->add('type')
             ->add('locale')
             ->add('active');
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        if (!$this->isGranted('m_create', SeoPromptTemplate::class)) {
+            $actions->remove(Crud::PAGE_INDEX, Action::NEW);
+        }
+
+        if (!$this->isGranted('m_edit', SeoPromptTemplate::class)) {
+            $actions
+                ->remove(Crud::PAGE_INDEX, Action::EDIT)
+                ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN)
+                ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
+        }
+
+        if (!$this->isGranted('m_delete', SeoPromptTemplate::class)) {
+            $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions;
     }
 }

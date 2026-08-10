@@ -229,7 +229,9 @@ La generation tente aussi d'associer une vraie image existante a la page, sans u
 
 Le premier element de `Suggestions alt images` fourni par Claude sert d'ALT principal lorsque l'image source ne possede pas deja un ALT. Cet ALT doit decrire la prestation ou la photo sans pretendre qu'elle a ete prise dans la ville cible.
 
-Les champs `Image SEO` et `ALT image SEO` restent modifiables dans la page. Le bouton `Trouver une image` relance la recherche pour une page deja generee. Il n'est donc pas necessaire de regenerer tout son contenu. Dans le template front, l'image renvoie vers `/albums` et le JSON-LD ajoute un `ImageObject` relie a la page et au service.
+Les champs `Image SEO` et `ALT image SEO` restent modifiables dans la page. Le bouton `Trouver une image` relance la recherche pour une page deja generee. Il n'est donc pas necessaire de regenerer tout son contenu. Dans le template front, une image issue d'une prestation renvoie vers sa page source, une image d'album reste non cliquable, et le JSON-LD ajoute un `ImageObject` relie a la page et au service.
+
+Le maillage interne affiche toutes les pages associees trouvees par le module. Aucune limite arbitraire n'est appliquee au nombre de liens associes.
 
 Pour une page importante deja generee, utiliser `Optimiser Sonnet 5`, `Optimiser Opus` ou `Optimiser Fable` depuis la page SEO. Le module retravaille la page avec le modele choisi, garde le lien avec le seed et ajoute une ligne dans l'historique Claude.
 

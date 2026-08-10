@@ -12,6 +12,25 @@ const ROUTE_SNIPPET = `
 # Route volontairement placee en dernier: elle sert les pages SEO a la racine,
 # sans prefixe technique, tout en laissant les routes classiques prioritaires.
 seo_programmatic_page:
+    path:
+        fr: /{slug}
+        en: /{_locale<%app.locales%>}/{slug}
+        de: /{_locale<%app.locales%>}/{slug}
+        es: /{_locale<%app.locales%>}/{slug}
+    controller: 'App\\Controller\\SeoProgrammaticController::show'
+    methods: [GET]
+    defaults:
+        _locale: fr
+    requirements:
+        slug: '[a-z0-9][a-z0-9-]*'
+`;
+
+const LEGACY_ROUTE_SNIPPET = `
+
+# SEO programmatique
+# Route volontairement placee en dernier: elle sert les pages SEO a la racine,
+# sans prefixe technique, tout en laissant les routes classiques prioritaires.
+seo_programmatic_page:
     path: /{slug}
     controller: 'App\\Controller\\SeoProgrammaticController::show'
     methods: [GET]
@@ -75,6 +94,29 @@ const DASHBOARD_HELPERS_SNIPPET = `
 `;
 
 const SITEMAP_SNIPPET = `
+
+        if ($this->em->getRepository(Module::class)->findOneBy(['name' => 'SeoPage', 'valid' => true])) {
+            foreach ($this->em->getRepository(SeoPage::class)->findIndexablePages() as $seoPage) {
+                if ($seoPage->getUpdatedAt()) {
+                    $date = $seoPage->getUpdatedAt()->format('Y-m-d');
+                } elseif ($seoPage->getPublishedAt()) {
+                    $date = $seoPage->getPublishedAt()->format('Y-m-d');
+                } else {
+                    $date = $seoPage->getCreatedAt()->format('Y-m-d');
+                }
+
+                $urls[] = [
+                    'loc' => $this->generateUrl('seo_programmatic_page', [
+                        'slug' => $seoPage->getSlug(),
+                        '_locale' => $seoPage->getLocale(),
+                    ]),
+                    'lastmod' => $date,
+                ];
+            }
+        }
+`;
+
+const LEGACY_SITEMAP_SNIPPET = `
 
         foreach ($this->em->getRepository(SeoPage::class)->findIndexablePages() as $seoPage) {
             if ($seoPage->getUpdatedAt()) {
@@ -414,9 +456,25 @@ function patchEnv(args) {
     write(targetFile, `${targetContent.replace(/\s*$/, '')}${block}`, args.dryRun);
 }
 
+function replaceKnownSnippet(content, previousSnippet, nextSnippet) {
+    for (const newline of ['\n', '\r\n']) {
+        const previous = previousSnippet.trim().replace(/\n/g, newline);
+        if (content.includes(previous)) {
+            return content.replace(previous, nextSnippet.trim().replace(/\n/g, newline));
+        }
+    }
+
+    return content;
+}
+
 function patchRoutes(args) {
     patchTextFile('config/routes.yaml', args, (content) => {
         if (content.includes('seo_programmatic_page:')) {
+            const upgraded = replaceKnownSnippet(content, LEGACY_ROUTE_SNIPPET, ROUTE_SNIPPET);
+            if (upgraded !== content) {
+                return { content: upgraded };
+            }
+
             return { content, message: 'config/routes.yaml contient deja seo_programmatic_page' };
         }
 
@@ -533,8 +591,16 @@ function patchSitemap(args) {
         let next = ensurePhpUse(content, 'use App\\Entity\\SeoPage;');
 
         if (next.includes('findIndexablePages()')) {
+            const upgraded = replaceKnownSnippet(next, LEGACY_SITEMAP_SNIPPET, SITEMAP_SNIPPET);
+            if (upgraded !== next) {
+                next = ensurePhpUse(upgraded, 'use App\\Entity\\Module;');
+                return { content: next };
+            }
+
             return { content: next, message: 'SitemapController.php contient deja les pages SEO' };
         }
+
+        next = ensurePhpUse(next, 'use App\\Entity\\Module;');
 
         const marker = next.indexOf('// Fabrication de la reponse');
         if (marker !== -1) {

@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\SeoPage;
 use App\Entity\SeoSeed;
 
 class SeoQualityScorer
@@ -53,6 +54,37 @@ class SeoQualityScorer
             'missing_data' => array_values(array_unique(array_filter($missing))),
             'indexable' => $indexable,
         ];
+    }
+
+    /**
+     * Recalcule le score depuis le contenu réellement sauvegardé dans l'admin.
+     *
+     * @return array{score: int, flags: array, missing_data: array, indexable: bool}
+     */
+    public function scorePage(SeoPage $page): array
+    {
+        $seed = $page->getSeed();
+
+        if (!$seed) {
+            return [
+                'score' => 0,
+                'flags' => ['Aucun seed SEO lie a cette page.'],
+                'missing_data' => $page->getMissingData(),
+                'indexable' => false,
+            ];
+        }
+
+        return $this->score([
+            'title' => $page->getTitle(),
+            'meta_description' => $page->getMetaDescription(),
+            'h1' => $page->getH1(),
+            'intro' => $page->getIntro(),
+            'sections' => $page->getContent(),
+            'faq' => $page->getFaq(),
+            'quality_flags' => [],
+            'missing_data' => $page->getMissingData(),
+            'indexation_recommendation' => 'index',
+        ], $seed);
     }
 
     private function hasText(?string $value, int $min, int $max): bool

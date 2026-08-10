@@ -156,7 +156,12 @@ class SeoJsonImporter
 
         $mainKeyword = SeoSeed::cleanPlainTextLine((string) $row['mainKeyword']);
         $city = SeoSeed::cleanPlainTextLine((string) ($row['city'] ?? '')) ?: null;
-        $existing = $seedRepository->findOneBy(['mainKeyword' => $mainKeyword, 'city' => $city]);
+        $locale = strtolower(trim((string) ($row['locale'] ?? 'fr'))) ?: 'fr';
+        $existing = $seedRepository->findOneBy([
+            'mainKeyword' => $mainKeyword,
+            'city' => $city,
+            'locale' => $locale,
+        ]);
 
         if ($existing instanceof SeoSeed && !$update) {
             ++$result['stats']['seeds']['skipped'];
@@ -178,7 +183,7 @@ class SeoJsonImporter
             ->setService((string) $row['service'])
             ->setCity($city)
             ->setDepartment(isset($row['department']) ? (string) $row['department'] : null)
-            ->setLocale((string) ($row['locale'] ?? 'fr'))
+            ->setLocale($locale)
             ->setServicePageUrl(isset($row['servicePageUrl']) ? (string) $row['servicePageUrl'] : null)
             ->setServicePageLabel(isset($row['servicePageLabel']) ? (string) $row['servicePageLabel'] : null)
             ->setSecondaryKeywords($this->stringList($row['secondaryKeywords'] ?? []))

@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\SeoSeed;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -16,9 +17,16 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class SeoSeedCrudController extends AbstractCrudController
 {
+    use SeoCrudPermissionsTrait;
+
+    public function __construct(private CsrfTokenManagerInterface $csrfTokenManager)
+    {
+    }
+
     public static function getEntityFqcn(): string
     {
         return SeoSeed::class;
@@ -97,12 +105,21 @@ class SeoSeedCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $postAttributes = static fn (string $token, string $confirmation): array => [
+            'data-seo-post-action' => 'true',
+            'data-csrf-token' => $token,
+            'data-confirm' => $confirmation,
+        ];
+
         $generateBatch = Action::new('generateSeoBatch', 'Générer toutes les pages', 'fa fa-layer-group')
             ->linkToRoute('admin_seo_seed_generate_batch')
-            ->setHtmlAttributes([
+            ->setHtmlAttributes(array_merge([
                 'target' => '_blank',
                 'rel' => 'noopener',
-            ])
+            ], $postAttributes(
+                (string) $this->csrfTokenManager->getToken('seo_seed_generate_batch_setup'),
+                'Préparer le lot de génération SEO ?'
+            )))
             ->addCssClass('btn btn-success')
             ->createAsGlobalAction();
 
@@ -113,19 +130,52 @@ class SeoSeedCrudController extends AbstractCrudController
 
         $generate = Action::new('generateSeoPage', 'Générer avec Claude', 'fa fa-wand-magic-sparkles')
             ->linkToRoute('admin_seo_seed_generate', static fn (SeoSeed $seed): array => ['id' => $seed->getId()])
+            ->setHtmlAttributes($postAttributes(
+                (string) $this->csrfTokenManager->getToken('seo_seed_generate'),
+                'Générer cette page avec Claude ?'
+            ))
             ->displayIf(static fn (SeoSeed $seed): bool => $seed->isValid());
 
         $generateKeywordPages = Action::new('generateKeywordPages', 'Générer pages mots clés', 'fa fa-sitemap')
             ->linkToRoute('admin_seo_seed_generate_keyword_pages', static fn (SeoSeed $seed): array => ['id' => $seed->getId()])
+            ->setHtmlAttributes($postAttributes(
+                (string) $this->csrfTokenManager->getToken('seo_seed_generate_keyword_pages'),
+                'Générer la page principale et ses pages mots clés ?'
+            ))
             ->displayIf(static fn (SeoSeed $seed): bool => $seed->isValid() && count($seed->getPageKeywords()) > 0);
 
-        return $actions
-            ->add(Crud::PAGE_INDEX, $generateBatch)
-            ->add(Crud::PAGE_INDEX, $import)
-            ->add(Crud::PAGE_INDEX, $generate)
-            ->add(Crud::PAGE_INDEX, $generateKeywordPages)
-            ->add(Crud::PAGE_EDIT, $generate)
-            ->add(Crud::PAGE_EDIT, $generateKeywordPages);
+        if ($this->isGranted('m_edit', SeoSeed::class) && $this->isGranted('m_create', \App\Entity\SeoPage::class)) {
+            $actions
+                ->add(Crud::PAGE_INDEX, $generateBatch)
+                ->add(Crud::PAGE_INDEX, $generate)
+                ->add(Crud::PAGE_INDEX, $generateKeywordPages)
+                ->add(Crud::PAGE_EDIT, $generate)
+                ->add(Crud::PAGE_EDIT, $generateKeywordPages);
+        }
+
+        if ($this->isGranted('m_create', SeoSeed::class)) {
+            $actions->add(Crud::PAGE_INDEX, $import);
+        } else {
+            $actions->remove(Crud::PAGE_INDEX, Action::NEW);
+        }
+
+        if (!$this->isGranted('m_edit', SeoSeed::class)) {
+            $actions
+                ->remove(Crud::PAGE_INDEX, Action::EDIT)
+                ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN)
+                ->remove(Crud::PAGE_EDIT, Action::SAVE_AND_CONTINUE);
+        }
+
+        if (!$this->isGranted('m_delete', SeoSeed::class)) {
+            $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions;
+    }
+
+    public function configureAssets(Assets $assets): Assets
+    {
+        return $assets->addJsFile('js/seo-admin-actions.js');
     }
 
     public function configureFilters(Filters $filters): Filters

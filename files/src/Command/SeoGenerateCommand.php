@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Repository\ModuleRepository;
+use App\Repository\SeoPageRepository;
 use App\Repository\SeoSeedRepository;
 use App\Service\ClaudeSeoGenerator;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -19,6 +21,8 @@ class SeoGenerateCommand extends Command
 {
     public function __construct(
         private SeoSeedRepository $seoSeedRepository,
+        private SeoPageRepository $seoPageRepository,
+        private ModuleRepository $moduleRepository,
         private ClaudeSeoGenerator $claudeSeoGenerator
     ) {
         parent::__construct();
@@ -35,6 +39,16 @@ class SeoGenerateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+
+        if (
+            !$this->moduleRepository->findOneBy(['name' => 'SeoSeed', 'valid' => true])
+            || !$this->moduleRepository->findOneBy(['name' => 'SeoPage', 'valid' => true])
+        ) {
+            $io->error('Les modules SeoSeed et SeoPage doivent etre actifs.');
+
+            return Command::FAILURE;
+        }
+
         $limit = max(1, (int) $input->getOption('limit'));
         $minimumCompleteness = max(0, min(100, (int) $input->getOption('minimum-completeness')));
         $modelPreference = $input->getOption('model');
@@ -47,9 +61,19 @@ class SeoGenerateCommand extends Command
             return Command::SUCCESS;
         }
 
+        $generated = 0;
+        $skipped = 0;
+
         foreach ($seeds as $seed) {
+            if ($this->seoPageRepository->findActiveForSeed($seed)) {
+                $io->writeln(sprintf('[ignore] %s -> une page active existe deja', $seed->getMainKeyword()));
+                $skipped++;
+                continue;
+            }
+
             $model = $this->claudeSeoGenerator->resolveModelForSeed($seed, $modelPreference);
             $page = $this->claudeSeoGenerator->generate($seed, $modelPreference);
+            $generated++;
             $io->writeln(sprintf(
                 '[%s] %s -> %s (score %d, modele %s)',
                 $page->getStatus(),
@@ -60,7 +84,7 @@ class SeoGenerateCommand extends Command
             ));
         }
 
-        $io->success(count($seeds) . ' generation(s) terminee(s).');
+        $io->success(sprintf('%d generation(s) terminee(s), %d seed(s) ignore(s).', $generated, $skipped));
 
         return Command::SUCCESS;
     }

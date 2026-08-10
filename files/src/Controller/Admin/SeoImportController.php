@@ -2,6 +2,9 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\SeoFact;
+use App\Entity\SeoSeed;
+use App\Repository\ModuleRepository;
 use App\Service\SeoJsonImporter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,15 +18,25 @@ class SeoImportController extends AbstractController
     public function __construct(
         private readonly SeoJsonImporter $importer,
         private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly ModuleRepository $moduleRepository,
     ) {
     }
 
     #[Route('/admin/seo/import/{type}', name: 'admin_seo_import_json', methods: ['GET', 'POST'])]
     public function import(string $type, Request $request): Response
     {
-        $type = in_array($type, [SeoJsonImporter::SCOPE_FACTS, SeoJsonImporter::SCOPE_SEEDS], true)
-            ? $type
-            : SeoJsonImporter::SCOPE_ALL;
+        if (!in_array($type, [SeoJsonImporter::SCOPE_FACTS, SeoJsonImporter::SCOPE_SEEDS], true)) {
+            throw $this->createNotFoundException('Type d import SEO inconnu.');
+        }
+
+        $moduleName = $type === SeoJsonImporter::SCOPE_FACTS ? 'SeoFact' : 'SeoSeed';
+        $entityClass = $type === SeoJsonImporter::SCOPE_FACTS ? SeoFact::class : SeoSeed::class;
+
+        if (!$this->moduleRepository->findOneBy(['name' => $moduleName, 'valid' => true])) {
+            throw $this->createNotFoundException(sprintf('Module %s indisponible.', $moduleName));
+        }
+
+        $this->denyAccessUnlessGranted('m_create', $entityClass);
 
         $result = null;
 
@@ -44,6 +57,18 @@ class SeoImportController extends AbstractController
 
             if (strtolower((string) $file->getClientOriginalExtension()) !== 'json') {
                 $this->addFlash('danger', 'Format refuse: importe un fichier .json.');
+
+                return $this->redirectToRoute('admin_seo_import_json', ['type' => $type]);
+            }
+
+            if (!$file->isValid() || $file->getSize() > 2 * 1024 * 1024) {
+                $this->addFlash('danger', 'Fichier refuse: le JSON doit etre valide et ne pas depasser 2 Mo.');
+
+                return $this->redirectToRoute('admin_seo_import_json', ['type' => $type]);
+            }
+
+            if (!in_array((string) $file->getMimeType(), ['application/json', 'text/plain', 'application/octet-stream'], true)) {
+                $this->addFlash('danger', 'Type de fichier refuse: importe uniquement un document JSON.');
 
                 return $this->redirectToRoute('admin_seo_import_json', ['type' => $type]);
             }
