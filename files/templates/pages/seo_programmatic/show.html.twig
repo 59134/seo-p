@@ -265,20 +265,21 @@ endblock %}
         line-height: 1.5;
     }
 
-    .seo-page-visual {
-        padding: 34px 0 0;
-    }
-
     .seo-page-visual-link {
         position: relative;
         isolation: isolate;
         display: block;
         width: 100%;
-        height: clamp(380px, 46vw, 620px);
+        min-height: 360px;
         overflow: hidden;
         border: 1px solid var(--seo-line);
         border-radius: 8px;
         background: var(--seo-panel);
+    }
+
+    .seo-page-visual-link-wide {
+        grid-column: 1 / -1;
+        min-height: clamp(380px, 42vw, 560px);
     }
 
     .seo-page-visual-link::after {
@@ -754,12 +755,12 @@ endblock %}
             font-size: 1rem;
         }
 
-        .seo-page-visual {
-            padding-top: 22px;
+        .seo-page-visual-link {
+            min-height: clamp(340px, 112vw, 520px);
         }
 
-        .seo-page-visual-link {
-            height: clamp(340px, 112vw, 520px);
+        .seo-page-visual-link-wide {
+            grid-column: auto;
         }
 
         .seo-page-visual-image {
@@ -1086,19 +1087,6 @@ endblock %}
         </div>
     </section>
 
-    {% if page.imageUrl %}
-        <section class="seo-page-visual" aria-label="Illustration de la prestation">
-            <div class="seo-wrap">
-                <a href="/albums" class="seo-page-visual-link" title="Voir les albums de {{ brand }}">
-                    <span class="seo-page-visual-backdrop" aria-hidden="true">
-                        <img src="{{ page.imageUrl }}" alt="" loading="lazy" decoding="async">
-                    </span>
-                    <img class="seo-page-visual-image" src="{{ page.imageUrl }}" alt="{{ page.imageAlt ?: service ?: page.h1 }}" loading="lazy" decoding="async">
-                </a>
-            </div>
-        </section>
-    {% endif %}
-
     <section class="seo-section">
         <div class="seo-wrap seo-offer-grid">
             <div class="seo-offer-main">
@@ -1163,6 +1151,14 @@ endblock %}
                             <p>{{ section.body|default('')|striptags|nl2br }}</p>
                 </article>
                 {% endfor %}
+                {% if page.imageUrl %}
+                <a href="/albums" class="seo-page-visual-link{{ page.content|length is even ? ' seo-page-visual-link-wide' : '' }}" title="Voir les albums de {{ brand }}" aria-label="Voir les albums de {{ brand }}">
+                    <span class="seo-page-visual-backdrop" aria-hidden="true">
+                        <img src="{{ page.imageUrl }}" alt="" loading="lazy" decoding="async">
+                    </span>
+                    <img class="seo-page-visual-image" src="{{ page.imageUrl }}" alt="{{ page.imageAlt ?: service ?: page.h1 }}" loading="lazy" decoding="async">
+                </a>
+                {% endif %}
             </div>
 
             {% if relatedPages|default([]) is not empty %}
