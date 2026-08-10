@@ -97,6 +97,15 @@ class SeoSeedCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $generateBatch = Action::new('generateSeoBatch', 'Générer toutes les pages', 'fa fa-layer-group')
+            ->linkToRoute('admin_seo_seed_generate_batch')
+            ->setHtmlAttributes([
+                'target' => '_blank',
+                'rel' => 'noopener',
+            ])
+            ->addCssClass('btn btn-success')
+            ->createAsGlobalAction();
+
         $import = Action::new('importJson', 'Importer JSON', 'fa fa-file-import')
             ->linkToRoute('admin_seo_import_json', ['type' => 'seeds'])
             ->addCssClass('btn btn-info')
@@ -111,6 +120,7 @@ class SeoSeedCrudController extends AbstractCrudController
             ->displayIf(static fn (SeoSeed $seed): bool => $seed->isValid() && count($seed->getPageKeywords()) > 0);
 
         return $actions
+            ->add(Crud::PAGE_INDEX, $generateBatch)
             ->add(Crud::PAGE_INDEX, $import)
             ->add(Crud::PAGE_INDEX, $generate)
             ->add(Crud::PAGE_INDEX, $generateKeywordPages)

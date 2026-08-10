@@ -1,0 +1,254 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title %}Génération SEO en lot{% endblock %}
+
+{% block content %}
+    <section
+        id="seo-batch-generator"
+        class="content-panel"
+        data-items="{{ items|json_encode|e('html_attr') }}"
+        data-token="{{ csrf_token('seo_seed_generate_batch') }}"
+    >
+        <div class="content-panel-body">
+            <div class="alert alert-info d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <strong>{{ items|length }} page(s) à traiter.</strong>
+                    {{ createdChildren }} seed(s) enfant(s) créé(s), {{ updatedChildren }} mis à jour
+                    et {{ archivedMalformed }} ancien(s) seed(s) combiné(s) archivé(s).
+                    Garde cet onglet ouvert pendant le traitement.
+                </div>
+                <a class="btn btn-secondary" href="{{ pageListUrl }}" target="_blank" rel="noopener">
+                    <i class="fa fa-search"></i> Voir les pages SEO
+                </a>
+            </div>
+
+            <div class="d-flex flex-wrap align-items-end gap-3 mb-4">
+                <div>
+                    <label class="form-label" for="seo-batch-concurrency">Générations simultanées</label>
+                    <select id="seo-batch-concurrency" class="form-select" style="min-width: 180px">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+                <button id="seo-batch-start" type="button" class="btn btn-primary" {% if items is empty %}disabled{% endif %}>
+                    <i class="fa fa-play"></i> Lancer la génération
+                </button>
+                <button id="seo-batch-pause" type="button" class="btn btn-secondary" disabled>
+                    <i class="fa fa-pause"></i> Mettre en pause
+                </button>
+                <button id="seo-batch-retry" type="button" class="btn btn-warning" hidden>
+                    <i class="fa fa-rotate-right"></i> Réessayer les erreurs
+                </button>
+            </div>
+
+            <div class="progress mb-3" style="height: 18px" role="progressbar" aria-label="Progression de la génération" aria-valuemin="0" aria-valuemax="100">
+                <div id="seo-batch-progress" class="progress-bar" style="width: 0%">0 %</div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3"><strong id="seo-batch-waiting">{{ items|length }}</strong><br><span class="text-muted">En attente</span></div>
+                <div class="col-6 col-md-3"><strong id="seo-batch-running">0</strong><br><span class="text-muted">En cours</span></div>
+                <div class="col-6 col-md-3"><strong id="seo-batch-success">0</strong><br><span class="text-muted">Terminées</span></div>
+                <div class="col-6 col-md-3"><strong id="seo-batch-errors">0</strong><br><span class="text-muted">Erreurs</span></div>
+            </div>
+
+            <div id="seo-batch-message" class="alert alert-secondary" {% if items is not empty %}hidden{% endif %}>
+                {% if items is empty %}
+                    Toutes les pages des seeds actifs existent déjà et aucun enfant ne nécessite de régénération.
+                {% endif %}
+            </div>
+
+            {% if items is not empty %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Mot clé</th>
+                            <th>Ville</th>
+                            <th>Action</th>
+                            <th>État</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in items %}
+                            <tr data-seed-id="{{ item.id }}">
+                                <td>{{ item.id }}</td>
+                                <td><strong>{{ item.keyword }}</strong></td>
+                                <td>{{ item.city ?: '—' }}</td>
+                                <td>{{ item.mode == 'improve' ? 'Régénérer' : 'Générer' }}</td>
+                                <td>
+                                    <span class="badge text-bg-secondary seo-batch-status">En attente</span>
+                                    <small class="d-block mt-1 text-muted seo-batch-detail"></small>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const root = document.getElementById('seo-batch-generator');
+            if (!root) return;
+
+            const items = JSON.parse(root.dataset.items || '[]');
+            const token = root.dataset.token;
+            const startButton = document.getElementById('seo-batch-start');
+            const pauseButton = document.getElementById('seo-batch-pause');
+            const retryButton = document.getElementById('seo-batch-retry');
+            const concurrencyInput = document.getElementById('seo-batch-concurrency');
+            const progress = document.getElementById('seo-batch-progress');
+            const message = document.getElementById('seo-batch-message');
+            const waitingCount = document.getElementById('seo-batch-waiting');
+            const runningCount = document.getElementById('seo-batch-running');
+            const successCount = document.getElementById('seo-batch-success');
+            const errorCount = document.getElementById('seo-batch-errors');
+
+            let pending = [...items];
+            let failed = [];
+            let active = 0;
+            let succeeded = 0;
+            let running = false;
+            let started = false;
+
+            const statusClasses = {
+                waiting: 'text-bg-secondary',
+                running: 'text-bg-primary',
+                generated: 'text-bg-success',
+                improved: 'text-bg-success',
+                skipped: 'text-bg-info',
+                error: 'text-bg-danger'
+            };
+
+            const setRowStatus = (item, state, label, detail = '') => {
+                const row = root.querySelector(`[data-seed-id="${item.id}"]`);
+                if (!row) return;
+
+                const badge = row.querySelector('.seo-batch-status');
+                const detailElement = row.querySelector('.seo-batch-detail');
+                badge.className = `badge seo-batch-status ${statusClasses[state] || statusClasses.waiting}`;
+                badge.textContent = label;
+                detailElement.textContent = detail;
+            };
+
+            const updateCounters = () => {
+                const completed = succeeded + failed.length;
+                const percent = items.length === 0 ? 100 : Math.round((completed / items.length) * 100);
+                waitingCount.textContent = pending.length;
+                runningCount.textContent = active;
+                successCount.textContent = succeeded;
+                errorCount.textContent = failed.length;
+                progress.style.width = `${percent}%`;
+                progress.textContent = `${percent} %`;
+                progress.setAttribute('aria-valuenow', String(percent));
+            };
+
+            const runItem = async (item) => {
+                active += 1;
+                setRowStatus(item, 'running', 'En cours', 'Appel à Claude…');
+                updateCounters();
+
+                try {
+                    const response = await fetch(item.url, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+                        body: JSON.stringify({_token: token, mode: item.mode})
+                    });
+                    const data = await response.json().catch(() => ({ok: false, message: `Réponse HTTP ${response.status}`}));
+
+                    if (!response.ok || !data.ok) {
+                        throw new Error(data.message || `Erreur HTTP ${response.status}`);
+                    }
+
+                    succeeded += 1;
+                    const detail = [data.model, data.qualityScore !== undefined ? `score ${data.qualityScore}` : null]
+                        .filter(Boolean)
+                        .join(' · ');
+                    setRowStatus(item, data.status, data.message, detail);
+                } catch (error) {
+                    failed.push(item);
+                    setRowStatus(item, 'error', 'Erreur', error instanceof Error ? error.message : String(error));
+                } finally {
+                    active -= 1;
+                    updateCounters();
+                    pump();
+                }
+            };
+
+            const finish = () => {
+                running = false;
+                startButton.disabled = true;
+                pauseButton.disabled = true;
+                retryButton.hidden = failed.length === 0;
+                message.hidden = false;
+                message.className = failed.length === 0 ? 'alert alert-success' : 'alert alert-warning';
+                message.textContent = failed.length === 0
+                    ? `${succeeded} génération(s) terminée(s).`
+                    : `${succeeded} génération(s) terminée(s), ${failed.length} en erreur. Tu peux relancer uniquement les erreurs.`;
+            };
+
+            const pump = () => {
+                if (pending.length === 0 && active === 0) {
+                    finish();
+                    return;
+                }
+
+                if (!running) return;
+                const concurrency = Math.max(1, Math.min(4, Number(concurrencyInput.value) || 3));
+
+                while (active < concurrency && pending.length > 0) {
+                    runItem(pending.shift());
+                }
+
+            };
+
+            startButton?.addEventListener('click', () => {
+                started = true;
+                running = true;
+                startButton.disabled = true;
+                pauseButton.disabled = false;
+                concurrencyInput.disabled = true;
+                message.hidden = true;
+                pump();
+            });
+
+            pauseButton?.addEventListener('click', () => {
+                running = false;
+                startButton.disabled = false;
+                startButton.innerHTML = '<i class="fa fa-play"></i> Reprendre';
+                pauseButton.disabled = true;
+                concurrencyInput.disabled = false;
+            });
+
+            retryButton?.addEventListener('click', () => {
+                pending = failed;
+                failed = [];
+                pending.forEach((item) => setRowStatus(item, 'waiting', 'En attente'));
+                retryButton.hidden = true;
+                message.hidden = true;
+                running = true;
+                startButton.disabled = true;
+                pauseButton.disabled = false;
+                concurrencyInput.disabled = true;
+                updateCounters();
+                pump();
+            });
+
+            window.addEventListener('beforeunload', (event) => {
+                if (started && (active > 0 || pending.length > 0)) {
+                    event.preventDefault();
+                    event.returnValue = '';
+                }
+            });
+
+            updateCounters();
+        })();
+    </script>
+{% endblock %}

@@ -44,8 +44,9 @@ class SeoSeedExpander
 
             $updated = false;
             if ($created || $this->shouldRefreshChildSeed($seed, $sourceSeed, $pageData['mainKeyword'])) {
+                $dataBeforeRefresh = $created ? null : $this->seedGenerationData($seed);
                 $this->applyPageDataToSeed($seed, $sourceSeed, $pageData);
-                $updated = true;
+                $updated = $created || $dataBeforeRefresh !== $this->seedGenerationData($seed);
             }
 
             $items[] = [
@@ -326,6 +327,30 @@ class SeoSeedExpander
         }
 
         return false;
+    }
+
+    /**
+     * @return array<string, bool|int|string|null|array<int, string>>
+     */
+    private function seedGenerationData(SeoSeed $seed): array
+    {
+        return [
+            'mainKeyword' => $seed->getMainKeyword(),
+            'service' => $seed->getService(),
+            'servicePageUrl' => $seed->getServicePageUrl(),
+            'servicePageLabel' => $seed->getServicePageLabel(),
+            'city' => $seed->getCity(),
+            'department' => $seed->getDepartment(),
+            'locale' => $seed->getLocale(),
+            'secondaryKeywords' => $seed->getSecondaryKeywords(),
+            'intent' => $seed->getIntent(),
+            'notes' => $seed->getNotes(),
+            'businessValue' => $seed->getBusinessValue(),
+            'priority' => $seed->getPriority(),
+            'claudeModelPreference' => $seed->getClaudeModelPreference(),
+            'dataCompletenessScore' => $seed->getDataCompletenessScore(),
+            'valid' => $seed->isValid(),
+        ];
     }
 
     /**

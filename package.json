@@ -1,6 +1,6 @@
 {
   "name": "seo-prog",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "private": true,
   "description": "Installateur local du module SEO programmatique Webtime",
   "bin": {

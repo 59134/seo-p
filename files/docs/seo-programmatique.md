@@ -178,6 +178,8 @@ Les boutons d'optimisation comme `Sonnet 5`, `Opus` et `Fable` permettent de for
 
 Si le champ `Mots cles pages a generer` est rempli, cliquer sur `Generer pages mots cles`. Le module genere d'abord la page du seed principal si elle n'existe pas encore, cree ensuite un seed par mot cle page, puis genere une page par seed enfant. Il evite de recreer les seeds/pages qui existent deja.
 
+Pour traiter tous les seeds actifs sans attendre famille par famille, utiliser `Generer toutes les pages` depuis le listing. Le suivi s'ouvre dans un nouvel onglet, prepare les pages enfants puis lance trois generations simultanees par defaut. La concurrence est reglable de 1 a 4. Garder l'onglet ouvert; la file peut etre mise en pause et les erreurs peuvent etre relancees seules.
+
 Difference importante:
 
 - `Mots cles secondaires`: enrichissent la page du seed.

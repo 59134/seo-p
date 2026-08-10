@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\SeoPage;
 use App\Entity\SeoSeed;
 use App\Repository\SeoPageRepository;
+use App\Repository\SeoSeedRepository;
 use App\Service\ClaudeSeoGenerator;
 use App\Service\SeoPageImageResolver;
 use App\Service\SeoSeedExpander;
@@ -12,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -126,6 +128,129 @@ class SeoWorkflowController extends AbstractController
             ->setController(SeoPageCrudController::class)
             ->setAction('index')
             ->generateUrl());
+    }
+
+    #[Route('/admin/seo-seed/generate-batch', name: 'admin_seo_seed_generate_batch', methods: ['GET'])]
+    public function generateBatch(SeoSeedRepository $seedRepository, SeoSeedExpander $seedExpander): Response
+    {
+        $itemsBySeedId = [];
+        $createdChildren = 0;
+        $updatedChildren = 0;
+        $archivedMalformed = 0;
+
+        foreach ($seedRepository->findReadyForGeneration(0) as $sourceSeed) {
+            if (count($sourceSeed->getPageKeywords()) === 0) {
+                continue;
+            }
+
+            $expandedItems = $seedExpander->createOrFindSeedsFromPageKeywords($sourceSeed);
+            $archivedMalformed += $seedExpander->getLastArchivedMalformedCount();
+
+            if (!$seedExpander->findPageForSeed($sourceSeed)) {
+                $this->addSeedToBatch($itemsBySeedId, $sourceSeed, 'generate');
+            }
+
+            foreach ($expandedItems as $expandedItem) {
+                $childSeed = $expandedItem['seed'];
+                $existingPage = $seedExpander->findPageForSeed($childSeed);
+                $createdChildren += $expandedItem['created'] ? 1 : 0;
+                $updatedChildren += (!$expandedItem['created'] && ($expandedItem['updated'] ?? false)) ? 1 : 0;
+
+                if (!$existingPage) {
+                    $this->addSeedToBatch($itemsBySeedId, $childSeed, 'generate');
+                } elseif ($expandedItem['updated'] ?? false) {
+                    $this->addSeedToBatch($itemsBySeedId, $childSeed, 'improve');
+                }
+            }
+        }
+
+        // Le second passage inclut aussi les seeds autonomes sans page.
+        foreach ($seedRepository->findReadyForGeneration(0) as $seed) {
+            if (!$seedExpander->findPageForSeed($seed)) {
+                $this->addSeedToBatch($itemsBySeedId, $seed, 'generate');
+            }
+        }
+
+        $items = array_values($itemsBySeedId);
+        usort($items, static function (array $left, array $right): int {
+            return [$right['priority'], $right['businessValue'], $left['id']]
+                <=> [$left['priority'], $left['businessValue'], $right['id']];
+        });
+
+        $pageListUrl = $this->adminUrlGenerator
+            ->setController(SeoPageCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
+
+        return $this->render('admin/seo_batch_generate.html.twig', [
+            'items' => $items,
+            'createdChildren' => $createdChildren,
+            'updatedChildren' => $updatedChildren,
+            'archivedMalformed' => $archivedMalformed,
+            'pageListUrl' => $pageListUrl,
+        ]);
+    }
+
+    #[Route('/admin/seo-seed/{id}/generate-batch-item', name: 'admin_seo_seed_generate_batch_item', methods: ['POST'])]
+    public function generateBatchItem(
+        SeoSeed $seed,
+        ClaudeSeoGenerator $generator,
+        SeoSeedExpander $seedExpander,
+        Request $request
+    ): JsonResponse {
+        $payload = json_decode($request->getContent(), true);
+
+        if (!is_array($payload) || !$this->isCsrfTokenValid('seo_seed_generate_batch', $payload['_token'] ?? null)) {
+            return $this->json(['ok' => false, 'message' => 'Jeton de sécurité invalide. Recharge la page.'], 403);
+        }
+
+        if (!$seed->isValid()) {
+            return $this->json(['ok' => false, 'message' => 'Ce seed est inactif.'], 422);
+        }
+
+        $mode = ($payload['mode'] ?? null) === 'improve' ? 'improve' : 'generate';
+        $seed->refreshDataCompletenessScore();
+        $this->entityManager->flush();
+        $model = $generator->resolveModelForSeed($seed);
+
+        // L'authentification est deja chargee. Liberer la session permet aux autres
+        // requetes du lot de travailler en parallele pendant l'appel a Claude.
+        if ($request->hasSession() && $request->getSession()->isStarted()) {
+            $request->getSession()->save();
+        }
+
+        try {
+            $page = $seedExpander->findPageForSeed($seed);
+
+            if ($page && $mode === 'improve') {
+                $page = $generator->improvePage($page);
+                $status = 'improved';
+                $message = 'Page régénérée';
+            } elseif ($page) {
+                $status = 'skipped';
+                $message = 'Page déjà existante';
+            } else {
+                $page = $generator->generate($seed);
+                $status = 'generated';
+                $message = 'Page générée';
+            }
+
+            return $this->json([
+                'ok' => true,
+                'status' => $status,
+                'message' => $message,
+                'keyword' => $seed->getMainKeyword(),
+                'model' => $model,
+                'qualityScore' => $page->getQualityScore(),
+            ]);
+        } catch (\Throwable $exception) {
+            return $this->json([
+                'ok' => false,
+                'message' => $exception->getMessage(),
+                'keyword' => $seed->getMainKeyword(),
+                'model' => $model,
+            ], 500);
+        }
     }
 
     #[Route('/admin/seo-page/{id}/improve', name: 'admin_seo_page_improve', methods: ['GET'])]
@@ -263,6 +388,28 @@ class SeoWorkflowController extends AbstractController
         $modelPreference = $request->attributes->get('model') ?: $request->query->get('model');
 
         return is_string($modelPreference) && trim($modelPreference) !== '' ? trim($modelPreference) : null;
+    }
+
+    /**
+     * @param array<int, array<string, int|string|null>> $itemsBySeedId
+     */
+    private function addSeedToBatch(array &$itemsBySeedId, SeoSeed $seed, string $mode): void
+    {
+        $seedId = $seed->getId();
+
+        if (!$seedId) {
+            return;
+        }
+
+        $itemsBySeedId[$seedId] = [
+            'id' => $seedId,
+            'keyword' => (string) $seed->getMainKeyword(),
+            'city' => $seed->getCity(),
+            'mode' => $mode,
+            'priority' => $seed->getPriority(),
+            'businessValue' => $seed->getBusinessValue(),
+            'url' => $this->generateUrl('admin_seo_seed_generate_batch_item', ['id' => $seedId]),
+        ];
     }
 
     private function promoteCleanSlugBeforePublication(SeoPage $page): ?string
