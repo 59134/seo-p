@@ -148,9 +148,9 @@ Fait verifie: Ne pas annoncer de tarif fixe si aucun prix officiel n'est fourni.
 
             <h3 class="h5">Choisir le modele Claude</h3>
             <ul>
-                <li><strong>Auto</strong> : choix recommande. Le module utilise Sonnet pour les pages normales et le modele premium si <strong>Valeur business</strong> ou <strong>Priorite</strong> est au moins a <code>80</code>.</li>
+                <li><strong>Auto</strong> : choix recommande. Le module utilise toujours Sonnet 5. <strong>Valeur business</strong> et <strong>Priorite</strong> servent a ordonner les generations, pas a changer de modele.</li>
                 <li><strong>Sonnet 4.6</strong> : meilleur choix pour generer beaucoup de pages avec un bon rapport qualite/cout.</li>
-                <li><strong>Sonnet 5</strong> : utile pour tester le modele Sonnet le plus recent ou optimiser une page sans passer sur Opus/Fable.</li>
+                <li><strong>Sonnet 5</strong> : modele utilise par defaut en mode Auto pour generer et optimiser les pages.</li>
                 <li><strong>Opus</strong> : utile pour les pages importantes, concurrentielles ou qui doivent etre plus differenciees.</li>
                 <li><strong>Fable</strong> : a reserver aux pages les plus strategiques, car le cout est plus eleve.</li>
             </ul>
@@ -380,7 +380,7 @@ Modele Claude: Auto</code></pre>
                 <code>.env</code>.
             </p>
             <pre class="bg-light p-3"><code>CLAUDE_API_KEY=sk-ant-...
-CLAUDE_MODEL=claude-sonnet-4-6
+CLAUDE_MODEL=claude-sonnet-5
 CLAUDE_MODEL_SONNET=claude-sonnet-4-6
 CLAUDE_MODEL_SONNET_5=claude-sonnet-5
 CLAUDE_MODEL_PREMIUM=claude-opus-4-8
@@ -392,9 +392,9 @@ CLAUDE_MAX_TOKENS_FABLE=9000
 CLAUDE_TIMEOUT_SECONDS=180
 SEO_ELFSIGHT_REVIEWS_APP_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code></pre>
             <p class="mb-0">
-                Par defaut, Sonnet est conseille pour le meilleur compromis qualite, vitesse et cout.
-                <code>CLAUDE_MODEL_PREMIUM</code> est utilise automatiquement pour les seeds en mode Auto avec valeur
-                business ou priorite au moins a <code>80</code>.
+                En mode Auto, le module utilise <code>CLAUDE_MODEL_SONNET_5</code>. Les choix explicites permettent
+                toujours de forcer Sonnet 4.6, Opus ou Fable. Valeur business et priorite ordonnent les traitements
+                en lot sans modifier le modele.
             </p>
             <p class="mb-0">
                 Le module demande par defaut <strong>7000 tokens output</strong> avec Sonnet et

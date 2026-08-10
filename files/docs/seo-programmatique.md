@@ -167,9 +167,9 @@ Modele Claude: Auto
 
 Modele Claude:
 
-- `Auto`: choix recommande. Sonnet pour les pages normales, modele premium si `Valeur business` ou `Priorite` est au moins a `80`.
+- `Auto`: choix recommande. Le module utilise toujours Sonnet 5. La valeur business et la priorite servent a ordonner les generations, pas a changer de modele.
 - `Sonnet`: a utiliser pour generer beaucoup de pages avec un bon rapport qualite/cout.
-- `Sonnet 5`: a utiliser pour tester le modele Sonnet le plus recent ou pour des pages plus importantes sans passer sur Opus/Fable.
+- `Sonnet 5`: modele utilise par defaut en mode Auto, adapte a la generation et a l'optimisation des pages.
 - `Opus`: a utiliser pour les pages importantes ou concurrentielles.
 - `Fable`: a reserver aux pages les plus strategiques.
 
@@ -413,7 +413,7 @@ Utiliser `.env.local` ou les variables serveur:
 
 ```env
 CLAUDE_API_KEY=sk-ant-...
-CLAUDE_MODEL=claude-sonnet-4-6
+CLAUDE_MODEL=claude-sonnet-5
 CLAUDE_MODEL_SONNET=claude-sonnet-4-6
 CLAUDE_MODEL_SONNET_5=claude-sonnet-5
 CLAUDE_MODEL_PREMIUM=claude-opus-4-8
@@ -450,7 +450,7 @@ Pour une page SEO, utiliser de preference un widget en liste, grille ou carrouse
 Le fichier `.env` contient seulement des ids de modeles non secrets:
 
 ```env
-CLAUDE_MODEL=claude-sonnet-4-6
+CLAUDE_MODEL=claude-sonnet-5
 CLAUDE_MODEL_SONNET=claude-sonnet-4-6
 CLAUDE_MODEL_SONNET_5=claude-sonnet-5
 CLAUDE_MODEL_PREMIUM=claude-opus-4-8
@@ -472,7 +472,7 @@ Dans `Historique Claude`, verifier `Max tokens`, `Tokens output` et `Stop reason
 Modele conseille par defaut:
 
 ```env
-CLAUDE_MODEL=claude-sonnet-4-6
+CLAUDE_MODEL=claude-sonnet-5
 CLAUDE_MODEL_SONNET_5=claude-sonnet-5
 ```
 
@@ -489,7 +489,7 @@ Utiliser un modele plus puissant seulement pour:
 - restructuration complexe;
 - audit qualite avance.
 
-En mode `Auto`, le module utilise Sonnet pour les pages normales. Si `Valeur business >= 80` ou `Priorite >= 80`, il utilise `CLAUDE_MODEL_PREMIUM`, Opus par defaut.
+En mode `Auto`, le module utilise toujours `CLAUDE_MODEL_SONNET_5`, soit Sonnet 5 par defaut. Les boutons et choix explicites permettent encore de forcer Sonnet 4.6, Opus ou Fable. `Valeur business` et `Priorite` determinent l'ordre des traitements en lot, sans changer le modele.
 
 ## Publication et indexation
 

@@ -9,7 +9,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.0.15.tgz
+npm install ./seo-prog-1.0.16.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -29,13 +29,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.0.15
+npm install git+https://github.com/59134/seo-p.git#v1.0.16
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.15
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.16
 ```
 
 Puis lancer l'installation :
@@ -111,6 +111,12 @@ Dans `2. Seeds SEO`, le bouton `Generer toutes les pages` ouvre un suivi dans un
 ## Publication en masse
 
 Dans `3. Pages SEO`, le bouton `Publication en masse` affiche les brouillons et pages a relire. Les pages ayant un score d'au moins 75 et aucune donnee critique manquante sont preselectionnees. Apres confirmation, elles deviennent publiees, indexables et sont ajoutees au sitemap. Les pages bloquees restent intactes avec leur motif affiche.
+
+Chaque page est enregistree separement pendant la publication en masse. Un conflit technique, notamment sur un slug, est donc affiche dans l'admin sans transformer toute l'operation en erreur 500.
+
+## Modele Auto
+
+Le choix `Auto` utilise Sonnet 5 pour toutes les generations. `Valeur business` et `Priorite` servent a ordonner les traitements en lot. Sonnet 4.6, Opus et Fable restent disponibles comme choix forces.
 
 ## Import JSON SEO
 
@@ -190,7 +196,7 @@ Elle ne supprime pas les fichiers Symfony installes par le module.
 Si le fichier `.tgz` a ete copie a la racine du projet, tu peux aussi le supprimer :
 
 ```bash
-rm seo-prog-1.0.15.tgz
+rm seo-prog-1.0.16.tgz
 ```
 
 Si un ancien essai a copie le fichier d'exemple `.env.seo-programmatique.example` dans le projet et que tu n'en as plus besoin :

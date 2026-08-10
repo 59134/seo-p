@@ -51,7 +51,7 @@ class ClaudeSeoGenerator
             SeoSeed::CLAUDE_MODEL_OPUS => $this->opusModel(),
             SeoSeed::CLAUDE_MODEL_FABLE => $this->fableModel(),
             'premium' => $this->premiumModel(),
-            default => $this->autoModel($seed),
+            default => $this->autoModel(),
         };
     }
 
@@ -405,13 +405,9 @@ class ClaudeSeoGenerator
             : SeoSeed::CLAUDE_MODEL_AUTO;
     }
 
-    private function autoModel(SeoSeed $seed): string
+    private function autoModel(): string
     {
-        if ($seed->getBusinessValue() >= 80 || $seed->getPriority() >= 80) {
-            return $this->premiumModel();
-        }
-
-        return $this->normalModel();
+        return $this->sonnet5Model();
     }
 
     private function normalModel(): string

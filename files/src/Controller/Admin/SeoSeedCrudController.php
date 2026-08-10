@@ -68,13 +68,13 @@ class SeoSeedCrudController extends AbstractCrudController
             IntegerField::new('priority', 'Priorité')->setColumns(4),
             ChoiceField::new('claudeModelPreference', 'Modèle Claude')
                 ->setChoices([
-                    'Auto: Sonnet ou premium si prioritaire' => SeoSeed::CLAUDE_MODEL_AUTO,
+                    'Auto: Sonnet 5' => SeoSeed::CLAUDE_MODEL_AUTO,
                     'Toujours Sonnet 4.6' => SeoSeed::CLAUDE_MODEL_SONNET,
                     'Toujours Sonnet 5' => SeoSeed::CLAUDE_MODEL_SONNET_5,
                     'Toujours Opus' => SeoSeed::CLAUDE_MODEL_OPUS,
                     'Toujours Fable' => SeoSeed::CLAUDE_MODEL_FABLE,
                 ])
-                ->setHelp('Auto = Sonnet pour les pages normales. Si valeur business ou priorité >= 80, le module utilise le modèle premium configuré.')
+                ->setHelp('Auto utilise Sonnet 5. Sonnet 4.6, Opus et Fable restent disponibles pour forcer un modèle précis.')
                 ->setColumns(4),
             IntegerField::new('dataCompletenessScore', 'Score données')->hideOnForm(),
             BooleanField::new('valid', 'Actif'),

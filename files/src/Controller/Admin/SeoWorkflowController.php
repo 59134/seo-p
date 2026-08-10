@@ -406,18 +406,28 @@ class SeoWorkflowController extends AbstractController
                     continue;
                 }
 
-                if ($this->promoteCleanSlugBeforePublication($page)) {
-                    $cleanedSlugs++;
+                try {
+                    $slugWasCleaned = null !== $this->promoteCleanSlugBeforePublication($page);
+
+                    $page
+                        ->setStatus(SeoPage::STATUS_PUBLISHED)
+                        ->setIndexable(true)
+                        ->setPublishedAt(new \DateTimeImmutable());
+
+                    // Chaque slug publie devient visible par la verification suivante.
+                    // Cela evite que deux pages du meme lot reservent la meme URL propre.
+                    $this->entityManager->flush();
+                    $published++;
+                    $cleanedSlugs += $slugWasCleaned ? 1 : 0;
+                } catch (\Throwable $exception) {
+                    $blocked[] = sprintf(
+                        '%s : erreur technique (%s)',
+                        $page->getMainKeyword() ?: $page->getSlug(),
+                        $exception->getMessage()
+                    );
+                    break;
                 }
-
-                $page
-                    ->setStatus(SeoPage::STATUS_PUBLISHED)
-                    ->setIndexable(true)
-                    ->setPublishedAt(new \DateTimeImmutable());
-                $published++;
             }
-
-            $this->entityManager->flush();
 
             if ($published > 0) {
                 $this->addFlash('success', sprintf(
