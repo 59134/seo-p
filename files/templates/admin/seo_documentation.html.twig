@@ -249,6 +249,19 @@ Modele Claude: Auto</code></pre>
                 des textes par defaut si ce champ est vide.
             </p>
 
+            <h3 class="h5">Image SEO</h3>
+            <p>
+                Le module cherche d'abord l'image <code>og:image</code> de l'<strong>URL page prestation liee</strong>.
+                Si elle est absente, il selectionne une photo dans un album actif pertinent. S'il ne trouve aucune source
+                fiable, la page reste sans image : il n'invente jamais de photo.
+            </p>
+            <p>
+                Claude propose des <strong>Suggestions alt images</strong>. La premiere sert d'ALT principal si la photo
+                source n'en possede pas. L'ALT doit decrire honnetement la photo sans affirmer qu'elle a ete prise dans la
+                ville cible. Le bouton <strong>Trouver une image</strong> permet de relancer uniquement cette recherche,
+                sans regenerer les textes. L'image front renvoie vers <code>/albums</code>.
+            </p>
+
             <h3 class="h5">Statuts</h3>
             <ul>
                 <li><strong>draft</strong> : brouillon, non publiable.</li>

@@ -16,7 +16,8 @@ class ClaudeSeoGenerator
         private HttpClientInterface $httpClient,
         private EntityManagerInterface $entityManager,
         private SeoPromptBuilder $promptBuilder,
-        private SeoQualityScorer $qualityScorer
+        private SeoQualityScorer $qualityScorer,
+        private SeoPageImageResolver $imageResolver
     ) {
     }
 
@@ -111,6 +112,7 @@ class ClaudeSeoGenerator
         }
 
         $page = $this->hydratePage($seed, $generated, $pageToImprove);
+        $this->imageResolver->resolve($page);
         $run->setPage($page);
 
         $this->entityManager->persist($page);

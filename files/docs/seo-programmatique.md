@@ -215,6 +215,18 @@ Le champ `Canonical forcee` est optionnel. Le laisser vide dans le cas normal. I
 
 Le champ `Textes template JSON` pilote les textes courts du template front: points sous le hero, bloc situation, etapes du parcours, introduction des sections et CTA final. Si le champ est vide, le template utilise des textes par defaut pour rester compatible avec les anciennes pages.
 
+#### Image SEO de la page
+
+La generation tente aussi d'associer une vraie image existante a la page, sans utiliser d'API de generation d'images:
+
+1. le module cherche l'image `og:image` de l'`URL page prestation liee`;
+2. si aucune image exploitable n'est trouvee, il cherche un album actif pertinent pour la prestation;
+3. si aucune source fiable n'est disponible, la page reste simplement sans image.
+
+Le premier element de `Suggestions alt images` fourni par Claude sert d'ALT principal lorsque l'image source ne possede pas deja un ALT. Cet ALT doit decrire la prestation ou la photo sans pretendre qu'elle a ete prise dans la ville cible.
+
+Les champs `Image SEO` et `ALT image SEO` restent modifiables dans la page. Le bouton `Trouver une image` relance la recherche pour une page deja generee. Il n'est donc pas necessaire de regenerer tout son contenu. Dans le template front, l'image renvoie vers `/albums` et le JSON-LD ajoute un `ImageObject` relie a la page et au service.
+
 Pour une page importante deja generee, utiliser `Optimiser Sonnet 5`, `Optimiser Opus` ou `Optimiser Fable` depuis la page SEO. Le module retravaille la page avec le modele choisi, garde le lien avec le seed et ajoute une ligne dans l'historique Claude.
 
 ### Etape 4 - Publier seulement si la page est vraiment bonne
@@ -408,7 +420,10 @@ CLAUDE_MAX_TOKENS_OPUS=9000
 CLAUDE_MAX_TOKENS_FABLE=9000
 CLAUDE_TIMEOUT_SECONDS=180
 SEO_ELFSIGHT_REVIEWS_APP_ID=
+SEO_SITE_URL=
 ```
+
+`SEO_SITE_URL` est optionnel. Il sert seulement aux generations lancees en ligne de commande lorsque l'URL de prestation liee est relative et qu'aucune requete web ne permet au module de connaitre le domaine. Exemple: `SEO_SITE_URL=https://www.exemple.fr`.
 
 ### Avis clients Elfsight
 

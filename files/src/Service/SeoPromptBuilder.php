@@ -186,6 +186,9 @@ class SeoPromptBuilder
                     ],
                     'image_alt_suggestions' => [
                         'type' => 'array',
+                        'description' => 'Textes alternatifs honnetes pour une vraie photo de la prestation. La premiere suggestion sert a l image principale. Ne jamais affirmer que la photo a ete prise dans la ville cible si ce fait n est pas fourni.',
+                        'minItems' => 1,
+                        'maxItems' => 3,
                         'items' => ['type' => 'string'],
                     ],
                     'schema_json_ld' => [
@@ -427,6 +430,7 @@ Contraintes:
 - cta doit etre uniquement un libellé court de bouton, 2 à 4 mots, maximum 38 caractères. Ne mets jamais une phrase complète. Exemples: "Faire une demande", "Tester mon éligibilité", "Demander un devis";
 - template_copy contient les textes courts du design. Ils doivent être génériques pour un site vitrine mais adaptés au service, à la ville et à l'intention. Ne mets pas de promesse inventée. Varie ces textes d'une page locale à l'autre;
 - si page_intent.linked_service_page.url est renseigne, ajoute ce lien dans internal_links avec un libelle naturel;
+- image_alt_suggestions doit proposer 1 a 3 ALT descriptifs et naturels pour une vraie photo de la prestation. Le premier sert a l'image principale. Ne pretends jamais que la photo a ete prise dans la ville cible sans preuve;
 - schema_json_ld doit contenir un @graph JSON-LD coherent avec WebPage, Service, LocalBusiness si les donnees entreprise/adresse existent, et FAQPage uniquement si la FAQ visible contient des questions/reponses;
 - ne jamais inventer adresse, telephone, horaires, coordonnees geo, avis ou note dans schema_json_ld;
 - indexation_recommendation doit etre "index" uniquement si la page a assez de valeur specifique.

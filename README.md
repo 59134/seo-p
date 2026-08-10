@@ -9,7 +9,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.0.8.tgz
+npm install ./seo-prog-1.0.9.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -29,13 +29,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.0.8
+npm install git+https://github.com/59134/seo-p.git#v1.0.9
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.8
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.9
 ```
 
 Puis lancer l'installation :
@@ -43,6 +43,13 @@ Puis lancer l'installation :
 ```bash
 ./node_modules/.bin/seo-prog --dry-run
 ./node_modules/.bin/seo-prog
+```
+
+Pour mettre a jour un module deja installe, verifier d'abord la simulation puis autoriser le remplacement des fichiers du module :
+
+```bash
+./node_modules/.bin/seo-prog --dry-run --force
+./node_modules/.bin/seo-prog --force
 ```
 
 ## Commande npx
@@ -124,6 +131,14 @@ Utiliser de preference un widget en liste, grille ou carrousel. Puis vider le ca
 php bin/console cache:clear
 ```
 
+## Images SEO existantes
+
+Lors d'une generation, le module cherche d'abord l'`og:image` de la page prestation liee, puis une photo dans un album actif pertinent. Claude fournit l'ALT descriptif. Si aucune image fiable n'est trouvee, la page reste sans image.
+
+Pour une page deja generee, ouvrir `3. Pages SEO`, modifier la page puis cliquer sur `Trouver une image`. Il n'est pas necessaire de regenerer les textes. L'image front renvoie vers `/albums`.
+
+Pendant une generation en ligne de commande, renseigner `SEO_SITE_URL=https://www.exemple.fr` dans `.env.local` si l'URL page prestation liee est relative.
+
 ## Nettoyage apres installation
 
 Supprimer d'abord les sauvegardes `.seo-programmatique.bak-*` creees par l'installateur :
@@ -152,7 +167,7 @@ Elle ne supprime pas les fichiers Symfony installes par le module.
 Si le fichier `.tgz` a ete copie a la racine du projet, tu peux aussi le supprimer :
 
 ```bash
-rm seo-prog-1.0.8.tgz
+rm seo-prog-1.0.9.tgz
 ```
 
 Si un ancien essai a copie le fichier d'exemple `.env.seo-programmatique.example` dans le projet et que tu n'en as plus besoin :
@@ -178,6 +193,8 @@ find . -name "*.seo-programmatique.bak-*" -type f -delete
 - Copie les nouveaux fichiers du module : entites, repositories, services, controllers SEO, templates, documentation et migrations SEO.
 - Ajoute l'import JSON SEO dans les modules Faits verifies et Seeds SEO.
 - Ajoute un JSON-LD SEO renforce sur le template front: WebPage, Service, LocalBusiness et FAQPage uniquement si la FAQ est visible.
+- Cherche une vraie image SEO depuis l'`og:image` de la prestation liee, puis dans les albums pertinents, et ajoute son `ImageObject` au JSON-LD.
+- Ajoute le bouton `Trouver une image` dans Pages SEO. L'image affichee renvoie vers `/albums` et utilise un ALT descriptif propose par Claude quand la source n'en fournit pas.
 - Ajoute un bloc d'avis clients Elfsight optionnel avant la FAQ quand `SEO_ELFSIGHT_REVIEWS_APP_ID` est renseigne.
 - Ajoute les variables manquantes dans `.env.local` ou dans le fichier choisi avec `--env`.
 - Garde `.env.seo-programmatique.example` en interne dans le package : ce fichier n'est pas copie dans le projet cible.

@@ -66,6 +66,15 @@ class SeoPage
     #[ORM\Column]
     private array $imageAltSuggestions = [];
 
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $imageUrl = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageAlt = null;
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $imageSource = null;
+
     #[ORM\Column(length: 120, nullable: true)]
     private ?string $cta = null;
 
@@ -392,6 +401,45 @@ class SeoPage
     public function getImageAltSuggestionsText(): string
     {
         return implode("\n", $this->getImageAltSuggestions());
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl(?string $imageUrl): self
+    {
+        $imageUrl = trim((string) $imageUrl);
+        $this->imageUrl = $imageUrl !== '' ? $this->limit($imageUrl, 500) : null;
+
+        return $this;
+    }
+
+    public function getImageAlt(): ?string
+    {
+        return $this->decodeText($this->imageAlt);
+    }
+
+    public function setImageAlt(?string $imageAlt): self
+    {
+        $imageAlt = trim((string) $this->decodeText($imageAlt));
+        $this->imageAlt = $imageAlt !== '' ? $this->limit($imageAlt, 255) : null;
+
+        return $this;
+    }
+
+    public function getImageSource(): ?string
+    {
+        return $this->imageSource;
+    }
+
+    public function setImageSource(?string $imageSource): self
+    {
+        $imageSource = trim((string) $imageSource);
+        $this->imageSource = $imageSource !== '' ? $this->limit($imageSource, 30) : null;
+
+        return $this;
     }
 
     public function getQualityFlags(): array

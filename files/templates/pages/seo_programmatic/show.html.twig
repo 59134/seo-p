@@ -265,6 +265,35 @@ endblock %}
         line-height: 1.5;
     }
 
+    .seo-page-visual {
+        padding: 34px 0 0;
+    }
+
+    .seo-page-visual-link {
+        display: block;
+        width: 100%;
+        min-height: 300px;
+        max-height: 520px;
+        aspect-ratio: 21 / 8;
+        overflow: hidden;
+        border: 1px solid var(--seo-line);
+        border-radius: 8px;
+        background: var(--seo-panel);
+    }
+
+    .seo-page-visual-link img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .35s ease;
+    }
+
+    .seo-page-visual-link:hover img,
+    .seo-page-visual-link:focus-visible img {
+        transform: scale(1.015);
+    }
+
     .seo-section {
         padding: 76px 0;
     }
@@ -691,6 +720,15 @@ endblock %}
             font-size: 1rem;
         }
 
+        .seo-page-visual {
+            padding-top: 22px;
+        }
+
+        .seo-page-visual-link {
+            min-height: 0;
+            aspect-ratio: 4 / 3;
+        }
+
         .seo-section,
         .seo-reviews-section,
         .seo-faq-section,
@@ -813,29 +851,43 @@ endblock %}
             }]) %}
         {% endif %}
     {% endfor %}
-    {% set schema_graph = [
-        local_business,
-        {
-            '@type': 'WebPage',
-            '@id': webpage_id,
-            'url': page_url,
-            'name': page.title,
-            'description': page.metaDescription,
-            'inLanguage': page.locale,
-            'about': {'@id': service_id},
-            'publisher': {'@id': business_id}
-        },
-        {
-            '@type': 'Service',
-            '@id': service_id,
-            'name': schema_service ?: page.h1,
-            'serviceType': schema_service ?: page.mainKeyword,
-            'description': page.intro|default(page.metaDescription)|striptags|trim,
-            'url': page_url,
-            'provider': {'@id': business_id},
-            'areaServed': area_served is not empty ? area_served : schema_city
-        }
-    ] %}
+    {% set webpage_schema = {
+        '@type': 'WebPage',
+        '@id': webpage_id,
+        'url': page_url,
+        'name': page.title,
+        'description': page.metaDescription,
+        'inLanguage': page.locale,
+        'about': {'@id': service_id},
+        'publisher': {'@id': business_id}
+    } %}
+    {% set service_schema = {
+        '@type': 'Service',
+        '@id': service_id,
+        'name': schema_service ?: page.h1,
+        'serviceType': schema_service ?: page.mainKeyword,
+        'description': page.intro|default(page.metaDescription)|striptags|trim,
+        'url': page_url,
+        'provider': {'@id': business_id},
+        'areaServed': area_served is not empty ? area_served : schema_city
+    } %}
+    {% set schema_graph = [local_business] %}
+    {% if page.imageUrl %}
+        {% set image_id = page_url ~ '#primaryimage' %}
+        {% set image_url = absolute_url(page.imageUrl) %}
+        {% set image_schema = {
+            '@type': 'ImageObject',
+            '@id': image_id,
+            'url': image_url,
+            'contentUrl': image_url,
+            'caption': page.imageAlt ?: page.h1,
+            'representativeOfPage': true
+        } %}
+        {% set webpage_schema = webpage_schema|merge({'primaryImageOfPage': {'@id': image_id}}) %}
+        {% set service_schema = service_schema|merge({'image': {'@id': image_id}}) %}
+        {% set schema_graph = schema_graph|merge([image_schema]) %}
+    {% endif %}
+    {% set schema_graph = schema_graph|merge([webpage_schema, service_schema]) %}
     {% if faq_schema is not empty %}
         {% set schema_graph = schema_graph|merge([{
             '@type': 'FAQPage',
@@ -995,6 +1047,16 @@ endblock %}
             </div>
         </div>
     </section>
+
+    {% if page.imageUrl %}
+        <section class="seo-page-visual" aria-label="Illustration de la prestation">
+            <div class="seo-wrap">
+                <a href="/albums" class="seo-page-visual-link" title="Voir les albums de {{ brand }}">
+                    <img src="{{ page.imageUrl }}" alt="{{ page.imageAlt ?: service ?: page.h1 }}" loading="lazy" decoding="async">
+                </a>
+            </div>
+        </section>
+    {% endif %}
 
     <section class="seo-section">
         <div class="seo-wrap seo-offer-grid">

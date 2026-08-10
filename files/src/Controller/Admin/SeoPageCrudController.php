@@ -110,6 +110,17 @@ class SeoPageCrudController extends AbstractCrudController
                 ->setHelp('Optionnel. Textes courts utilisés par le template front: points du hero, bloc situation, étapes, introduction des sections et CTA final.')
                 ->setColumns(12),
             TextareaField::new('imageAltSuggestionsText', 'Suggestions alt images')->hideOnIndex()->hideOnForm(),
+            TextField::new('imageUrl', 'Image SEO')
+                ->setRequired(false)
+                ->hideOnIndex()
+                ->setColumns(6)
+                ->setHelp('Automatique: image og:image de la prestation liee, puis photo d un album pertinent.'),
+            TextField::new('imageAlt', 'ALT image SEO')
+                ->setRequired(false)
+                ->hideOnIndex()
+                ->setColumns(6)
+                ->setHelp('Decrit honnetement la photo. Ne pas inventer le lieu de prise de vue.'),
+            TextField::new('imageSource', 'Source image')->hideOnIndex()->hideOnForm(),
             TextField::new('cta', 'CTA')
                 ->hideOnIndex()
                 ->setColumns(4)
@@ -174,6 +185,10 @@ class SeoPageCrudController extends AbstractCrudController
             ->linkToRoute('admin_seo_page_unpublish', static fn (SeoPage $page): array => ['id' => $page->getId()])
             ->displayIf(static fn (SeoPage $page): bool => $page->getStatus() === SeoPage::STATUS_PUBLISHED);
 
+        $resolveImage = Action::new('resolveSeoImage', 'Trouver une image', 'fa fa-image')
+            ->linkToRoute('admin_seo_page_resolve_image', static fn (SeoPage $page): array => ['id' => $page->getId()])
+            ->displayIf(static fn (SeoPage $page): bool => $page->getSeed() !== null);
+
         $improveSonnet5 = Action::new('improveSeoPageSonnet5', 'Optimiser Sonnet 5', 'fa fa-bolt')
             ->linkToRoute('admin_seo_page_improve_model', static fn (SeoPage $page): array => [
                 'id' => $page->getId(),
@@ -202,6 +217,7 @@ class SeoPageCrudController extends AbstractCrudController
             ->add(Crud::PAGE_EDIT, $preview)
             ->add(Crud::PAGE_EDIT, $publish)
             ->add(Crud::PAGE_EDIT, $unpublish)
+            ->add(Crud::PAGE_EDIT, $resolveImage)
             ->add(Crud::PAGE_EDIT, $improveSonnet5)
             ->add(Crud::PAGE_EDIT, $improveOpus)
             ->add(Crud::PAGE_EDIT, $improveFable);

@@ -6,6 +6,7 @@ use App\Entity\SeoPage;
 use App\Entity\SeoSeed;
 use App\Repository\SeoPageRepository;
 use App\Service\ClaudeSeoGenerator;
+use App\Service\SeoPageImageResolver;
 use App\Service\SeoSeedExpander;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -222,6 +223,21 @@ class SeoWorkflowController extends AbstractController
             'relatedPages' => $this->seoPageRepository->findRelatedPublishedPages($page, null, false),
             'preview' => true,
         ]);
+    }
+
+    #[Route('/admin/seo-page/{id}/resolve-image', name: 'admin_seo_page_resolve_image', methods: ['GET'])]
+    public function resolveImage(SeoPage $page, SeoPageImageResolver $imageResolver): Response
+    {
+        $result = $imageResolver->resolve($page, true);
+
+        if ($result['resolved']) {
+            $this->entityManager->flush();
+            $this->addFlash('success', $result['message']);
+        } else {
+            $this->addFlash('warning', $result['message']);
+        }
+
+        return $this->redirectToSeoPage($page);
     }
 
     private function redirectToSeoPage(SeoPage $page): Response
