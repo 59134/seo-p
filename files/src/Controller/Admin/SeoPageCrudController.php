@@ -170,6 +170,11 @@ class SeoPageCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $bulkPublish = Action::new('bulkPublishSeoPages', 'Publication en masse', 'fa fa-list-check')
+            ->linkToRoute('admin_seo_page_bulk_publish')
+            ->addCssClass('btn btn-success')
+            ->createAsGlobalAction();
+
         $preview = Action::new('previewSeoPage', 'Previsualiser', 'fa fa-eye')
             ->linkToRoute('admin_seo_page_preview', static fn (SeoPage $page): array => ['id' => $page->getId()])
             ->setHtmlAttributes([
@@ -211,6 +216,7 @@ class SeoPageCrudController extends AbstractCrudController
             ->displayIf(static fn (SeoPage $page): bool => $page->getSeed() !== null && $page->getStatus() !== SeoPage::STATUS_PUBLISHED);
 
         return $actions
+            ->add(Crud::PAGE_INDEX, $bulkPublish)
             ->add(Crud::PAGE_INDEX, $preview)
             ->add(Crud::PAGE_INDEX, $publish)
             ->add(Crud::PAGE_INDEX, $unpublish)

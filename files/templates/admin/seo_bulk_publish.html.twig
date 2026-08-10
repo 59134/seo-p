@@ -1,0 +1,139 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title %}Publication SEO en masse{% endblock %}
+
+{% block content %}
+    <section id="seo-bulk-publish" class="content-panel">
+        <div class="content-panel-body">
+            <div class="alert {{ eligibleCount > 0 ? 'alert-info' : 'alert-warning' }} d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <strong>{{ eligibleCount }} page(s) éligible(s) sur {{ rows|length }}.</strong>
+                    Les pages bloquées restent en brouillon et indiquent la correction nécessaire.
+                </div>
+                <a class="btn btn-secondary" href="{{ pageListUrl }}">
+                    <i class="fa fa-arrow-left"></i> Retour aux pages SEO
+                </a>
+            </div>
+
+            {% if rows is empty %}
+                <div class="alert alert-success mb-0">
+                    Aucune page en brouillon ou à relire ne reste à publier.
+                </div>
+            {% else %}
+                <form id="seo-bulk-publish-form" method="post">
+                    <input type="hidden" name="_token" value="{{ csrf_token('seo_page_bulk_publish') }}">
+
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                        <div class="form-check">
+                            <input id="seo-select-all-eligible" class="form-check-input" type="checkbox" checked {% if eligibleCount == 0 %}disabled{% endif %}>
+                            <label class="form-check-label" for="seo-select-all-eligible">Sélectionner toutes les pages éligibles</label>
+                        </div>
+                        <button id="seo-bulk-publish-submit" type="submit" class="btn btn-success" {% if eligibleCount == 0 %}disabled{% endif %}>
+                            <i class="fa fa-check-double"></i>
+                            Publier <span id="seo-selected-count">{{ eligibleCount }}</span> page(s)
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                            <tr>
+                                <th style="width: 48px"></th>
+                                <th>Page</th>
+                                <th>Statut</th>
+                                <th>Score</th>
+                                <th>Contrôle de publication</th>
+                                <th style="width: 70px"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in rows %}
+                                <tr>
+                                    <td>
+                                        <input
+                                            class="form-check-input seo-page-checkbox"
+                                            type="checkbox"
+                                            name="page_ids[]"
+                                            value="{{ row.page.id }}"
+                                            {% if row.eligible %}checked{% else %}disabled{% endif %}
+                                            aria-label="Sélectionner {{ row.page.mainKeyword }}"
+                                        >
+                                    </td>
+                                    <td>
+                                        <strong>{{ row.page.mainKeyword }}</strong>
+                                        <small class="d-block text-muted">/{{ row.page.slug }}</small>
+                                    </td>
+                                    <td>{{ row.page.status == 'review' ? 'À relire' : 'Brouillon' }}</td>
+                                    <td>
+                                        <span class="badge {{ row.page.qualityScore >= 75 ? 'text-bg-success' : 'text-bg-warning' }}">
+                                            {{ row.page.qualityScore }}/100
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if row.eligible %}
+                                            <span class="badge text-bg-success">Éligible</span>
+                                        {% else %}
+                                            <span class="badge text-bg-danger mb-1">Bloquée</span>
+                                            {% for blocker in row.blockers %}
+                                                <small class="d-block text-danger">{{ blocker }}</small>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="btn btn-sm btn-secondary"
+                                            href="{{ path('admin_seo_page_preview', {id: row.page.id}) }}"
+                                            target="_blank"
+                                            rel="noopener"
+                                            title="Prévisualiser"
+                                        ><i class="fa fa-eye"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const root = document.getElementById('seo-bulk-publish');
+            const form = document.getElementById('seo-bulk-publish-form');
+            if (!root || !form) return;
+
+            const selectAll = document.getElementById('seo-select-all-eligible');
+            const submitButton = document.getElementById('seo-bulk-publish-submit');
+            const selectedCount = document.getElementById('seo-selected-count');
+            const checkboxes = [...root.querySelectorAll('.seo-page-checkbox:not(:disabled)')];
+
+            const refreshSelection = () => {
+                const count = checkboxes.filter((checkbox) => checkbox.checked).length;
+                selectedCount.textContent = String(count);
+                submitButton.disabled = count === 0;
+                selectAll.checked = checkboxes.length > 0 && count === checkboxes.length;
+                selectAll.indeterminate = count > 0 && count < checkboxes.length;
+            };
+
+            selectAll?.addEventListener('change', () => {
+                checkboxes.forEach((checkbox) => {
+                    checkbox.checked = selectAll.checked;
+                });
+                refreshSelection();
+            });
+
+            checkboxes.forEach((checkbox) => checkbox.addEventListener('change', refreshSelection));
+
+            form.addEventListener('submit', (event) => {
+                const count = checkboxes.filter((checkbox) => checkbox.checked).length;
+                if (count === 0 || !window.confirm(`Publier et rendre indexable ${count} page(s) ?`)) {
+                    event.preventDefault();
+                }
+            });
+
+            refreshSelection();
+        })();
+    </script>
+{% endblock %}

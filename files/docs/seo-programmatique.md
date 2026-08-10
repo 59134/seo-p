@@ -209,6 +209,8 @@ Avant de publier, verifier:
 - les donnees manquantes, surtout si elles touchent le service, la zone ou la veracite du contenu;
 - le score qualite.
 
+Pour publier plusieurs pages, ouvrir `3. Pages SEO` puis cliquer sur `Publication en masse`. Les pages avec un score d'au moins 75 et sans donnee critique manquante sont preselectionnees. Les autres restent bloquees avec leur motif. Apres confirmation, les pages choisies deviennent publiees, indexables et sont ajoutees au sitemap.
+
 Une page doit avoir un score d'au moins `75` pour etre publiee.
 
 Le champ `Donnees manquantes` est editable. Une ligne correspond a une information que Claude n'a pas pu verifier. Les informations comme telephone, adresse, delai, forfait, aides, prix, marque ou garantie sont utiles pour ameliorer la page, mais ne bloquent pas automatiquement la publication. Les manques critiques, eux, peuvent bloquer: service non confirme, zone non couverte, faits locaux insuffisants, preuves metier insuffisantes ou generation Claude echouee.

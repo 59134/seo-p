@@ -365,6 +365,111 @@ class SeoWorkflowController extends AbstractController
         return $this->redirectToSeoPage($page);
     }
 
+    #[Route('/admin/seo-page/bulk-publish', name: 'admin_seo_page_bulk_publish', methods: ['GET', 'POST'])]
+    public function bulkPublish(Request $request): Response
+    {
+        $repository = $this->entityManager->getRepository(SeoPage::class);
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('seo_page_bulk_publish', $request->request->get('_token'))) {
+                $this->addFlash('danger', 'Jeton de sécurité invalide. Recharge la page.');
+
+                return $this->redirectToRoute('admin_seo_page_bulk_publish');
+            }
+
+            $formData = $request->request->all();
+            $selectedIds = array_values(array_unique(array_filter(array_map(
+                static fn (mixed $id): int => (int) $id,
+                (array) ($formData['page_ids'] ?? [])
+            ))));
+
+            if (!$selectedIds) {
+                $this->addFlash('warning', 'Sélectionne au moins une page éligible.');
+
+                return $this->redirectToRoute('admin_seo_page_bulk_publish');
+            }
+
+            $published = 0;
+            $blocked = [];
+            $cleanedSlugs = 0;
+
+            foreach ($repository->findBy(['id' => $selectedIds]) as $page) {
+                if (!in_array($page->getStatus(), [SeoPage::STATUS_DRAFT, SeoPage::STATUS_REVIEW], true)) {
+                    $blocked[] = sprintf('%s : statut non publiable', $page->getMainKeyword());
+                    continue;
+                }
+
+                $blockers = $this->bulkPublicationBlockers($page);
+
+                if ($blockers) {
+                    $blocked[] = sprintf('%s : %s', $page->getMainKeyword(), implode(', ', $blockers));
+                    continue;
+                }
+
+                if ($this->promoteCleanSlugBeforePublication($page)) {
+                    $cleanedSlugs++;
+                }
+
+                $page
+                    ->setStatus(SeoPage::STATUS_PUBLISHED)
+                    ->setIndexable(true)
+                    ->setPublishedAt(new \DateTimeImmutable());
+                $published++;
+            }
+
+            $this->entityManager->flush();
+
+            if ($published > 0) {
+                $this->addFlash('success', sprintf(
+                    '%d page(s) publiée(s) et ajoutée(s) au sitemap%s.',
+                    $published,
+                    $cleanedSlugs > 0 ? sprintf(', %d URL(s) nettoyée(s)', $cleanedSlugs) : ''
+                ));
+            }
+
+            if ($blocked) {
+                $this->addFlash('warning', sprintf(
+                    '%d page(s) ignorée(s) : %s',
+                    count($blocked),
+                    implode(' / ', array_slice($blocked, 0, 5)) . (count($blocked) > 5 ? ' / ...' : '')
+                ));
+            }
+
+            return $this->redirectToRoute('admin_seo_page_bulk_publish');
+        }
+
+        $pages = $repository->findBy([
+            'status' => [SeoPage::STATUS_DRAFT, SeoPage::STATUS_REVIEW],
+        ], [
+            'qualityScore' => 'DESC',
+            'updated_at' => 'DESC',
+        ]);
+        $rows = [];
+        $eligibleCount = 0;
+
+        foreach ($pages as $page) {
+            $blockers = $this->bulkPublicationBlockers($page);
+            $eligible = count($blockers) === 0;
+            $eligibleCount += $eligible ? 1 : 0;
+            $rows[] = [
+                'page' => $page,
+                'eligible' => $eligible,
+                'blockers' => $blockers,
+            ];
+        }
+
+        $pageListUrl = $this->adminUrlGenerator
+            ->setController(SeoPageCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
+
+        return $this->render('admin/seo_bulk_publish.html.twig', [
+            'rows' => $rows,
+            'eligibleCount' => $eligibleCount,
+            'pageListUrl' => $pageListUrl,
+        ]);
+    }
+
     private function redirectToSeoPage(SeoPage $page): Response
     {
         return $this->redirect($this->adminUrlGenerator
@@ -490,6 +595,26 @@ class SeoWorkflowController extends AbstractController
 
             return false;
         }));
+    }
+
+    /**
+     * @return string[]
+     */
+    private function bulkPublicationBlockers(SeoPage $page): array
+    {
+        $blockers = [];
+
+        if ($page->getQualityScore() < 75) {
+            $blockers[] = sprintf('score qualité %d/100, minimum 75', $page->getQualityScore());
+        }
+
+        $blockingMissingData = $this->blockingMissingData($page->getMissingData());
+
+        if ($blockingMissingData) {
+            $blockers[] = 'données critiques : ' . $this->shortMissingDataList($blockingMissingData);
+        }
+
+        return $blockers;
     }
 
     /**
