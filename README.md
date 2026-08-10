@@ -9,7 +9,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.0.12.tgz
+npm install ./seo-prog-1.0.13.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -29,13 +29,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.0.12
+npm install git+https://github.com/59134/seo-p.git#v1.0.13
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.12
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.0.13
 ```
 
 Puis lancer l'installation :
@@ -75,6 +75,7 @@ Sur certains serveurs, `npx seo-prog` peut chercher `seo-prog` sur le registre n
 ./node_modules/.bin/seo-prog --target=/chemin/vers/projet
 ./node_modules/.bin/seo-prog --force
 ./node_modules/.bin/seo-prog --no-backup
+./node_modules/.bin/seo-prog --keep-backups
 ./node_modules/.bin/seo-prog --clean-backups
 ```
 
@@ -141,7 +142,15 @@ Pendant une generation en ligne de commande, renseigner `SEO_SITE_URL=https://ww
 
 ## Nettoyage apres installation
 
-Supprimer d'abord les sauvegardes `.seo-programmatique.bak-*` creees par l'installateur :
+Apres une installation reussie, l'installateur supprime maintenant automatiquement tous les fichiers `.seo-programmatique.bak-*`. En cas d'erreur pendant l'installation, les sauvegardes sont conservees pour permettre une restauration.
+
+Pour conserver volontairement les sauvegardes apres une installation reussie :
+
+```bash
+./node_modules/.bin/seo-prog --keep-backups
+```
+
+Pour supprimer les sauvegardes laissees par une ancienne version de l'installateur :
 
 ```bash
 ./node_modules/.bin/seo-prog --clean-backups --dry-run
@@ -167,7 +176,7 @@ Elle ne supprime pas les fichiers Symfony installes par le module.
 Si le fichier `.tgz` a ete copie a la racine du projet, tu peux aussi le supprimer :
 
 ```bash
-rm seo-prog-1.0.12.tgz
+rm seo-prog-1.0.13.tgz
 ```
 
 Si un ancien essai a copie le fichier d'exemple `.env.seo-programmatique.example` dans le projet et que tu n'en as plus besoin :
@@ -203,7 +212,7 @@ find . -name "*.seo-programmatique.bak-*" -type f -delete
 - Ajoute les pages SEO publiees dans `SitemapController.php` si absent.
 - Ajoute l'exclusion TinyMCE pour les champs JSON SEO dans `assets/js/back/script.js` si absent.
 - Ajoute les variables CSS `--wt-primary` et `--wt-primary-light` dans `assets/styles/front/custom.scss` si absentes.
-- Cree des sauvegardes `.seo-programmatique.bak-YYYYMMDDHHMMSS` avant de modifier un fichier existant.
+- Cree des sauvegardes `.seo-programmatique.bak-YYYYMMDDHHMMSS` pendant les modifications, puis les supprime automatiquement apres une installation reussie. Elles restent disponibles en cas d'echec ou avec `--keep-backups`.
 
 ## Important
 

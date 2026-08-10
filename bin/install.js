@@ -145,6 +145,7 @@ function parseArgs(argv) {
         dryRun: false,
         force: false,
         backup: true,
+        keepBackups: false,
         cleanBackups: false,
         help: false,
     };
@@ -156,6 +157,8 @@ function parseArgs(argv) {
             args.force = true;
         } else if (arg === '--no-backup') {
             args.backup = false;
+        } else if (arg === '--keep-backups') {
+            args.keepBackups = true;
         } else if (arg === '--clean-backups') {
             args.cleanBackups = true;
         } else if (arg === '--help' || arg === '-h') {
@@ -184,6 +187,7 @@ Options:
   --dry-run        Affiche les actions sans modifier les fichiers
   --force          Remplace les fichiers du module deja presents
   --no-backup      Ne cree pas de sauvegarde avant patch
+  --keep-backups    Conserve les sauvegardes apres une installation reussie
   --clean-backups  Supprime les sauvegardes .seo-programmatique.bak-*
   --env=FILE       Fichier env cible, par defaut .env.local
   --target=DIR     Projet Symfony cible, par defaut le dossier courant
@@ -270,11 +274,13 @@ function listBackupFiles(dir, base = dir) {
     });
 }
 
-function cleanBackupFiles(args) {
+function cleanBackupFiles(args, silentWhenEmpty = false) {
     const backupFiles = listBackupFiles(args.target);
 
     if (backupFiles.length === 0) {
-        log('skip', 'aucune sauvegarde SEO programmatique trouvee');
+        if (!silentWhenEmpty) {
+            log('skip', 'aucune sauvegarde SEO programmatique trouvee');
+        }
         return;
     }
 
@@ -632,6 +638,10 @@ function main() {
     patchSitemap(args);
     patchTinyMce(args);
     patchFrontColorVariables(args);
+
+    if (!args.keepBackups) {
+        cleanBackupFiles(args, true);
+    }
 
     log('ok', 'installation terminee');
     log('ok', 'prochaine etape: php bin/console doctrine:migrations:migrate puis npm run build et cache Symfony');
