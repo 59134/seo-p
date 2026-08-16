@@ -8,6 +8,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SeoDocumentationController extends AbstractController
 {
+    private const MODULE_VERSION = '1.0.18';
+
     #[Route('/admin/seo-documentation', name: 'admin_seo_documentation', methods: ['GET'])]
     public function index(): Response
     {
@@ -20,6 +22,8 @@ class SeoDocumentationController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        return $this->render('admin/seo_documentation.html.twig');
+        return $this->render('admin/seo_documentation.html.twig', [
+            'moduleVersion' => self::MODULE_VERSION,
+        ]);
     }
 }
