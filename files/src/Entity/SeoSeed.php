@@ -126,12 +126,12 @@ class SeoSeed
 
     public function getService(): ?string
     {
-        return self::cleanPlainTextLine($this->service) ?: null;
+        return self::capitalizeFirstLetter($this->service) ?: null;
     }
 
     public function setService(string $service): self
     {
-        $this->service = self::cleanPlainTextLine($service);
+        $this->service = self::capitalizeFirstLetter($service);
 
         return $this;
     }
@@ -162,12 +162,12 @@ class SeoSeed
 
     public function getMainKeyword(): ?string
     {
-        return self::cleanPlainTextLine($this->mainKeyword) ?: null;
+        return self::capitalizeFirstLetter($this->mainKeyword) ?: null;
     }
 
     public function setMainKeyword(string $mainKeyword): self
     {
-        $this->mainKeyword = self::cleanPlainTextLine($mainKeyword);
+        $this->mainKeyword = self::capitalizeFirstLetter($mainKeyword);
 
         return $this;
     }
@@ -186,12 +186,12 @@ class SeoSeed
 
     public function getServicePageLabel(): ?string
     {
-        return self::cleanPlainTextLine($this->servicePageLabel) ?: null;
+        return self::capitalizeFirstLetter($this->servicePageLabel) ?: null;
     }
 
     public function setServicePageLabel(?string $servicePageLabel): self
     {
-        $this->servicePageLabel = $servicePageLabel ? self::cleanPlainTextLine($servicePageLabel) : null;
+        $this->servicePageLabel = $servicePageLabel ? self::capitalizeFirstLetter($servicePageLabel) : null;
 
         return $this;
     }
@@ -386,6 +386,22 @@ class SeoSeed
         $text = self::htmlToPlainText($value);
 
         return trim(preg_replace('/\s+/', ' ', $text) ?: '');
+    }
+
+    public static function capitalizeFirstLetter(?string $value): string
+    {
+        $text = self::cleanPlainTextLine($value);
+
+        if ($text === '') {
+            return '';
+        }
+
+        return preg_replace_callback(
+            '/\p{L}/u',
+            static fn (array $matches): string => mb_strtoupper($matches[0], 'UTF-8'),
+            $text,
+            1
+        ) ?: $text;
     }
 
     public static function cleanPlainTextBlock(?string $value): ?string

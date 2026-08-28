@@ -1,6 +1,6 @@
 # Module SEO programmatique
 
-**Version du module : 1.0.18**
+**Version du module : 1.0.19**
 
 Ce module permet de generer des pages SEO a partir de donnees metier verifiees, avec Claude, puis de les publier seulement apres controle qualite et validation admin.
 

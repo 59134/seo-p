@@ -546,12 +546,12 @@ class SeoPage
 
     public function getMainKeyword(): ?string
     {
-        return $this->decodeText($this->mainKeyword);
+        return SeoSeed::capitalizeFirstLetter($this->decodeText($this->mainKeyword)) ?: null;
     }
 
     public function getCleanMainKeyword(): ?string
     {
-        return $this->cleanTextLabel($this->mainKeyword);
+        return SeoSeed::capitalizeFirstLetter($this->cleanTextLabel($this->mainKeyword)) ?: null;
     }
 
     public function getCleanH1(): ?string
@@ -561,7 +561,7 @@ class SeoPage
 
     public function setMainKeyword(?string $mainKeyword): self
     {
-        $this->mainKeyword = $this->decodeText($mainKeyword);
+        $this->mainKeyword = SeoSeed::capitalizeFirstLetter($this->decodeText($mainKeyword)) ?: null;
 
         return $this;
     }
