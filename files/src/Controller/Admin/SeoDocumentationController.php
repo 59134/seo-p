@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SeoDocumentationController extends AbstractController
 {
-    private const MODULE_VERSION = '1.0.19';
+    private const MODULE_VERSION = '1.1.0';
 
     #[Route('/admin/seo-documentation', name: 'admin_seo_documentation', methods: ['GET'])]
     public function index(): Response

@@ -14,6 +14,20 @@
         ou les informations inventees.
     </div>
 
+    <section class="mb-4" aria-labelledby="seo-release-title">
+        <h2 id="seo-release-title" class="h4">Nouveautés 1.1.0</h2>
+        <ul>
+            <li>Sous-titres numérotés en H3 ; les anciens contenus JSON restent compatibles.</li>
+            <li>Les lieux cités dans les notes du pilier ne sont plus remplacés dans les enfants. Précisez la ville et le service auxquels chaque fait s'applique.</li>
+            <li>Des thèmes de FAQ propres au seed guident la diversité des questions, selon les faits disponibles.</li>
+            <li>Les pages publiques du menu alimentent le maillage. Les liens internes reconnus peuvent apparaître dans la section concernée, sans HTML libre.</li>
+            <li>Les ancres des pages associées varient selon la page source, de façon stable et sans limiter leur nombre.</li>
+            <li>Les alertes de duplication textuelle et de questions identiques aident la relecture. Elles ne sont pas un score sémantique et ne dépublient rien.</li>
+        </ul>
+        <p>Vos prompts personnalisés sont conservés ; les règles de sécurité et le contexte du CMS s'y ajoutent à l'exécution. Les faits doivent toujours être vérifiés humainement.</p>
+        <p class="mb-0">Aucune migration pour cette mise à jour. Les URL et textes existants ne sont pas réécrits automatiquement. Les H3 et ancres changent au rendu ; les nouvelles FAQ et les liens contextuels demandent une génération ou une optimisation choisie, suivie d'une prévisualisation.</p>
+    </section>
+
     <div class="card mb-3">
         <div class="card-body">
             <h2 class="h4">Resume ultra simple</h2>
@@ -323,8 +337,9 @@ Modele Claude: Auto</code></pre>
             <p>
                 Quand plusieurs pages sont generees pour le meme service dans des villes differentes, Claude recoit
                 aussi un resume des pages deja generees. Il doit varier l'introduction, les H2, les exemples, la FAQ,
-                l'angle local, les textes SEO et la conclusion. L'objectif est de rester sous 55 % de similarite
-                editoriale quand les donnees le permettent.
+                l'angle local, les textes SEO et la conclusion. Les sous-titres de section sont rendus en H3.
+                Le contrôle textuel compare un échantillon de douze autres pages au maximum, en priorité du même service.
+                Il ne mesure pas la similarité sémantique et ne constitue pas une garantie SEO.
             </p>
 
             <div class="alert alert-danger mb-0">

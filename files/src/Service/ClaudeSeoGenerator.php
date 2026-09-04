@@ -19,7 +19,8 @@ class ClaudeSeoGenerator
         private SeoPageRepository $seoPageRepository,
         private SeoPromptBuilder $promptBuilder,
         private SeoQualityScorer $qualityScorer,
-        private SeoPageImageResolver $imageResolver
+        private SeoPageImageResolver $imageResolver,
+        private SeoSiteLinkProvider $siteLinks
     ) {
     }
 
@@ -117,7 +118,7 @@ class ClaudeSeoGenerator
             $run->setErrorMessage($exception->getMessage());
         }
 
-        $page = $this->hydratePage($seed, $generated, $pageToImprove);
+        $page = $this->hydratePage($seed, $generated, $pageToImprove, array_column($prompt['context']['available_internal_pages'], null, 'url'));
         $this->imageResolver->resolve($page);
         $run->setPage($page);
 
@@ -160,7 +161,7 @@ class ClaudeSeoGenerator
         throw new \RuntimeException('Claude n\'a pas retourne l\'outil create_seo_page.');
     }
 
-    private function hydratePage(SeoSeed $seed, array $payload, ?SeoPage $page = null): SeoPage
+    private function hydratePage(SeoSeed $seed, array $payload, ?SeoPage $page = null, array $linkCatalog = []): SeoPage
     {
         $page ??= new SeoPage();
 
@@ -185,7 +186,7 @@ class ClaudeSeoGenerator
             ->setContent($payload['sections'] ?? [])
             ->setFaq($payload['faq'] ?? [])
             ->setSchemaJson($payload['schema_json_ld'] ?? [])
-            ->setInternalLinks($this->internalLinksWithSeedLinks($seed, $payload['internal_links'] ?? []))
+            ->setInternalLinks($this->internalLinksWithSeedLinks($seed, $payload['internal_links'] ?? [], $linkCatalog, count($payload['sections'] ?? [])))
             ->setTemplateCopy($payload['template_copy'] ?? [])
             ->setImageAltSuggestions($payload['image_alt_suggestions'] ?? [])
             ->setCta($payload['cta'] ?? null)
@@ -249,42 +250,16 @@ class ClaudeSeoGenerator
         return $validItems >= $minimum;
     }
 
-    private function internalLinksWithSeedLinks(SeoSeed $seed, array $internalLinks): array
+    private function internalLinksWithSeedLinks(SeoSeed $seed, array $internalLinks, array $catalog, int $sectionCount): array
     {
-        $links = [];
-
-        foreach ($internalLinks as $link) {
-            if (!is_array($link)) {
-                continue;
-            }
-
-            $url = trim((string) ($link['url'] ?? ''));
-            $label = trim((string) ($link['label'] ?? ''));
-
-            if ($url === '') {
-                continue;
-            }
-
-            $links[] = [
-                'label' => $label !== '' ? $label : $url,
-                'url' => $url,
-            ];
-        }
-
         if ($seed->getServicePageUrl()) {
-            $links[] = [
+            $internalLinks[] = [
                 'label' => $seed->getServicePageLabel() ?: $this->defaultServicePageLabel($seed),
                 'url' => $seed->getServicePageUrl(),
             ];
         }
 
-        $uniqueLinks = [];
-        foreach ($links as $link) {
-            $key = strtolower((string) $link['url']);
-            $uniqueLinks[$key] = $link;
-        }
-
-        return array_values($uniqueLinks);
+        return $this->siteLinks->filterLinks($internalLinks, $catalog, $sectionCount);
     }
 
     private function defaultServicePageLabel(SeoSeed $seed): string

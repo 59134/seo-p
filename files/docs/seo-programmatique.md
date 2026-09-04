@@ -1,6 +1,30 @@
 # Module SEO programmatique
 
-**Version du module : 1.0.19**
+**Version du module : 1.1.0**
+
+## Nouveautés 1.1.0
+
+- Les sous-titres des blocs numérotés sont maintenant des H3 sous le H2 principal. La clé JSON `h2` reste inchangée pour les anciens contenus.
+- Les notes et le contexte du pilier conservent leurs lieux et leurs URL lors de la création des enfants. Aucun remplacement automatique du lieu d'une preuve ou d'une réalisation.
+- Les consignes de génération distinguent implantation, zone couverte et contexte géographique. Les faits insuffisants doivent être signalés, jamais complétés par des monuments inventés.
+- Un plan de thèmes de FAQ stable par seed aide à varier les besoins traités, y compris lors des générations parallèles. Ce plan ne remplace pas la vérification des réponses.
+- La génération reçoit un inventaire des catégories actives et cliquables, avec de courts extraits des articles. Les liens de menu reconnus vers des modules publics actifs sont également proposés. Aucun crawl HTTP supplémentaire.
+- Seules les destinations internes reconnues sont retenues dans les nouveaux liens contextuels. Les URL externes, privées, inconnues, à paramètres ou ancres de fragment sont exclues de cet inventaire. Un lien personnalisé non reconnu reste à vérifier manuellement ; la navigation générale du CMS n'est pas modifiée.
+- Les liens peuvent être affichés sous la section pertinente. Le format historique `label`/`url` reste accepté ; `section` (1 à N, ou 0 pour un lien général) et `context` sont optionnels. Le HTML reste échappé.
+- Les ancres de « Continuer votre recherche » varient de façon stable selon la page source et la destination, sans changer les URL ni limiter le nombre de pages associées.
+- Des alertes de reprise textuelle et de questions identiques sont calculées lors de la génération ou du recalcul qualité. Elles ne changent pas le score et ne dépublient rien automatiquement.
+
+### Mise à jour et limites
+
+Aucune nouvelle migration ni compilation front n'est nécessaire pour passer de 1.0.19 à 1.1.0. Déployer tous les fichiers PSEO concernés, puis vider le cache Symfony. Les nouveaux services sont autowirés comme les autres services du module.
+
+Les URL et textes stockés ne sont pas réécrits à l'installation. Les H3 et ancres s'appliquent immédiatement au template standard ; les FAQ et nouveaux liens demandent une génération ou une optimisation choisie, puis une prévisualisation. Une optimisation conserve l'URL existante et repasse la page en relecture/brouillon selon le fonctionnement habituel.
+
+Les prompts enregistrés en base ne sont pas écrasés : les règles de sécurité et de compatibilité leur sont ajoutées à l'exécution, ainsi que le contexte s'il manque. Les faits restent sélectionnés par langue, pas par un champ ville : préciser le périmètre dans le nom et le contenu de chaque fait. La pertinence géographique et la véracité demandent toujours une relecture humaine.
+
+La comparaison lexicale examine jusqu'à 12 autres pages, en donnant priorité au même service. Elle compare les groupes de cinq mots du corps du texte après neutralisation des villes (au moins 80 mots, alerte à partir de 0,80 de Jaccard), ainsi que les questions de FAQ. Ce seuil est un repère technique, pas un seuil Google. Ce n'est ni un contrôle exhaustif de tout le site ni une mesure sémantique ; la limite de comparaison ne limite pas le maillage affiché.
+
+Pour les générations en ligne de commande, `SEO_SITE_URL` peut préciser le domaine et le sous-répertoire lorsque le routeur utilise encore `localhost`. L'inventaire ne fait aucun appel réseau ; les vérifications externes des faits restent à réaliser en amont.
 
 Ce module permet de generer des pages SEO a partir de donnees metier verifiees, avec Claude, puis de les publier seulement apres controle qualite et validation admin.
 
@@ -377,10 +401,9 @@ Le module ajoute au prompt un bloc `anti_duplication`.
 
 Objectif:
 
-- viser une similarite editoriale inferieure a 55 %;
-- ne pas depasser 65 % avec une autre page;
+- apporter une valeur propre a chaque page, sans pretendre mesurer une similarite semantique;
 - varier les introductions;
-- varier les H2;
+- varier les sous-titres de section (H3 dans le template, cle JSON `h2`);
 - varier les exemples;
 - varier les FAQ;
 - varier l'angle local;
@@ -405,7 +428,7 @@ URL page prestation liee: /remplacement-chaudiere
 Libelle lien prestation: Remplacement de chaudiere
 ```
 
-Ce lien est donne a Claude et ajoute automatiquement dans les liens internes de la page generee. Cela relie les pages locales a la page pilier de la prestation.
+Lorsque sa destination est reconnue dans l'inventaire public, ce lien est donne a Claude et ajoute aux liens internes de la page generee. Le lien prestation existant dans le seed reste utilise par les CTA du template. Les liens contextuels supplementaires sont filtres par l'inventaire et affiches dans leur section.
 
 Si `CLAUDE_API_KEY` est absent, le module cree un brouillon local non indexable. Cela permet de tester le workflow sans appel API.
 

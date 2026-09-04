@@ -96,6 +96,15 @@ class SeoPageRepository extends ServiceEntityRepository
             ->addOrderBy('p.updated_at', 'DESC')
             ->setMaxResults($limit);
 
+        if ($seed->getService()) {
+            $queryBuilder
+                ->addSelect('CASE WHEN s.service = :comparisonService THEN 0 ELSE 1 END AS HIDDEN servicePriority')
+                ->setParameter('comparisonService', $seed->getService())
+                ->orderBy('servicePriority', 'ASC')
+                ->addOrderBy('p.updated_at', 'DESC')
+                ->addOrderBy('p.id', 'DESC');
+        }
+
         if ($seed->getId()) {
             $queryBuilder
                 ->andWhere('s.id IS NULL OR s.id != :seedId')

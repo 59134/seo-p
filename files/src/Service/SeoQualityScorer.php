@@ -7,6 +7,10 @@ use App\Entity\SeoSeed;
 
 class SeoQualityScorer
 {
+    public function __construct(private SeoEditorialAdvisor $editorialAdvisor)
+    {
+    }
+
     public function score(array $payload, SeoSeed $seed): array
     {
         $flags = $payload['quality_flags'] ?? [];
@@ -43,6 +47,7 @@ class SeoQualityScorer
         }
 
         $score = max(0, $score - $this->keywordUsagePenalty($payload, $seed, $flags));
+        $flags = array_merge($flags, $this->editorialAdvisor->warnings($payload, $seed));
 
         $indexable = $score >= 75
             && count($missing) <= 2

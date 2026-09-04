@@ -164,14 +164,11 @@ class SeoSeedExpander
         $intent = $intent ?: sprintf('Repondre a la recherche "%s" avec une page specifique, utile et locale.', $mainKeyword);
 
         if ($sourceSeed->getIntent()) {
-            $intent .= "\n\nContexte source adapte a la ville cible: " . $this->replaceSourceCity(
-                $sourceSeed->getIntent(),
-                $sourceSeed,
-                $city
-            );
+            $intent .= "\n\nContexte du seed source (ne pas transposer ses faits locaux): " . $sourceSeed->getIntent();
         }
 
-        $sourceNotes = $this->replaceSourceCity((string) $sourceSeed->getNotes(), $sourceSeed, $city);
+        // Preserve locations, references and URLs: they are not interchangeable facts.
+        $sourceNotes = (string) $sourceSeed->getNotes();
         $notes = trim(sprintf(
             "%s\n\nSeed cree automatiquement depuis le seed source%s \"%s\".",
             $sourceNotes,

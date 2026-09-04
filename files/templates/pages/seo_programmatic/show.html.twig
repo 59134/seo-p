@@ -268,6 +268,16 @@ endblock %}
         line-height: 1.5;
     }
 
+    .seo-programmatic-page .seo-contextual-link a {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        overflow-wrap: anywhere;
+    }
+
+    .seo-programmatic-page .seo-link-list a {
+        overflow-wrap: anywhere;
+    }
+
     .seo-page-visual-link {
         position: relative;
         isolation: isolate;
@@ -520,7 +530,7 @@ endblock %}
         font-size: .95rem;
     }
 
-    .seo-content-card h2 {
+    .seo-content-card h3 {
         margin: 0 0 12px;
         font-family: "titre", Arial, sans-serif;
         font-size: clamp(1.25rem, 1.7vw, 1.5rem);
@@ -949,6 +959,7 @@ endblock %}
 {% endblock %}
 
 {% block body %}
+    {% set contextual_links = seo_internal_links(page) %}
 {% set city = page.seed and page.seed.city ? page.seed.city : coordonnees().ville %}
 {% set department = page.seed and page.seed.department ? page.seed.department : null %}
 {% set service = page.seed and page.seed.service ? page.seed.service : page.mainKeyword %}
@@ -963,7 +974,7 @@ endblock %}
 {% if generated_cta and generated_cta|length <= 38 %} {% set contact_label=generated_cta %} {% else %} {% set
     contact_label='Faire une demande' %} {% endif %} {% set template_copy=page.templateCopy|default({}) %} {% set
     default_hero_points=[ 'Réponse claire avant engagement' , 'Accompagnement adapté à votre besoin' , city
-    ? 'Présence locale à ' ~ city : 'Présence locale' ] %} {% set hero_points=template_copy.hero_points|default([]) %}
+    ? 'Votre projet à ' ~ city : 'Votre projet' ] %} {% set hero_points=template_copy.hero_points|default([]) %}
     {% if hero_points is empty %} {% set hero_points=default_hero_points %} {% endif %} {% set
     situation_title=template_copy.situation_title|default('Un point de départ clair pour votre recherche.') %} {% set
     situation_text=template_copy.situation_text|default("Cette page rassemble les informations utiles pour comprendre
@@ -1150,8 +1161,14 @@ endblock %}
                 {% for section in page.content %}
                 <article class="seo-content-card" id="section-{{ loop.index }}">
                     <span class="seo-content-number">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</span>
-                            <h2>{{ section.h2|default('') }}</h2>
-                            <p>{{ section.body|default('')|striptags|nl2br }}</p>
+                    <h3>{{ section.h2|default('') }}</h3>
+                    <p>{{ section.body|default('')|striptags|nl2br }}</p>
+                    {% set section_number = loop.index %}
+                    {% for link in contextual_links %}
+                        {% if link.section|default(0) == section_number %}
+                        <p class="seo-contextual-link">{{ link.context|default('') }} <a href="{{ link.url }}">{{ link.label }}</a></p>
+                        {% endif %}
+                    {% endfor %}
                 </article>
                 {% endfor %}
                 {% if page.imageUrl %}
@@ -1173,14 +1190,26 @@ endblock %}
                 {% endif %}
             </div>
 
+            {% set general_links = contextual_links|filter(link => link.section|default(0) == 0) %}
+            {% if general_links is not empty %}
+            <nav class="seo-links-band" aria-label="Autres pages utiles du site">
+                <h2>À découvrir sur le site</h2>
+                <ul class="seo-link-list">
+                    {% for link in general_links %}
+                    <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+
             {% if relatedPages|default([]) is not empty %}
             <nav class="seo-links-band" aria-label="Pages SEO liées">
                 <h2>Continuer votre recherche</h2>
                 <ul class="seo-link-list">
                     {% for relatedPage in relatedPages %}
-                    {% set related_label = relatedPage.cleanMainKeyword ?: relatedPage.cleanH1 %}
+                    {% set related_label = seo_related_anchor(page, relatedPage) %}
                     <li>
-                        <a href="{% if preview|default(false) %}{{ path('admin_seo_page_preview', {'id': relatedPage.id}) }}{% else %}{{ path('seo_programmatic_page', {'slug': relatedPage.slug}) }}{% endif %}"
+                        <a href="{% if preview|default(false) %}{{ path('admin_seo_page_preview', {'id': relatedPage.id}) }}{% else %}{{ path('seo_programmatic_page', {'slug': relatedPage.slug, '_locale': relatedPage.locale}) }}{% endif %}"
                             title="{{ related_label }}">
                             {{ related_label }}
                         </a>
