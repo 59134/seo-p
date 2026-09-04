@@ -4,6 +4,12 @@ Ce package installe le module SEO programmatique dans un projet Symfony/Webtime 
 
 Il est prevu pour etre installe temporairement dans le projet cible, lancer l'installation du module, puis etre retire du `package.json` apres verification.
 
+## Version 1.1.1
+
+- Corrige l'erreur 500 de la publication en masse : accès direct et retours après POST passent par le contexte EasyAdmin.
+- Conserve la route `/admin/seo-page/bulk-publish`, les droits, le CSRF et les contrôles qualité. Affiche les confirmations et la liste vide après publication du dernier lot.
+- Depuis 1.1.0 : déployer le contrôleur et le template ensemble, puis `php bin/console cache:clear`. Aucune migration ni compilation front.
+
 ## Version 1.1.0
 
 - H3 compatibles avec les contenus historiques, notes locales non transposées et règles ajoutées aux prompts personnalisés sans les écraser.
@@ -27,7 +33,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.1.0.tgz
+npm install ./seo-prog-1.1.1.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -47,13 +53,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.1.0
+npm install git+https://github.com/59134/seo-p.git#v1.1.1
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.1.0
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.1.1
 ```
 
 Puis lancer l'installation :

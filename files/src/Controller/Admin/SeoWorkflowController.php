@@ -12,6 +12,7 @@ use App\Service\SeoPageImageResolver;
 use App\Service\SeoQualityScorer;
 use App\Service\SeoSeedExpander;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -406,13 +407,24 @@ class SeoWorkflowController extends AbstractController
     public function bulkPublish(Request $request): Response
     {
         $this->assertPageEditAccess();
+        $bulkPublishUrl = $this->adminUrlGenerator
+            ->unsetAll()
+            ->setDashboard(DashboardController::class)
+            ->setRoute('admin_seo_page_bulk_publish')
+            ->generateUrl();
+
+        // EasyAdmin templates require a dashboard context, absent on a direct route.
+        if (!$request->isMethod('POST') && null === $request->attributes->get(EA::CONTEXT_REQUEST_ATTRIBUTE)) {
+            return $this->redirect($bulkPublishUrl);
+        }
+
         $repository = $this->entityManager->getRepository(SeoPage::class);
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('seo_page_bulk_publish', $request->request->get('_token'))) {
                 $this->addFlash('danger', 'Jeton de sécurité invalide. Recharge la page.');
 
-                return $this->redirectToRoute('admin_seo_page_bulk_publish');
+                return $this->redirect($bulkPublishUrl, Response::HTTP_SEE_OTHER);
             }
 
             $formData = $request->request->all();
@@ -424,7 +436,7 @@ class SeoWorkflowController extends AbstractController
             if (!$selectedIds) {
                 $this->addFlash('warning', 'Sélectionne au moins une page éligible.');
 
-                return $this->redirectToRoute('admin_seo_page_bulk_publish');
+                return $this->redirect($bulkPublishUrl, Response::HTTP_SEE_OTHER);
             }
 
             $published = 0;
@@ -487,7 +499,7 @@ class SeoWorkflowController extends AbstractController
                 ));
             }
 
-            return $this->redirectToRoute('admin_seo_page_bulk_publish');
+            return $this->redirect($bulkPublishUrl, Response::HTTP_SEE_OTHER);
         }
 
         $pages = $repository->findBy([
@@ -511,6 +523,8 @@ class SeoWorkflowController extends AbstractController
         }
 
         $pageListUrl = $this->adminUrlGenerator
+            ->unsetAll()
+            ->setDashboard(DashboardController::class)
             ->setController(SeoPageCrudController::class)
             ->setAction('index')
             ->generateUrl();
@@ -519,6 +533,7 @@ class SeoWorkflowController extends AbstractController
             'rows' => $rows,
             'eligibleCount' => $eligibleCount,
             'pageListUrl' => $pageListUrl,
+            'bulkPublishUrl' => $bulkPublishUrl,
         ]);
     }
 

@@ -5,6 +5,7 @@
         "phpunit/phpunit": "^9.6",
         "doctrine/orm": "^2.20",
         "doctrine/doctrine-bundle": "^2.13",
+        "easycorp/easyadmin-bundle": "4.7.0",
         "knplabs/doctrine-behaviors": "^2.6",
         "symfony/routing": "6.4.*",
         "symfony/http-client": "6.4.*",

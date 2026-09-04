@@ -1,6 +1,14 @@
 # Module SEO programmatique
 
-**Version du module : 1.1.0**
+**Version du module : 1.1.1**
+
+## Correctif 1.1.1 : publication en masse
+
+La route `/admin/seo-page/bulk-publish` existe toujours. Un accès direct est redirigé vers son URL EasyAdmin pour disposer du contexte nécessaire au template. Après un POST, les retours (succès, sélection vide ou jeton invalide) utilisent aussi cette URL, avec une redirection 303 vers une lecture GET.
+
+La sélection, les permissions, le jeton CSRF, le recalcul du score minimum de 75 et les données critiques bloquantes sont conservés. La confirmation et les pages ignorées sont affichées, même lorsque le dernier lot laisse une liste vide. Aucun appel Claude ni changement des pages déjà publiées n'est requis pour ce correctif.
+
+Depuis 1.1.0, déployer ensemble `src/Controller/Admin/SeoWorkflowController.php` et `templates/admin/seo_bulk_publish.html.twig`, ainsi que les fichiers de documentation/version, puis exécuter `php bin/console cache:clear`. Aucune migration ni compilation front. Ne pas relancer une publication déjà réussie simplement pour corriger l'affichage.
 
 ## Nouveautés 1.1.0
 
