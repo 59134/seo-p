@@ -15,7 +15,10 @@
     </div>
 
     <section class="mb-4" aria-labelledby="seo-release-title">
-        <h2 id="seo-release-title" class="h4">Nouveautés 1.2.0</h2>
+        <h2 id="seo-release-title" class="h4">Correctif 1.2.1</h2>
+        <p>Le score éditorial totalise réellement 100 points. La liste de publication le recalcule à l'affichage, sans modifier les pages enregistrées. Un score élevé ne remplace pas la vérification des faits.</p>
+        <p>Les précisions techniques locales facultatives manquantes apparaissent comme « Éligible, à vérifier ». Service non confirmé, zone non couverte, contenu générique ou absence de matière locale utile restent bloquants. Les anciennes alertes sont reconnues et les prompts personnalisés reçoivent les nouvelles consignes.</p>
+        <h3 class="h4">Nouveautés 1.2.0</h3>
         <p>Le maillage est intégré naturellement dans les paragraphes ou présenté comme un CTA après le texte. Les liens existants deviennent des CTA ; les expressions cliquables dans le texte demandent une génération ou une optimisation suivie d'une relecture.</p>
         <p>Les URL et les contenus enregistrés sont conservés. Si une expression proposée pour un lien est absente, répétée ou déjà liée, le module affiche un CTA. Les nouvelles consignes s'appliquent aussi aux prompts personnalisés.</p>
         <h3 class="h4">Correctif 1.1.1</h3>
@@ -271,9 +274,11 @@ Modele Claude: Auto</code></pre>
                 ameliorations utiles, mais ne bloquent pas automatiquement la publication.
             </p>
             <p>
-                Les manques critiques peuvent bloquer : service non confirme, zone non couverte, faits locaux
-                insuffisants, preuves metier insuffisantes ou generation Claude echouee. Quand le point est corrige dans
-                la page, ou accepte apres relecture humaine, supprimer la ligne puis sauvegarder avant de publier.
+                Les manques critiques peuvent bloquer : service non confirmé, zone non couverte, absence de matière
+                locale utile, preuves métier indispensables insuffisantes ou génération Claude échouée. Les nouvelles
+                alertes portent <code>[bloquant]</code> ou <code>[amelioration]</code>. Une statistique technique par ville
+                n'est pas obligatoire si elle est omise du texte. Corriger ou requalifier une alerte seulement après
+                vérification de sa portée réelle ; les précisions facultatives peuvent rester notées après publication.
             </p>
             <p>
                 Le champ <strong>Canonical forcee</strong> est optionnel. Dans le cas normal, le laisser vide : la page

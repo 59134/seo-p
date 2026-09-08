@@ -4,6 +4,13 @@ Ce package installe le module SEO programmatique dans un projet Symfony/Webtime 
 
 Il est prevu pour etre installe temporairement dans le projet cible, lancer l'installation du module, puis etre retire du `package.json` apres verification.
 
+## Version 1.2.1
+
+- Distingue les vrais blocages des précisions facultatives : statistiques techniques locales manquantes signalées en jaune, service non confirmé, contenu générique ou absence de matière locale utile toujours bloquants.
+- Score éditorial réellement sur 100. Le score affiché en publication en masse est recalculé sans écrire en base ni lancer de comparaisons page par page.
+- Règles communes pour génération, publication individuelle et en masse ; les alertes historiques restent lues et les nouvelles consignes complètent les prompts personnalisés.
+- Aucune migration, régénération automatique ni compilation front. Déployer tous les fichiers concernés, dont le nouveau `SeoPublicationPolicy.php`, puis vider le cache.
+
 ## Version 1.2.0
 
 - Les liens contextuels sont intégrés à une expression du paragraphe ou présentés comme un CTA après le texte. La phrase artificielle suivie d'une ancre isolée disparaît.
@@ -41,7 +48,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.2.0.tgz
+npm install ./seo-prog-1.2.1.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -61,13 +68,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.2.0
+npm install git+https://github.com/59134/seo-p.git#v1.2.1
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.2.0
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.2.1
 ```
 
 Puis lancer l'installation :

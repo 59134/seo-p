@@ -11,10 +11,11 @@ class SeoQualityScorer
     {
     }
 
-    public function score(array $payload, SeoSeed $seed): array
+    public function score(array $payload, SeoSeed $seed, bool $withEditorialChecks = true): array
     {
         $flags = $payload['quality_flags'] ?? [];
         $missing = $payload['missing_data'] ?? [];
+        $issues = SeoPublicationPolicy::classify($missing);
         $score = 0;
 
         $score += $this->hasText($payload['title'] ?? null, 35, 70) ? 10 : 0;
@@ -23,7 +24,7 @@ class SeoQualityScorer
         $score += $this->hasText($payload['intro'] ?? null, 180, 900) ? 10 : 0;
 
         $sections = $payload['sections'] ?? [];
-        $score += is_array($sections) && count($sections) >= 3 ? 15 : 0;
+        $score += is_array($sections) && count($sections) >= 3 ? 10 : 0;
         $score += $this->sectionsLookSubstantial($sections) ? 10 : 0;
 
         $faq = $payload['faq'] ?? [];
@@ -32,14 +33,15 @@ class SeoQualityScorer
         $score += $seed->getCity() || $seed->getDepartment() ? 10 : 0;
         $score += $seed->getDataCompletenessScore() >= 65 ? 10 : 0;
         $score += count($missing) === 0 ? 10 : 0;
-        $score += ($payload['indexation_recommendation'] ?? 'review') === 'index' ? 5 : 0;
 
         if (!$seed->getCity() && !$seed->getDepartment()) {
             $flags[] = 'Contexte local faible: aucune ville ni departement dans le seed.';
         }
 
         if (count($missing) > 0) {
-            $flags[] = 'Donnees manquantes a completer avant publication.';
+            $flags[] = $issues['blocking']
+                ? 'Des donnees critiques empechent la publication.'
+                : 'Des precisions facultatives restent a verifier, sans bloquer la publication.';
         }
 
         if (($payload['indexation_recommendation'] ?? 'review') !== 'index') {
@@ -47,10 +49,12 @@ class SeoQualityScorer
         }
 
         $score = max(0, $score - $this->keywordUsagePenalty($payload, $seed, $flags));
-        $flags = array_merge($flags, $this->editorialAdvisor->warnings($payload, $seed));
+        if ($withEditorialChecks) {
+            $flags = array_merge($flags, $this->editorialAdvisor->warnings($payload, $seed));
+        }
 
         $indexable = $score >= 75
-            && count($missing) <= 2
+            && $issues['blocking'] === []
             && ($payload['indexation_recommendation'] ?? 'review') === 'index';
 
         return [
@@ -66,7 +70,7 @@ class SeoQualityScorer
      *
      * @return array{score: int, flags: array, missing_data: array, indexable: bool}
      */
-    public function scorePage(SeoPage $page): array
+    public function scorePage(SeoPage $page, bool $withEditorialChecks = true): array
     {
         $seed = $page->getSeed();
 
@@ -89,7 +93,7 @@ class SeoQualityScorer
             'quality_flags' => [],
             'missing_data' => $page->getMissingData(),
             'indexation_recommendation' => 'index',
-        ], $seed);
+        ], $seed, $withEditorialChecks);
     }
 
     private function hasText(?string $value, int $min, int $max): bool
@@ -106,6 +110,10 @@ class SeoQualityScorer
 
     private function sectionsLookSubstantial(array $sections): bool
     {
+        if ($sections === []) {
+            return false;
+        }
+
         foreach ($sections as $section) {
             if (!is_array($section)) {
                 return false;

@@ -14,9 +14,9 @@ const { chromium } = require('playwright');
       page.on('pageerror', error => errors.push(error.message));
       await page.route('**/*', async route => {
         const url = new URL(route.request().url());
-        if (url.pathname === '/bulk' || url.pathname === '/empty') {
-          return route.fulfill({ contentType: 'text/html', path: path.join(__dirname,
-            url.pathname === '/bulk' ? 'rendered-bulk.html' : 'rendered-bulk-empty.html') });
+        const fixtures = { '/bulk': 'rendered-bulk.html', '/empty': 'rendered-bulk-empty.html', '/advisories': 'rendered-bulk-advisories.html' };
+        if (fixtures[url.pathname]) {
+          return route.fulfill({ contentType: 'text/html', path: path.join(__dirname, fixtures[url.pathname]) });
         }
         const key = url.pathname.replace(/^\/assets\//, '');
         const relative = (manifest[key] || key).replace(/^\/?bundles\/easyadmin\//, '');
@@ -46,6 +46,14 @@ const { chromium } = require('playwright');
       await page.goto('https://example.test/empty');
       assert.equal(await page.locator('#seo-bulk-publish-form').count(), 0);
       assert.equal(await page.locator('[role="alert"]').count(), 1);
+      await page.goto('https://example.test/advisories');
+      assert.equal(await page.locator('.seo-page-checkbox:disabled').count(), 0);
+      assert.equal(await page.locator('.badge.text-bg-warning').innerText(), 'Éligible, à vérifier');
+      assert.equal(await page.locator('table').innerText().then(text => text.includes('90/100')), true);
+      await page.locator('details summary').click();
+      assert.equal(await page.locator('details[open] li').isVisible(), true);
+      assert.match(await page.locator('details li').innerText(), /parc de chauffage/);
+      await page.screenshot({ path: path.join(__dirname, `rendered-bulk-advisories-${viewport.width}.png`), fullPage: true });
       assert.deepEqual(errors, []);
       await page.close();
       console.log(`Bulk publish browser OK: ${viewport.width}px, selection, confirmation and empty state`);

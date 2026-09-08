@@ -208,6 +208,9 @@ final class PseoRegressionTest extends TestCase
         self::assertStringContainsString('placement="inline"', $prompt['system']);
         self::assertStringContainsString('cta_label', $prompt['system']);
         self::assertStringContainsString('Laisse context vide', $prompt['system']);
+        self::assertStringContainsString('[amelioration]', $prompt['system']);
+        self::assertStringContainsString('[bloquant]', $prompt['system']);
+        self::assertStringContainsString('n exige pas une etude technique', $prompt['system']);
         self::assertSame(['inline', 'cta'], $builder->outputTool()['input_schema']['properties']['internal_links']['items']['properties']['placement']['enum']);
         self::assertStringContainsString('H3', $builder->outputTool()['input_schema']['properties']['sections']['items']['properties']['h2']['description']);
     }
@@ -394,6 +397,7 @@ final class PseoRegressionTest extends TestCase
         $events->addEventSubscriber(new Knp\DoctrineBehaviors\EventSubscriber\TranslatableEventSubscriber($localeProvider, 'LAZY', 'LAZY'));
         $em = Doctrine\ORM\EntityManager::create(['driver' => 'pdo_sqlite', 'memory' => true], $config, $events);
         $queries = [
+            'SELECT p, s FROM App\\Entity\\SeoPage p LEFT JOIN p.seed s WHERE p.status IN (:statuses) ORDER BY p.updated_at DESC, p.id DESC',
             'SELECT c, t FROM App\\Entity\\Categorie c LEFT JOIN c.translations t WHERE c.valid = :valid AND c.clickable = :valid ORDER BY c.position ASC',
             'SELECT IDENTITY(a.categorie) AS categoryId, SUBSTRING(COALESCE(t.content, a.content), 1, 1200) AS excerpt FROM App\\Entity\\Article a LEFT JOIN a.translations t WITH t.locale = :locale WHERE a.valid = :valid AND a.categorie IN (:categories) ORDER BY a.position ASC',
             'SELECT p, s, CASE WHEN s.service = :comparisonService THEN 0 ELSE 1 END AS HIDDEN servicePriority FROM App\\Entity\\SeoPage p LEFT JOIN p.seed s WHERE p.locale = :locale ORDER BY servicePriority ASC, p.updated_at DESC, p.id DESC',

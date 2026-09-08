@@ -1,5 +1,7 @@
 # Tests de non-regression PSEO
 
+Publication 1.2.1 : anciennes alertes placo/toitures/chauffage et Raismes, priorités des blocages, préfixes structurés, barème sur 100, recalcul sans écriture, chargement groupé des seeds et cohérence entre publication individuelle/en masse. Le contrôle navigateur couvre aussi le détail dépliable des précisions facultatives.
+
 Depuis le depot du module, avec PHP 8.1+ (mbstring et pdo_sqlite) et Composer :
 
 ```bash

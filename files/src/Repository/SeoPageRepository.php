@@ -114,6 +114,18 @@ class SeoPageRepository extends ServiceEntityRepository
         return $queryBuilder->getQuery()->getResult();
     }
 
+    /** @return SeoPage[] */
+    public function findForBulkPublication(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.seed', 's')->addSelect('s')
+            ->andWhere('p.status IN (:statuses)')
+            ->setParameter('statuses', [SeoPage::STATUS_DRAFT, SeoPage::STATUS_REVIEW])
+            ->orderBy('p.updated_at', 'DESC')
+            ->addOrderBy('p.id', 'DESC')
+            ->getQuery()->getResult();
+    }
+
     /**
      * @return SeoPage[]
      */

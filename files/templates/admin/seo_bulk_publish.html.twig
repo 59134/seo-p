@@ -49,7 +49,7 @@
                                 <th style="width: 48px"></th>
                                 <th>Page</th>
                                 <th>Statut</th>
-                                <th>Score</th>
+                                <th>Score éditorial</th>
                                 <th>Contrôle de publication</th>
                                 <th style="width: 70px"></th>
                             </tr>
@@ -73,18 +73,26 @@
                                     </td>
                                     <td>{{ row.page.status == 'review' ? 'À relire' : 'Brouillon' }}</td>
                                     <td>
-                                        <span class="badge {{ row.page.qualityScore >= 75 ? 'text-bg-success' : 'text-bg-warning' }}">
-                                            {{ row.page.qualityScore }}/100
+                                        <span class="badge {{ row.score >= 75 ? 'text-bg-success' : 'text-bg-warning' }}" title="Score de structure recalculé. Les blocages et précisions à vérifier sont indiqués séparément.">
+                                            {{ row.score }}/100
                                         </span>
                                     </td>
                                     <td>
                                         {% if row.eligible %}
-                                            <span class="badge text-bg-success">Éligible</span>
+                                            <span class="badge {{ row.advisories is empty ? 'text-bg-success' : 'text-bg-warning' }}">{{ row.advisories is empty ? 'Éligible' : 'Éligible, à vérifier' }}</span>
                                         {% else %}
                                             <span class="badge text-bg-danger mb-1">Bloquée</span>
                                             {% for blocker in row.blockers %}
                                                 <small class="d-block text-danger">{{ blocker }}</small>
                                             {% endfor %}
+                                        {% endif %}
+                                        {% if row.advisories is not empty %}
+                                            <details class="mt-1 text-muted">
+                                                <summary>Précisions facultatives ({{ row.advisories|length }})</summary>
+                                                <ul class="mb-0">
+                                                    {% for advisory in row.advisories %}<li>{{ advisory }}</li>{% endfor %}
+                                                </ul>
+                                            </details>
                                         {% endif %}
                                     </td>
                                     <td>

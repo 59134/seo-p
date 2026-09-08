@@ -76,7 +76,7 @@ class SeoPageCrudController extends AbstractCrudController
             TextField::new('title', 'Title SEO')->setColumns(6),
             TextField::new('metaDescription', 'Meta description')->setColumns(6),
             BooleanField::new('indexable', 'Indexable')->hideOnForm()->setColumns(2),
-            IntegerField::new('qualityScore', 'Score qualité')->hideOnForm()->setColumns(4),
+            IntegerField::new('qualityScore', 'Score éditorial')->hideOnForm()->setColumns(4),
             TextField::new('h1', 'H1')->hideOnIndex()->setColumns(12),
             TextareaField::new('intro', 'Introduction')
                 ->setRequired(false)
@@ -150,7 +150,7 @@ class SeoPageCrudController extends AbstractCrudController
             TextareaField::new('missingDataText', 'Donnees manquantes')
                 ->setRequired(false)
                 ->setColumns(12)
-                ->setHelp('Une ligne par information manquante. Telephone, adresse, delai, forfait, aides ou prix sont des ameliorations non bloquantes. Les lignes critiques comme service non confirme, zone non couverte ou generation Claude echouee bloquent la publication.'),
+                ->setHelp('Une ligne par information. [amelioration] : precision facultative omise du texte, comme une statistique technique locale. [bloquant] : service non confirme, zone non couverte, information inventee ou contenu sans valeur propre. Les anciennes alertes restent reconnues. Requalifier une ligne seulement apres verification du contenu.'),
             TextField::new('canonicalUrl', 'Canonical forcee')
                 ->setRequired(false)
                 ->hideOnIndex()

@@ -10,6 +10,7 @@ use App\Repository\SeoSeedRepository;
 use App\Service\ClaudeSeoGenerator;
 use App\Service\SeoPageImageResolver;
 use App\Service\SeoQualityScorer;
+use App\Service\SeoPublicationPolicy;
 use App\Service\SeoSeedExpander;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
@@ -440,6 +441,7 @@ class SeoWorkflowController extends AbstractController
             }
 
             $published = 0;
+            $publishedWithAdvisories = 0;
             $blocked = [];
             $cleanedSlugs = 0;
 
@@ -470,6 +472,7 @@ class SeoWorkflowController extends AbstractController
                     // Cela evite que deux pages du meme lot reservent la meme URL propre.
                     $this->entityManager->flush();
                     $published++;
+                    $publishedWithAdvisories += SeoPublicationPolicy::classify($page->getMissingData())['advisory'] !== [] ? 1 : 0;
                     $cleanedSlugs += $slugWasCleaned ? 1 : 0;
                 } catch (\Throwable $exception) {
                     $blocked[] = sprintf(
@@ -491,6 +494,10 @@ class SeoWorkflowController extends AbstractController
                 ));
             }
 
+            if ($publishedWithAdvisories > 0) {
+                $this->addFlash('warning', sprintf('%d page(s) publiee(s) conservent des precisions facultatives a verifier.', $publishedWithAdvisories));
+            }
+
             if ($blocked) {
                 $this->addFlash('warning', sprintf(
                     '%d page(s) ignorée(s) : %s',
@@ -502,25 +509,25 @@ class SeoWorkflowController extends AbstractController
             return $this->redirect($bulkPublishUrl, Response::HTTP_SEE_OTHER);
         }
 
-        $pages = $repository->findBy([
-            'status' => [SeoPage::STATUS_DRAFT, SeoPage::STATUS_REVIEW],
-        ], [
-            'qualityScore' => 'DESC',
-            'updated_at' => 'DESC',
-        ]);
+        $pages = $repository->findForBulkPublication();
         $rows = [];
         $eligibleCount = 0;
 
         foreach ($pages as $page) {
-            $blockers = $this->bulkPublicationBlockers($page);
+            // Recalculate for display only, without writes or per-page comparison queries.
+            $quality = $this->qualityScorer->scorePage($page, false);
+            $blockers = $this->bulkPublicationBlockers($page, $quality['score']);
             $eligible = count($blockers) === 0;
             $eligibleCount += $eligible ? 1 : 0;
             $rows[] = [
                 'page' => $page,
                 'eligible' => $eligible,
                 'blockers' => $blockers,
+                'score' => $quality['score'],
+                'advisories' => SeoPublicationPolicy::classify($page->getMissingData())['advisory'],
             ];
         }
+        usort($rows, static fn (array $a, array $b): int => $b['score'] <=> $a['score']);
 
         $pageListUrl = $this->adminUrlGenerator
             ->unsetAll()
@@ -645,34 +652,19 @@ class SeoWorkflowController extends AbstractController
 
     private function blockingMissingData(array $missingData): array
     {
-        return array_values(array_filter($missingData, function (string $item): bool {
-            $normalized = $this->normalizeForSearch($item);
-
-            foreach ($this->softMissingDataPatterns() as $softPattern) {
-                if (str_contains($normalized, $softPattern)) {
-                    return false;
-                }
-            }
-
-            foreach ($this->criticalMissingDataPatterns() as $criticalPattern) {
-                if (str_contains($normalized, $criticalPattern)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }));
+        return SeoPublicationPolicy::classify($missingData)['blocking'];
     }
 
     /**
      * @return string[]
      */
-    private function bulkPublicationBlockers(SeoPage $page): array
+    private function bulkPublicationBlockers(SeoPage $page, ?int $currentScore = null): array
     {
         $blockers = [];
 
-        if ($page->getQualityScore() < 75) {
-            $blockers[] = sprintf('score qualité %d/100, minimum 75', $page->getQualityScore());
+        $currentScore ??= $page->getQualityScore();
+        if ($currentScore < 75) {
+            $blockers[] = sprintf('score qualité %d/100, minimum 75', $currentScore);
         }
 
         $blockingMissingData = $this->blockingMissingData($page->getMissingData());
@@ -682,60 +674,6 @@ class SeoWorkflowController extends AbstractController
         }
 
         return $blockers;
-    }
-
-    /**
-     * Donnees vraiment bloquantes pour l'indexation: si elles manquent,
-     * la page risque d'etre fausse, generique ou issue d'une generation echouee.
-     */
-    private function criticalMissingDataPatterns(): array
-    {
-        return [
-            'generation_claude',
-            'erreur claude',
-            'fait local',
-            'faits locaux',
-            'preuve metier',
-            'preuves metier',
-            'donnees metier insuffisantes',
-            'service non',
-            'prestation non',
-            'activite non',
-            'zone non',
-            'ville non couverte',
-            'secteur non couvert',
-            'couverture non',
-            'entreprise inconnue',
-            'nom entreprise',
-            'nom de l entreprise',
-        ];
-    }
-
-    /**
-     * Donnees utiles mais non obligatoires: Claude les signale pour enrichir
-     * la page, mais elles ne doivent pas bloquer une publication valide.
-     */
-    private function softMissingDataPatterns(): array
-    {
-        return [
-            'canonical',
-            'canonique',
-            'telephone',
-            'numero de telephone',
-            'adresse',
-            'rue',
-            'code postal',
-            'delai',
-            'forfait',
-            'aide',
-            'eligibilite',
-            'condition d eligibilite',
-            'prix',
-            'tarif',
-            'marque',
-            'certification',
-            'garantie',
-        ];
     }
 
     private function assertSeedGenerationAccess(): void
@@ -772,20 +710,6 @@ class SeoWorkflowController extends AbstractController
         $page
             ->setQualityScore($result['score'])
             ->setQualityFlags($result['flags']);
-    }
-
-    private function normalizeForSearch(string $value): string
-    {
-        $value = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $value = strtolower(trim(preg_replace('/\s+/', ' ', $value) ?: ''));
-
-        if (!function_exists('iconv')) {
-            return $value;
-        }
-
-        $asciiValue = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
-
-        return is_string($asciiValue) && $asciiValue !== '' ? $asciiValue : $value;
     }
 
     private function shortMissingDataList(array $missingData): string

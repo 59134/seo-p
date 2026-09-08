@@ -70,6 +70,7 @@ final class PseoBulkPublishTest extends TestCase
     private int $flushes = 0;
     private bool $allowed = true;
     private bool $moduleEnabled = true;
+    private array $recalculatedScores = [];
 
     protected function setUp(): void
     {
@@ -84,6 +85,7 @@ final class PseoBulkPublishTest extends TestCase
             '_controller' => SeoWorkflowController::class . '::bulkPublish',
         ], [], [], '', [], $route->getMethods()));
         $routes->add('admin_seo_page_preview', new Route('/admin/seo-page/{id}/preview'));
+        $routes->add('admin_seo_page_publish', new Route('/admin/seo-page/{id}/publish', ['_controller' => SeoWorkflowController::class . '::publish'], [], [], '', [], ['POST']));
         $generator = new UrlGenerator($routes, $context);
         $matcher = new UrlMatcher($routes, $context);
         $provider = new AdminContextProvider($stack);
@@ -102,20 +104,22 @@ final class PseoBulkPublishTest extends TestCase
                     : in_array($page->getStatus(), $criteria['status'], true);
             }));
         });
+        $repository->method('findForBulkPublication')->willReturnCallback(fn (): array => array_values(array_filter($this->pages,
+            static fn (SeoPage $page): bool => in_array($page->getStatus(), [SeoPage::STATUS_DRAFT, SeoPage::STATUS_REVIEW], true))));
         $modules = $this->createMock(ModuleRepository::class);
         $modules->method('findOneBy')->willReturnCallback(fn () => $this->moduleEnabled ? new Module() : null);
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->with(SeoPage::class)->willReturn($repository);
         $em->method('flush')->willReturnCallback(function (): void { ++$this->flushes; });
         $scorer = $this->createMock(SeoQualityScorer::class);
-        $scorer->method('scorePage')->willReturnCallback(static fn (SeoPage $page): array => [
-            'score' => $page->getQualityScore(), 'flags' => [],
+        $scorer->method('scorePage')->willReturnCallback(fn (SeoPage $page): array => [
+            'score' => $this->recalculatedScores[$page->getId()] ?? $page->getQualityScore(), 'flags' => [],
         ]);
         $authorization = $this->createMock(AuthorizationCheckerInterface::class);
         $authorization->method('isGranted')->with('m_edit', SeoPage::class)->willReturnCallback(fn () => $this->allowed);
         $csrf = $this->createMock(CsrfTokenManagerInterface::class);
         $csrf->method('isTokenValid')->willReturnCallback(static fn (CsrfToken $token): bool =>
-            $token->getId() === 'seo_page_bulk_publish' && $token->getValue() === 'test-token'
+            in_array($token->getId(), ['seo_page_bulk_publish', 'seo_page_publish'], true) && $token->getValue() === 'test-token'
         );
         $container = new Container();
         $container->set('router', $generator);
@@ -164,9 +168,10 @@ final class PseoBulkPublishTest extends TestCase
         $this->kernel = new HttpKernel($dispatcher, $resolver, $stack, new ArgumentResolver());
     }
 
-    private function request(string $url, string $method = 'GET', array $data = []): Response
+    private function request(string $url, string $method = 'GET', array $data = [], array $attributes = []): Response
     {
         $request = Request::create($url, $method, $data);
+        $request->attributes->add($attributes);
         $request->setSession($this->session);
         $this->twig->resetGlobals();
         return $this->kernel->handle($request, HttpKernel::MAIN_REQUEST, false);
@@ -299,6 +304,60 @@ final class PseoBulkPublishTest extends TestCase
         $this->allowed = false;
         $this->expectException(AccessDeniedException::class);
         $this->request(self::DIRECT_URL);
+    }
+
+    public function testOptionalLocalDetailsStayVisibleAndDoNotPreventBulkPublication(): void
+    {
+        $page = $this->page(1, 100)->setMissingData(["Aucun fait local documenté sur le parc de chauffage à Valenciennes"]);
+        $this->recalculatedScores[1] = 90;
+        $url = $this->assertAdminRedirect($this->request(self::DIRECT_URL), 302);
+        $html = $this->request($url)->getContent();
+        self::assertStringContainsString('90/100', $html);
+        self::assertStringContainsString('Éligible, à vérifier', $html);
+        self::assertStringContainsString('parc de chauffage', $html);
+        self::assertSame(100, $page->getQualityScore());
+        self::assertSame(0, $this->flushes);
+        file_put_contents(__DIR__ . '/rendered-bulk-advisories.html', $html);
+        $this->request(self::DIRECT_URL, 'POST', ['_token' => 'test-token', 'page_ids' => ['1']]);
+        self::assertSame(SeoPage::STATUS_PUBLISHED, $page->getStatus());
+        self::assertSame(90, $page->getQualityScore());
+        self::assertNotEmpty($page->getMissingData());
+        self::assertNotEmpty($this->session->getFlashBag()->peek('warning'));
+    }
+
+    public function testCriticalReasonIsNotCancelledByAnOptionalWordInTheSameLine(): void
+    {
+        $page = $this->page(1, 100)->setMissingData(['Service non confirmé, tarif non communiqué']);
+        $this->request(self::DIRECT_URL, 'POST', ['_token' => 'test-token', 'page_ids' => ['1']]);
+        self::assertSame(SeoPage::STATUS_DRAFT, $page->getStatus());
+        self::assertFalse($page->isIndexable());
+    }
+
+    /** @dataProvider individualIssues */
+    public function testIndividualPublicationUsesTheSameRules(string $issue, bool $publish): void
+    {
+        $page = $this->page(1, 90)->setMissingData([$issue]);
+        $response = $this->request('https://example.test/admin/seo-page/1/publish', 'POST', ['_token' => 'test-token'], ['page' => $page]);
+        self::assertTrue($response->isRedirect());
+        self::assertSame($publish ? SeoPage::STATUS_PUBLISHED : SeoPage::STATUS_DRAFT, $page->getStatus());
+        self::assertSame($publish, $page->isIndexable());
+    }
+
+    public static function individualIssues(): array
+    {
+        return [["Faits locaux insuffisants sur l'état des toitures", true], ['Faits locaux insuffisants', false], ['[amelioration] Information inventée dans le texte', false]];
+    }
+
+    public function testListUsesCurrentScoreWithoutChangingStoredPage(): void
+    {
+        $page = $this->page(1, 100);
+        $this->recalculatedScores[1] = 70;
+        $url = $this->assertAdminRedirect($this->request(self::DIRECT_URL), 302);
+        $html = $this->request($url)->getContent();
+        self::assertStringContainsString('70/100', $html);
+        self::assertStringContainsString('Bloquée', $html);
+        self::assertSame(100, $page->getQualityScore());
+        self::assertSame(0, $this->flushes);
     }
 
     public function testInactiveModuleStillReturnsNotFound(): void
