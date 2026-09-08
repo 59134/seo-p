@@ -1,6 +1,32 @@
 # Module SEO programmatique
 
-**Version du module : 1.1.1**
+**Version du module : 1.2.0**
+
+## Nouveautés 1.2.0 : des liens naturels
+
+Les liens d'une section peuvent apparaître directement sur une expression de son paragraphe ou sous la forme d'un CTA après le texte. Le champ historique `context` reste conservé en base mais n'est plus affiché comme une phrase incomplète suivie d'un lien.
+
+- Pour une page déjà générée : chaque lien de section sans nouveau mode devient un CTA « Découvrir : [libellé] », dès la mise à jour. Le corps du texte, les URL, le statut et les données stockées sont conservés.
+- Pour une nouvelle génération ou une optimisation : Claude choisit `placement: "inline"` si une expression naturelle du paragraphe décrit la destination, ou `placement: "cta"` si un renvoi séparé est préférable. Il ne doit pas forcer un lien par bloc ni ajouter systématiquement une phrase de transition en fin de texte.
+- En mode inline, `anchor` doit reproduire exactement une expression unique du `body` de la section, casse et accents compris. Seule cette expression devient cliquable. Si elle manque, se répète ou chevauche un autre lien, le module utilise un CTA avec `cta_label`, ou « Découvrir : [libellé] » à défaut.
+- `cta_label` est un libellé autonome, par exemple « Découvrir les travaux d'isolation ». Il ne doit ajouter aucune promesse non vérifiée.
+- `section` reste numéroté de 1 à N ; 0 désigne un lien général. `label` et `url` restent obligatoires. Aucun HTML ni Markdown de lien n'est nécessaire dans le texte.
+
+Exemple : pour le paragraphe « Associer isolation thermique et placo permet de coordonner les travaux. », si `/isolation` figure réellement dans l'inventaire validé du site :
+
+```json
+{"label":"Isolation thermique","url":"/isolation","section":1,"placement":"inline","anchor":"isolation thermique","cta_label":"Découvrir les travaux d'isolation"}
+```
+
+Le rendu ne fait aucun appel Claude, crawl ou accès aux données supplémentaire par rapport au maillage précédent. Les destinations continuent d'être validées à la génération et au rendu ; les liens privés, externes, inconnus ou vers la page elle-même restent exclus. Les prompts personnalisés reçoivent ces consignes sans être écrasés.
+
+### Déploiement depuis 1.1.1
+
+Déployer ensemble `src/Service/SeoSiteLinkProvider.php`, `src/Service/SeoPromptBuilder.php`, `src/Twig/SeoProgrammaticExtension.php`, `templates/pages/seo_programmatic/show.html.twig` et le nouveau partiel `templates/pages/seo_programmatic/_section_content.html.twig`, ainsi que les fichiers de documentation/version. Exécuter ensuite `php bin/console cache:clear`. Aucune migration ni compilation front.
+
+Pour un template personnalisé, conserver son apparence et remplacer l'ancien paragraphe `link.context` + `link.label` par le nouveau partiel, en lui passant `body`, `links` (les liens validés) et `section_number`. Reporter aussi les styles `.seo-inline-link`, `.seo-section-actions` et `.seo-section-cta`. Un simple changement de prompt ne corrige pas un ancien template.
+
+Les anciens paragraphes qui contiennent déjà une transition artificielle dans `body` ne sont pas réécrits automatiquement : les corriger ou optimiser la page puis prévisualiser. Seules les transitions séparées enregistrées dans `context` cessent d'être affichées immédiatement.
 
 ## Correctif 1.1.1 : publication en masse
 

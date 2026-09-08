@@ -132,7 +132,7 @@ class SeoSiteLinkProvider
         return $path;
     }
 
-    /** Keeps the old label/url format; section and context are optional additions. */
+    /** Keeps legacy links readable while accepting structured inline links and CTAs. */
     public function filterLinks(array $links, array $catalog, int $sectionCount, ?string $selfUrl = null): array
     {
         $result = [];
@@ -153,6 +153,13 @@ class SeoSiteLinkProvider
             if (is_int($section) && $section > 0 && $section <= $sectionCount) {
                 $item['section'] = $section;
                 $item['context'] = mb_substr(SeoSeed::cleanPlainTextLine(is_string($link['context'] ?? null) ? $link['context'] : ''), 0, 240);
+                $item['placement'] = ($link['placement'] ?? null) === 'inline' ? 'inline' : 'cta';
+                foreach (['anchor', 'cta_label'] as $field) {
+                    $value = SeoSeed::cleanPlainTextLine(is_string($link[$field] ?? null) ? $link[$field] : '');
+                    if ($value !== '' && mb_strlen($value) <= 150) {
+                        $item[$field] = $value;
+                    }
+                }
             }
             $result[$url] = $item;
         }

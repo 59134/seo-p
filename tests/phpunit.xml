@@ -3,6 +3,7 @@
     <testsuites>
         <testsuite name="PSEO regression">
             <file>PseoRegressionTest.php</file>
+            <file>PseoNaturalLinksTest.php</file>
             <file>PseoBulkPublishTest.php</file>
         </testsuite>
     </testsuites>

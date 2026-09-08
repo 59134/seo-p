@@ -1,0 +1,12 @@
+{% set content = seo_section_content(body, links, section_number) %}
+<p class="seo-section-body">{% for part in content.parts %}{% if part.url is defined %}<a class="seo-inline-link" href="{{ part.url }}">{{ part.text }}</a>{% else %}{{ part.text|nl2br }}{% endif %}{% endfor %}</p>
+{% if content.ctas is not empty %}
+<div class="seo-section-actions">
+    {% for link in content.ctas %}
+    <a class="seo-section-cta" href="{{ link.url }}">
+        <span>{{ link.cta_label|default('Découvrir : ' ~ link.label) }}</span>
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}

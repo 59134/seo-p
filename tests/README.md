@@ -20,3 +20,5 @@ EasyAdmin est volontairement fixe a 4.7.0 dans ce banc isole pour reproduire la 
 Les fixtures `rendered-bulk.html` et `rendered-bulk-empty.html` permettent le controle des interactions avec `node tests/bulk-browser-smoke.cjs` (Playwright et Edge requis). Aucun serveur ni aucune base client ne sont utilises.
 
 Les fichiers `rendered-public.html` et `rendered-preview.html` sont des fixtures generees, ignorees par Git. Ils ne constituent pas une validation visuelle d'un site client. Les tests ne prouvent pas la veracite d'un texte produit par l'API : une generation reelle en brouillon et une relecture restent necessaires avant publication.
+
+Maillage 1.2.0 : rendu inline au milieu des phrases, accents, ordre et conservation du texte, repli CTA si ancre absente, répétée ou chevauchante, compatibilité des anciens liens et échappement HTML. `node tests/natural-links-browser-smoke.cjs` contrôle les liens et le débordement sur les fixtures publiques/prévisualisation en 1440, 390 et 320 px avec Playwright et Edge.

@@ -4,6 +4,14 @@ Ce package installe le module SEO programmatique dans un projet Symfony/Webtime 
 
 Il est prevu pour etre installe temporairement dans le projet cible, lancer l'installation du module, puis etre retire du `package.json` apres verification.
 
+## Version 1.2.0
+
+- Les liens contextuels sont intégrés à une expression du paragraphe ou présentés comme un CTA après le texte. La phrase artificielle suivie d'une ancre isolée disparaît.
+- Les liens des pages existantes passent en CTA au rendu. Pour intégrer une ancre dans le texte, générer ou optimiser la page puis la relire ; aucune réécriture automatique de la base.
+- Le mode inline exige une expression exacte, unique et sans chevauchement ; sinon le lien devient un CTA. Les URL restent validées et les textes échappés.
+- Les nouvelles consignes complètent aussi les prompts personnalisés. Aucune migration, compilation front ou requête supplémentaire liée à ce rendu.
+- Déployer les services, l'extension Twig, le template et son nouveau partiel `_section_content.html.twig` ensemble, puis vider le cache. Voir la documentation pour une mise à jour d'un template personnalisé.
+
 ## Version 1.1.1
 
 - Corrige l'erreur 500 de la publication en masse : accès direct et retours après POST passent par le contexte EasyAdmin.
@@ -33,7 +41,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.1.1.tgz
+npm install ./seo-prog-1.2.0.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -53,13 +61,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.1.1
+npm install git+https://github.com/59134/seo-p.git#v1.2.0
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.1.1
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.2.0
 ```
 
 Puis lancer l'installation :

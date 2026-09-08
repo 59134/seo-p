@@ -268,10 +268,54 @@ endblock %}
         line-height: 1.5;
     }
 
-    .seo-programmatic-page .seo-contextual-link a {
+    .seo-programmatic-page .seo-inline-link {
+        color: var(--seo-primary);
         text-decoration: underline;
         text-underline-offset: 3px;
         overflow-wrap: anywhere;
+    }
+
+    .seo-section-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .seo-programmatic-page .seo-section-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 100%;
+        padding: 10px 14px;
+        border: 1px solid var(--seo-primary);
+        border-radius: 6px;
+        color: var(--seo-text);
+        background: transparent;
+        text-decoration: none;
+        font-size: .94rem;
+        line-height: 1.4;
+        white-space: normal;
+    }
+
+    .seo-section-cta span {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .seo-section-cta i {
+        flex: 0 0 auto;
+        color: var(--seo-primary);
+    }
+
+    .seo-programmatic-page .seo-section-cta:hover {
+        background: var(--seo-soft);
+    }
+
+    .seo-programmatic-page .seo-section-cta:focus-visible,
+    .seo-programmatic-page .seo-inline-link:focus-visible {
+        outline: 2px solid var(--seo-primary);
+        outline-offset: 4px;
     }
 
     .seo-programmatic-page .seo-link-list a {
@@ -1162,13 +1206,9 @@ endblock %}
                 <article class="seo-content-card" id="section-{{ loop.index }}">
                     <span class="seo-content-number">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</span>
                     <h3>{{ section.h2|default('') }}</h3>
-                    <p>{{ section.body|default('')|striptags|nl2br }}</p>
-                    {% set section_number = loop.index %}
-                    {% for link in contextual_links %}
-                        {% if link.section|default(0) == section_number %}
-                        <p class="seo-contextual-link">{{ link.context|default('') }} <a href="{{ link.url }}">{{ link.label }}</a></p>
-                        {% endif %}
-                    {% endfor %}
+                    {% include 'pages/seo_programmatic/_section_content.html.twig' with {
+                        body: section.body|default(''), links: contextual_links, section_number: loop.index
+                    } only %}
                 </article>
                 {% endfor %}
                 {% if page.imageUrl %}

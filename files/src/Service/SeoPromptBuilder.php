@@ -190,7 +190,10 @@ class SeoPromptBuilder
                                 'label' => ['type' => 'string'],
                                 'url' => ['type' => 'string'],
                                 'section' => ['type' => 'integer', 'minimum' => 0, 'description' => 'Numero de section, de 1 a N, ou 0 pour un lien general.'],
-                                'context' => ['type' => 'string', 'maxLength' => 240, 'description' => 'Courte phrase utile avant le lien, en texte brut, sans repeter son ancre ni inventer de promesse.'],
+                                'placement' => ['type' => 'string', 'enum' => ['inline', 'cta'], 'description' => 'inline pour lier une expression du paragraphe, cta pour un bouton apres le texte.'],
+                                'anchor' => ['type' => 'string', 'maxLength' => 150, 'description' => 'Pour inline seulement: expression exacte et unique de sections[section-1].body, en respectant casse, accents et espaces. Elle doit etre naturelle dans la phrase et decrire la destination.'],
+                                'cta_label' => ['type' => 'string', 'maxLength' => 150, 'description' => 'Libelle autonome avec un verbe et une destination explicite, sans promesse inventee. Sert aussi de repli si une ancre inline est introuvable. Exemple: Decouvrir les travaux d isolation.'],
+                                'context' => ['type' => 'string', 'maxLength' => 240, 'description' => 'Champ historique conserve pour compatibilite, non affiche. Laisser vide; ne pas ajouter de phrase de transition detachee.'],
                             ],
                         ],
                     ],
@@ -447,7 +450,9 @@ Regles de securite et de compatibilite du module PSEO:
 - La cle sections[].h2 reste obligatoire pour compatibilite; elle est rendue en H3 sous le H2 du bloc principal. Toutes les consignes sur les anciens H2 de section s appliquent a ces sous-titres.
 - Pour la FAQ, utilise faq_editorial_plan et les questions/sujets des pages precedentes. Varie les besoins traites, pas seulement les formulations. Renseigne topic lorsque possible; preparation, choix, deroulement, contraintes, organisation, suivi, adequation. Adapte les sujets aux seuls faits disponibles. N invente pas de difference entre communes pour varier.
 - Pour internal_links, choisis exclusivement une URL exacte de available_internal_pages. Aucun lien invente, prive, externe ou ajoute pour atteindre un quota. Une page de formules, prestation ou presentation n est liee que si elle aide vraiment ici.
-- Associe chaque lien contextuel a section (numero 1 a N) et context (courte phrase en texte brut avant le lien). Pour un lien general, utilise section=0. Ne mets aucun HTML ou Markdown de lien dans le corps des sections.
+- Associe chaque lien contextuel a section (numero 1 a N). Privilegie placement="inline" lorsque le sujet apparait naturellement dans le paragraphe: anchor doit reprendre exactement une expression unique deja presente dans sections[section-1].body, avec la meme casse, les memes accents et espaces. Le module rendra cette expression cliquable a son emplacement, y compris au milieu du texte.
+- Si un renvoi separe est plus utile, utilise placement="cta" avec cta_label, un libelle autonome et naturel tel que "Decouvrir nos travaux d isolation" ou "Voir les realisations". Fournis aussi cta_label comme repli pour inline. Le CTA apparait apres le paragraphe; ne duplique pas ce libelle dans le corps du texte.
+- N ajoute pas systematiquement les liens a la derniere phrase. Evite les fins artificielles du type "Pour un projet plus large ... Salles de bain". Laisse context vide: ce champ historique n est plus affiche. Ne force pas un lien dans chaque section et ne reecris pas les faits pour justifier un lien. Pour un lien general, utilise section=0. Ne mets aucun HTML ou Markdown de lien dans le corps des sections.
 - Les ancres restent descriptives et fideles a la destination. Varier est utile quand le contexte le justifie, mais une ancre repetee n est pas automatiquement un probleme SEO.
 - Ne fournis pas de pourcentage pretendument mesure de similarite. Les anciennes consignes 55/65 sont indicatives, non verifiees et sans garantie Google. Si les pages restent interchangeables, signale-le pour relecture.
 PROMPT;

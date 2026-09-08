@@ -105,6 +105,14 @@ final class PseoRegressionTest extends TestCase
         self::assertSame([['url' => '/contact', 'label' => 'Contact']], $legacy);
         $invalid = $provider->filterLinks([['url' => '/contact', 'label' => 'Contact', 'section' => 99]], $catalog, 3);
         self::assertArrayNotHasKey('section', $invalid[0]);
+        $inline = $provider->filterLinks([['url' => '/contact', 'label' => 'Contact', 'section' => 1, 'placement' => 'inline', 'anchor' => 'notre équipe', 'cta_label' => '<b>Contacter notre équipe</b>']], $catalog, 3);
+        self::assertSame('inline', $inline[0]['placement']);
+        self::assertSame('notre équipe', $inline[0]['anchor']);
+        self::assertSame('Contacter notre équipe', $inline[0]['cta_label']);
+        $malformed = $provider->filterLinks([['url' => '/contact', 'label' => 'Contact', 'section' => 1, 'placement' => ['inline'], 'anchor' => ['bad'], 'cta_label' => str_repeat('x', 151)]], $catalog, 3);
+        self::assertSame('cta', $malformed[0]['placement']);
+        self::assertArrayNotHasKey('anchor', $malformed[0]);
+        self::assertArrayNotHasKey('cta_label', $malformed[0]);
     }
 
     public function testParentNotesAndIntentDoNotChangeLocationsOrUrls(): void
@@ -197,6 +205,10 @@ final class PseoRegressionTest extends TestCase
         self::assertStringContainsString('Roubaix', $prompt['user']);
         self::assertStringStartsWith('PROMPT PERSONNALISE', $prompt['user']);
         self::assertSame('TON PERSONNALISE', $custom->getSystemPrompt());
+        self::assertStringContainsString('placement="inline"', $prompt['system']);
+        self::assertStringContainsString('cta_label', $prompt['system']);
+        self::assertStringContainsString('Laisse context vide', $prompt['system']);
+        self::assertSame(['inline', 'cta'], $builder->outputTool()['input_schema']['properties']['internal_links']['items']['properties']['placement']['enum']);
         self::assertStringContainsString('H3', $builder->outputTool()['input_schema']['properties']['sections']['items']['properties']['h2']['description']);
     }
 
@@ -288,7 +300,7 @@ final class PseoRegressionTest extends TestCase
         $page = (new SeoPage())->setSeed((new SeoSeed())->setCity('Lille')->setService('Demenagement'))
             ->setMainKeyword('Demenagement Lille')->setSlug('demenagement-lille')->setH1('Demenagement a Lille')
             ->setContent([
-                ['h2' => 'Preparer le projet', 'body' => 'Contenu utile conserve.'],
+                ['h2' => 'Preparer le projet', 'body' => 'Prevoir une isolation thermique avec la peinture permet de coordonner les travaux.'],
                 ['h2' => 'Choisir une formule', 'body' => 'Les options verifiees.'],
                 ['h2' => 'Organiser la demande', 'body' => 'Les informations necessaires.'],
             ]);
@@ -298,6 +310,8 @@ final class PseoRegressionTest extends TestCase
         $provider->method('forPage')->willReturn([
             ['url' => '/10-formules', 'label' => '<img src=x onerror=alert(1)>Formules', 'section' => 2, 'context' => '<script>alert(1)</script>Comparez'],
             ['url' => '/contact', 'label' => 'Contact'],
+            ['url' => '/isolation', 'label' => 'Isolation', 'section' => 1, 'placement' => 'inline', 'anchor' => 'isolation thermique'],
+            ['url' => '/electricite', 'label' => 'Travaux electriques', 'section' => 3, 'placement' => 'cta', 'cta_label' => 'Decouvrir les travaux electriques'],
         ]);
         $loader = new Twig\Loader\ChainLoader([
             new Twig\Loader\ArrayLoader(['base.html.twig' => '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{margin:0;font-family:Arial,sans-serif}button{font:inherit}</style>{% block stylesheets %}{% endblock %}</head><body>{% block body %}{% endblock %}</body></html>']),
@@ -319,6 +333,8 @@ final class PseoRegressionTest extends TestCase
         self::assertSame(3, $xpath->query('//article[contains(@class,"seo-content-card")]/h3')->length);
         self::assertSame(0, $xpath->query('//article[contains(@class,"seo-content-card")]/h2')->length);
         self::assertSame(1, $xpath->query('//article[@id="section-2"]//a[@href="/10-formules"]')->length);
+        self::assertSame(1, $xpath->query('//article[@id="section-1"]/p/a[@href="/isolation"]')->length);
+        self::assertSame(1, $xpath->query('//article[@id="section-3"]//a[@class="seo-section-cta"]')->length);
         self::assertSame(0, $xpath->query('//article//script | //article//img[@onerror]')->length);
         self::assertStringContainsString('href="' . ($preview ? '/admin/seo-page/8/preview' : '/demenagement-roubaix') . '"', $html);
         self::assertStringNotContainsString('Présence locale à', $html);
