@@ -15,9 +15,10 @@
     </div>
 
     <section class="mb-4" aria-labelledby="seo-release-title">
-        <h2 id="seo-release-title" class="h4">Correctif 1.2.1</h2>
+        <h2 id="seo-release-title" class="h4">Correctif 1.2.2</h2>
         <p>Le score éditorial totalise réellement 100 points. La liste de publication le recalcule à l'affichage, sans modifier les pages enregistrées. Un score élevé ne remplace pas la vérification des faits.</p>
-        <p>Les précisions techniques locales facultatives manquantes apparaissent comme « Éligible, à vérifier ». Service non confirmé, zone non couverte, contenu générique ou absence de matière locale utile restent bloquants. Les anciennes alertes sont reconnues et les prompts personnalisés reçoivent les nouvelles consignes.</p>
+        <p>Les précisions techniques locales restent facultatives. Un contenu potentiellement générique ou répétitif passe en « Relecture nécessaire », sans être déclaré faux. Service non confirmé, zone non couverte, information inventée ou génération inutilisable restent bloquants.</p>
+        <p>Les pages à relire ne sont ni précochées ni incluses dans la sélection globale. Après vérification, leur sélection individuelle et la confirmation valident la relecture. Le serveur contrôle cette confirmation, aussi en publication individuelle. Les anciennes alertes restent conservées et les prompts personnalisés reçoivent les nouvelles consignes sans être écrasés.</p>
         <h3 class="h4">Nouveautés 1.2.0</h3>
         <p>Le maillage est intégré naturellement dans les paragraphes ou présenté comme un CTA après le texte. Les liens existants deviennent des CTA ; les expressions cliquables dans le texte demandent une génération ou une optimisation suivie d'une relecture.</p>
         <p>Les URL et les contenus enregistrés sont conservés. Si une expression proposée pour un lien est absente, répétée ou déjà liée, le module affiche un CTA. Les nouvelles consignes s'appliquent aussi aux prompts personnalisés.</p>
@@ -265,7 +266,7 @@ Modele Claude: Auto</code></pre>
                 <li>Les <strong>Textes template JSON</strong> restent courts, naturels et adaptes a la page.</li>
                 <li>Les liens internes sont pertinents.</li>
                 <li>Les alertes qualite sont corrigees.</li>
-                <li>Les donnees manquantes critiques sont corrigees ou acceptees.</li>
+                <li>Les données manquantes critiques sont corrigées ; les doutes éditoriaux ont été relus.</li>
                 <li>Le score qualite est au moins de <strong>75</strong>.</li>
             </ul>
             <p>
@@ -274,11 +275,11 @@ Modele Claude: Auto</code></pre>
                 ameliorations utiles, mais ne bloquent pas automatiquement la publication.
             </p>
             <p>
-                Les manques critiques peuvent bloquer : service non confirmé, zone non couverte, absence de matière
-                locale utile, preuves métier indispensables insuffisantes ou génération Claude échouée. Les nouvelles
-                alertes portent <code>[bloquant]</code> ou <code>[amelioration]</code>. Une statistique technique par ville
-                n'est pas obligatoire si elle est omise du texte. Corriger ou requalifier une alerte seulement après
-                vérification de sa portée réelle ; les précisions facultatives peuvent rester notées après publication.
+                <code>[bloquant]</code> concerne un service non confirmé, une zone non couverte, une information inventée
+                ou une génération inutilisable. <code>[relecture]</code> concerne un doute sur l'utilité ou la répétition
+                du contenu ; sa publication demande une confirmation humaine. <code>[amelioration]</code> concerne une
+                précision facultative omise du texte. Une statistique technique par ville n'est pas obligatoire. Les alertes
+                restent notées après publication ; une confirmation ne neutralise pas un vrai blocage.
             </p>
             <p>
                 Le champ <strong>Canonical forcee</strong> est optionnel. Dans le cas normal, le laisser vide : la page

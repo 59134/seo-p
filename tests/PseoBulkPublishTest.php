@@ -257,7 +257,7 @@ final class PseoBulkPublishTest extends TestCase
 
     public static function invalidSubmissions(): array
     {
-        return [[['_token' => 'invalid', 'page_ids' => ['1']]], [['_token' => 'test-token']]];
+        return [[['_token' => 'invalid', 'page_ids' => ['1']]], [['_token' => 'invalid', 'reviewed_page_ids' => ['1']]], [['_token' => 'test-token']]];
     }
 
     public function testDirectHeadRecoversContextWithoutPublishing(): void
@@ -358,6 +358,81 @@ final class PseoBulkPublishTest extends TestCase
         self::assertStringContainsString('Bloquée', $html);
         self::assertSame(100, $page->getQualityScore());
         self::assertSame(0, $this->flushes);
+    }
+
+    public function testReviewRowsAreSelectableButNotPreselected(): void
+    {
+        $this->page(1);
+        $review = $this->page(2)->setMissingData(['Faits locaux insuffisants <script>alert(1)</script>']);
+        $url = $this->assertAdminRedirect($this->request(self::DIRECT_URL), 302);
+        $html = $this->request($url)->getContent();
+        file_put_contents(__DIR__ . '/rendered-bulk-review.html', $html);
+        $dom = new DOMDocument();
+        @$dom->loadHTML($html);
+        $xpath = new DOMXPath($dom);
+        self::assertSame(1, $xpath->query('//input[@name="reviewed_page_ids[]" and @value="2" and not(@checked) and not(@disabled)]')->length);
+        self::assertStringContainsString('Relecture nécessaire', $html);
+        self::assertStringNotContainsString('<script>alert(1)</script>', $html);
+        self::assertSame(0, $this->flushes);
+        self::assertSame(SeoPage::STATUS_DRAFT, $review->getStatus());
+    }
+
+    public function testBulkReviewNeedsExplicitSelectionAndKeepsItsAlerts(): void
+    {
+        $page = $this->page(1)->setMissingData(['Faits locaux insuffisants']);
+        $this->request(self::DIRECT_URL, 'POST', ['_token' => 'test-token', 'page_ids' => ['1']]);
+        self::assertSame(SeoPage::STATUS_DRAFT, $page->getStatus());
+        self::assertFalse($page->isIndexable());
+        $this->request(self::DIRECT_URL, 'POST', ['_token' => 'test-token', 'reviewed_page_ids' => ['1']]);
+        self::assertSame(SeoPage::STATUS_PUBLISHED, $page->getStatus());
+        self::assertTrue($page->isIndexable());
+        self::assertSame(['Faits locaux insuffisants'], $page->getMissingData());
+    }
+
+    public function testOnlyReviewPagesStartWithAnEmptySelection(): void
+    {
+        $this->page(1)->setMissingData(['Faits locaux insuffisants']);
+        $url = $this->assertAdminRedirect($this->request(self::DIRECT_URL), 302);
+        $html = $this->request($url)->getContent();
+        file_put_contents(__DIR__ . '/rendered-bulk-review-only.html', $html);
+        $dom = new DOMDocument();
+        @$dom->loadHTML($html);
+        $xpath = new DOMXPath($dom);
+        self::assertSame('0', $xpath->evaluate('string(//span[@id="seo-selected-count"])'));
+        self::assertSame(1, $xpath->query('//input[@id="seo-select-all-eligible" and @disabled]')->length);
+        self::assertSame(1, $xpath->query('//input[@name="reviewed_page_ids[]" and not(@disabled) and not(@checked)]')->length);
+    }
+
+    public function testReviewConfirmationCannotOverrideCriticalOrScoreBlocks(): void
+    {
+        $critical = $this->page(1)->setMissingData(['Faits locaux insuffisants', 'Service non confirmé']);
+        $weak = $this->page(2, 60)->setMissingData(['Page trop générique']);
+        $this->request(self::DIRECT_URL, 'POST', ['_token' => 'test-token', 'reviewed_page_ids' => ['1', '2']]);
+        self::assertSame(SeoPage::STATUS_DRAFT, $critical->getStatus());
+        self::assertSame(SeoPage::STATUS_DRAFT, $weak->getStatus());
+        self::assertFalse($critical->isIndexable());
+        self::assertFalse($weak->isIndexable());
+    }
+
+    public function testIndividualReviewCanBeConfirmedWithoutErasingTheAlert(): void
+    {
+        $page = $this->page(1)->setMissingData(['Page trop générique']);
+        $url = 'https://example.test/admin/seo-page/1/publish';
+        $this->request($url, 'POST', ['_token' => 'test-token'], ['page' => $page]);
+        self::assertSame(SeoPage::STATUS_DRAFT, $page->getStatus());
+        $this->request($url, 'POST', ['_token' => 'test-token', 'editorial_review_confirmed' => '1'], ['page' => $page]);
+        self::assertSame(SeoPage::STATUS_PUBLISHED, $page->getStatus());
+        self::assertSame(['Page trop générique'], $page->getMissingData());
+    }
+
+    public function testIndividualConfirmationCannotBypassTruthOrCsrf(): void
+    {
+        $page = $this->page(1)->setMissingData(['[relecture] Information inventée dans le texte']);
+        $url = 'https://example.test/admin/seo-page/1/publish';
+        $this->request($url, 'POST', ['_token' => 'test-token', 'editorial_review_confirmed' => '1'], ['page' => $page]);
+        self::assertSame(SeoPage::STATUS_DRAFT, $page->getStatus());
+        $this->expectException(AccessDeniedException::class);
+        $this->request($url, 'POST', ['_token' => 'invalid', 'editorial_review_confirmed' => '1'], ['page' => $page]);
     }
 
     public function testInactiveModuleStillReturnsNotFound(): void

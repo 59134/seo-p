@@ -210,6 +210,8 @@ final class PseoRegressionTest extends TestCase
         self::assertStringContainsString('Laisse context vide', $prompt['system']);
         self::assertStringContainsString('[amelioration]', $prompt['system']);
         self::assertStringContainsString('[bloquant]', $prompt['system']);
+        self::assertStringContainsString('[relecture]', $prompt['system']);
+        self::assertStringContainsString('ne doit jamais minimiser un probleme de veracite', $prompt['system']);
         self::assertStringContainsString('n exige pas une etude technique', $prompt['system']);
         self::assertSame(['inline', 'cta'], $builder->outputTool()['input_schema']['properties']['internal_links']['items']['properties']['placement']['enum']);
         self::assertStringContainsString('H3', $builder->outputTool()['input_schema']['properties']['sections']['items']['properties']['h2']['description']);

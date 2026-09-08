@@ -1,25 +1,30 @@
 # Module SEO programmatique
 
-**Version du module : 1.2.1**
+**Version du module : 1.2.2**
 
-## Correctif 1.2.1 : score et blocages de publication
+## Correctif 1.2.2 : distinguer blocage et relecture
 
 Le score éditorial mesure la structure, pas la véracité ni l'autorisation de publier. Il totalise désormais exactement 100 points : title 10, description 10, H1 10, introduction 10, au moins trois sections 10, contenu des sections 10, FAQ 10, ville/département 10, seed suffisamment renseigné 10 et absence de données manquantes 10. Une section vide ne rapporte aucun point de contenu. Les pénalités existantes sur les mots clés restent appliquées. La recommandation d'indexation de Claude n'ajoute plus de points mais reste prise en compte à la génération.
 
 Une page complète avec une information manquante peut donc avoir 90/100. Le seuil de publication reste 75. Un score élevé ne lève pas un blocage critique.
 
-Les données manquantes sont séparées en deux groupes :
+Les données manquantes sont séparées en trois groupes :
 
-- **Bloquantes** : service non confirmé, zone non couverte, génération échouée, information inventée signalée dans la page, contenu interchangeable, absence totale de matière locale utile ou preuves métier indispensables insuffisantes.
+- **Bloquantes** : service non confirmé, zone non couverte, génération échouée/inutilisable ou information inventée signalée dans la page. Un préfixe de relecture ou d'amélioration ne neutralise pas un problème de véracité explicite.
+- **Relecture nécessaire** : contenu potentiellement générique, répétitif, manque de matière locale utile ou preuves métier trop faibles. Le message motive une vérification humaine ; il ne prouve pas à lui seul que la page est mauvaise.
 - **À vérifier** : précision facultative omise du texte, telle qu'une statistique technique locale, l'usage d'un matériau dans une commune, l'état du parc de toitures ou de chauffage. Elle n'empêche pas la publication mais reste consultable dans la liste et dans la page.
 
-Pour les nouvelles générations, chaque ligne utilise `[bloquant]` ou `[amelioration]`. Un motif critique explicite reste bloquant même si la même ligne mentionne un téléphone, un prix ou porte un préfixe d'amélioration. Les prompts personnalisés reçoivent ces nouvelles consignes sans être modifiés en base.
+Pour les nouvelles générations, chaque ligne utilise `[bloquant]`, `[relecture]` ou `[amelioration]`. Les prompts personnalisés reçoivent ces nouvelles consignes sans être modifiés en base.
 
-Les anciennes lignes sont interprétées à la lecture. Un manque technique clairement identifié devient un avertissement ; un message général « Faits locaux insuffisants » reste bloquant tant que sa portée n'a pas été vérifiée. Par exemple, l'absence de chiffres sur le placo ou le chauffage ne se confond pas avec un texte sans contexte local utile. La classification est déterministe et ne constitue pas une vérification sémantique automatique du contenu.
+Les anciennes lignes sont interprétées à la lecture, sans suppression ni réécriture en base. Les types de bâti ou contraintes locales manquants sont facultatifs s'ils sont omis du texte. Les alertes générales « Faits locaux insuffisants » passent en relecture, y compris avec leur ancien préfixe `[bloquant]`. Une alerte qui mentionne aussi des données déjà utilisées sur d'autres pages reste à relire. Les blocages personnalisés non reconnus restent bloquants par prudence. La classification est déterministe : elle ne constitue pas une vérification sémantique automatique du contenu ni une garantie SEO.
 
-La liste de publication affiche le score recalculé et les états « Éligible », « Éligible, à vérifier » et « Bloquée ». Les seeds sont chargés avec les pages ; l'affichage ne lance ni appel Claude ni comparaison de duplication par page et n'écrit rien en base. Les scores enregistrés sont actualisés à la sauvegarde ou à la publication, sans recalcul automatique des pages déjà publiées. Les alertes facultatives ne sont pas effacées lors de la publication.
+La liste de publication affiche « Éligible », « Éligible, à vérifier », « Relecture nécessaire » ou « Bloquée ». Une page à relire n'est jamais précochée et la sélection globale ne la coche pas. Après prévisualisation et vérification, la cocher individuellement puis confirmer la publication valide sa relecture. Le serveur exige cette sélection explicite ; un ancien formulaire qui transmet seulement `page_ids` ne peut pas publier une page à relire. Les vrais blocages et le score minimum restent prioritaires.
 
-Déployer les contrôleurs `SeoWorkflowController`, `SeoPageCrudController`, `SeoDocumentationController`, le repository `SeoPageRepository`, les services `SeoQualityScorer`, `SeoPromptBuilder` et le nouveau `SeoPublicationPolicy`, le template `admin/seo_bulk_publish.html.twig` et la documentation, puis `php bin/console cache:clear`. Aucune migration ni compilation front. Vérifier le contenu avant de requalifier une ancienne alerte ; ne pas la supprimer simplement pour contourner un vrai problème.
+En publication individuelle, l'action Publier demande de confirmer la relecture et l'utilité de la page. Sans cette confirmation, une page signalée reste non publiée. Les alertes ne sont pas effacées après confirmation. À la génération, une alerte de relecture empêche de considérer la page comme automatiquement indexable.
+
+Les seeds sont chargés avec les pages ; l'affichage ne lance ni appel Claude ni comparaison de duplication par page et n'écrit rien en base. Les scores enregistrés sont actualisés à la sauvegarde ou à la publication, sans recalcul automatique des pages déjà publiées. Une confirmation de relecture ne constitue pas une analyse automatisée du contenu.
+
+Déployer les contrôleurs `SeoWorkflowController`, `SeoPageCrudController`, `SeoDocumentationController`, les services `SeoQualityScorer`, `SeoPromptBuilder`, `SeoPublicationPolicy`, le template `admin/seo_bulk_publish.html.twig`, `public/js/seo-admin-actions.js` et la documentation, puis `php bin/console cache:clear`. Depuis une version antérieure à 1.2.1, déployer aussi le repository `SeoPageRepository`. Aucune migration ni compilation front. Le script d'action est versionné dans son URL pour renouveler le cache navigateur. Vérifier le contenu avant de confirmer une relecture ; ne pas supprimer une alerte pour contourner un vrai problème.
 
 ## Nouveautés 1.2.0 : des liens naturels
 
@@ -125,7 +130,8 @@ Le menu admin est volontairement numerote:
 Le module refuse la publication si:
 
 - le score qualite est inferieur a 75;
-- il reste une donnee critique manquante: service non confirme, zone non couverte, absence de matiere locale utile, preuves metier indispensables insuffisantes ou generation Claude echouee;
+- il reste une donnee critique manquante: service non confirme, zone non couverte, information inventee ou generation inutilisable;
+- une relecture editoriale necessaire n'a pas ete confirmee;
 - la page n'est pas suffisamment specifique.
 
 Le champ `Canonical forcee` n'est pas obligatoire. S'il est vide, la page utilise automatiquement sa propre URL publique comme canonical.
@@ -288,11 +294,11 @@ Avant de publier, verifier:
 - les donnees manquantes, surtout si elles touchent le service, la zone ou la veracite du contenu;
 - le score qualite.
 
-Pour publier plusieurs pages, ouvrir `3. Pages SEO` puis cliquer sur `Publication en masse`. Les pages avec un score d'au moins 75 et sans donnee critique manquante sont preselectionnees. Les autres restent bloquees avec leur motif. Apres confirmation, les pages choisies deviennent publiees, indexables et sont ajoutees au sitemap.
+Pour publier plusieurs pages, ouvrir `3. Pages SEO` puis cliquer sur `Publication en masse`. Les pages avec un score d'au moins 75 et sans blocage ni relecture necessaire sont preselectionnees. Les pages a relire restent selectionnables individuellement apres verification ; la selection globale ne les inclut pas. Les pages bloquees restent desactivees avec leur motif. Apres confirmation, les pages choisies deviennent publiees, indexables et sont ajoutees au sitemap.
 
 Une page doit avoir un score d'au moins `75` pour etre publiee.
 
-Le champ `Donnees manquantes` est editable. Une ligne correspond a une information que Claude n'a pas pu verifier. `[amelioration]` signale une precision facultative omise du contenu ; `[bloquant]` signale un vrai obstacle. L'absence d'une statistique technique locale ne suffit pas a bloquer la page. Un service non confirme, une zone non couverte ou une absence de matiere locale utile restent bloquants, meme si la ligne mentionne aussi un prix ou un telephone. Voir les regles 1.2.1 ci-dessus.
+Le champ `Donnees manquantes` est editable. `[amelioration]` signale une precision facultative omise du contenu ; `[relecture]` demande une verification editoriale ; `[bloquant]` signale un vrai obstacle. L'absence d'une statistique technique locale ne suffit pas a bloquer la page. Un doute sur la valeur propre du contenu demande une relecture. Service non confirme, zone non couverte ou information inventee restent bloquants, meme si la ligne mentionne aussi un prix ou un telephone. Voir les regles 1.2.2 ci-dessus.
 
 Le champ `Canonical forcee` est optionnel. Le laisser vide dans le cas normal. Il sert seulement si la page doit pointer volontairement vers une autre URL canonique.
 

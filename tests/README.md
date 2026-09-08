@@ -1,6 +1,6 @@
 # Tests de non-regression PSEO
 
-Publication 1.2.1 : anciennes alertes placo/toitures/chauffage et Raismes, priorités des blocages, préfixes structurés, barème sur 100, recalcul sans écriture, chargement groupé des seeds et cohérence entre publication individuelle/en masse. Le contrôle navigateur couvre aussi le détail dépliable des précisions facultatives.
+Publication 1.2.2 : trois niveaux d'alerte, anciens messages Maçon Valenciennes/Raismes, préfixes historiques, confirmations manuelles individuelles/en masse et impossibilité de contourner les vrais blocages, le score ou le CSRF. Les tests vérifient la conservation des alertes et l'absence de publication automatique des pages à relire. Le navigateur vérifie que la sélection globale exclut ces pages et que la confirmation individuelle transmet l'accord uniquement après validation. Le barème sur 100 et le recalcul sans écriture restent couverts.
 
 Depuis le depot du module, avec PHP 8.1+ (mbstring et pdo_sqlite) et Composer :
 

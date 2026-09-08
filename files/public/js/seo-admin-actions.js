@@ -31,6 +31,14 @@
         token.value = link.getAttribute('data-csrf-token') || '';
         form.appendChild(token);
 
+        if (confirmation && link.getAttribute('data-seo-review-confirmed') === 'true') {
+            var reviewed = document.createElement('input');
+            reviewed.type = 'hidden';
+            reviewed.name = 'editorial_review_confirmed';
+            reviewed.value = '1';
+            form.appendChild(reviewed);
+        }
+
         document.body.appendChild(form);
         form.submit();
         form.remove();

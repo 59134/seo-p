@@ -150,7 +150,7 @@ class SeoPageCrudController extends AbstractCrudController
             TextareaField::new('missingDataText', 'Donnees manquantes')
                 ->setRequired(false)
                 ->setColumns(12)
-                ->setHelp('Une ligne par information. [amelioration] : precision facultative omise du texte, comme une statistique technique locale. [bloquant] : service non confirme, zone non couverte, information inventee ou contenu sans valeur propre. Les anciennes alertes restent reconnues. Requalifier une ligne seulement apres verification du contenu.'),
+                ->setHelp('Une ligne par information. [bloquant] : service non confirmé, zone non couverte, information inventée ou génération inutilisable. [relecture] : contenu potentiellement générique ou répétitif, à vérifier avant publication. [amelioration] : précision facultative omise du texte. Les anciennes alertes locales sont reclassées sans être effacées.'),
             TextField::new('canonicalUrl', 'Canonical forcee')
                 ->setRequired(false)
                 ->hideOnIndex()
@@ -203,8 +203,8 @@ class SeoPageCrudController extends AbstractCrudController
             ->linkToRoute('admin_seo_page_publish', static fn (SeoPage $page): array => ['id' => $page->getId()])
             ->setHtmlAttributes($postAttributes(
                 (string) $this->csrfTokenManager->getToken('seo_page_publish'),
-                'Publier cette page et l ajouter au sitemap ?'
-            ))
+                'Confirmez-vous avoir relu la page et ses alertes, vérifié son utilité et vouloir la publier et l’ajouter au sitemap ?'
+            ) + ['data-seo-review-confirmed' => 'true'])
             ->displayIf(static fn (SeoPage $page): bool => $page->getStatus() !== SeoPage::STATUS_PUBLISHED);
 
         $unpublish = Action::new('unpublishSeoPage', 'Retirer', 'fa fa-ban')
@@ -289,7 +289,7 @@ class SeoPageCrudController extends AbstractCrudController
 
     public function configureAssets(Assets $assets): Assets
     {
-        return $assets->addJsFile('js/seo-admin-actions.js');
+        return $assets->addJsFile('js/seo-admin-actions.js?v=1.2.2');
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void

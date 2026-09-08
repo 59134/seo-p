@@ -41,7 +41,9 @@ class SeoQualityScorer
         if (count($missing) > 0) {
             $flags[] = $issues['blocking']
                 ? 'Des donnees critiques empechent la publication.'
-                : 'Des precisions facultatives restent a verifier, sans bloquer la publication.';
+                : ($issues['review']
+                    ? 'Une relecture editoriale doit etre confirmee avant publication.'
+                    : 'Des precisions facultatives restent a verifier, sans bloquer la publication.');
         }
 
         if (($payload['indexation_recommendation'] ?? 'review') !== 'index') {
@@ -55,6 +57,7 @@ class SeoQualityScorer
 
         $indexable = $score >= 75
             && $issues['blocking'] === []
+            && $issues['review'] === []
             && ($payload['indexation_recommendation'] ?? 'review') === 'index';
 
         return [

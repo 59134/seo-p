@@ -337,6 +337,14 @@ class SeoWorkflowController extends AbstractController
             return $this->redirectToSeoPage($page);
         }
 
+        $issues = SeoPublicationPolicy::classify($page->getMissingData());
+        if ($issues['review'] && !$request->request->getBoolean('editorial_review_confirmed')) {
+            $this->entityManager->flush();
+            $this->addFlash('warning', 'Relecture à confirmer avant publication : ' . $this->shortMissingDataList($issues['review']) . '. Relis la page puis confirme sa publication depuis l’action Publier.');
+
+            return $this->redirectToSeoPage($page);
+        }
+
         $cleanSlug = $this->promoteCleanSlugBeforePublication($page);
 
         $page
@@ -429,9 +437,13 @@ class SeoWorkflowController extends AbstractController
             }
 
             $formData = $request->request->all();
+            $reviewedIds = array_values(array_unique(array_filter(array_map(
+                static fn (mixed $id): int => is_scalar($id) ? (int) $id : 0,
+                (array) ($formData['reviewed_page_ids'] ?? [])
+            ))));
             $selectedIds = array_values(array_unique(array_filter(array_map(
-                static fn (mixed $id): int => (int) $id,
-                (array) ($formData['page_ids'] ?? [])
+                static fn (mixed $id): int => is_scalar($id) ? (int) $id : 0,
+                array_merge((array) ($formData['page_ids'] ?? []), $reviewedIds)
             ))));
 
             if (!$selectedIds) {
@@ -442,6 +454,7 @@ class SeoWorkflowController extends AbstractController
 
             $published = 0;
             $publishedWithAdvisories = 0;
+            $publishedAfterReview = 0;
             $blocked = [];
             $cleanedSlugs = 0;
 
@@ -454,6 +467,10 @@ class SeoWorkflowController extends AbstractController
                 }
 
                 $blockers = $this->bulkPublicationBlockers($page);
+                $issues = SeoPublicationPolicy::classify($page->getMissingData());
+                if ($issues['review'] && !in_array($page->getId(), $reviewedIds, true)) {
+                    $blockers[] = 'relecture éditoriale non confirmée';
+                }
 
                 if ($blockers) {
                     $blocked[] = sprintf('%s : %s', $page->getMainKeyword(), implode(', ', $blockers));
@@ -472,7 +489,8 @@ class SeoWorkflowController extends AbstractController
                     // Cela evite que deux pages du meme lot reservent la meme URL propre.
                     $this->entityManager->flush();
                     $published++;
-                    $publishedWithAdvisories += SeoPublicationPolicy::classify($page->getMissingData())['advisory'] !== [] ? 1 : 0;
+                    $publishedWithAdvisories += $issues['advisory'] !== [] ? 1 : 0;
+                    $publishedAfterReview += $issues['review'] !== [] ? 1 : 0;
                     $cleanedSlugs += $slugWasCleaned ? 1 : 0;
                 } catch (\Throwable $exception) {
                     $blocked[] = sprintf(
@@ -498,6 +516,10 @@ class SeoWorkflowController extends AbstractController
                 $this->addFlash('warning', sprintf('%d page(s) publiee(s) conservent des precisions facultatives a verifier.', $publishedWithAdvisories));
             }
 
+            if ($publishedAfterReview > 0) {
+                $this->addFlash('warning', sprintf('%d page(s) publiée(s) après confirmation de relecture. Les alertes éditoriales restent conservées.', $publishedAfterReview));
+            }
+
             if ($blocked) {
                 $this->addFlash('warning', sprintf(
                     '%d page(s) ignorée(s) : %s',
@@ -512,6 +534,7 @@ class SeoWorkflowController extends AbstractController
         $pages = $repository->findForBulkPublication();
         $rows = [];
         $eligibleCount = 0;
+        $reviewCount = 0;
 
         foreach ($pages as $page) {
             // Recalculate for display only, without writes or per-page comparison queries.
@@ -519,12 +542,15 @@ class SeoWorkflowController extends AbstractController
             $blockers = $this->bulkPublicationBlockers($page, $quality['score']);
             $eligible = count($blockers) === 0;
             $eligibleCount += $eligible ? 1 : 0;
+            $issues = SeoPublicationPolicy::classify($page->getMissingData());
+            $reviewCount += $eligible && $issues['review'] !== [] ? 1 : 0;
             $rows[] = [
                 'page' => $page,
                 'eligible' => $eligible,
                 'blockers' => $blockers,
                 'score' => $quality['score'],
-                'advisories' => SeoPublicationPolicy::classify($page->getMissingData())['advisory'],
+                'reviews' => $issues['review'],
+                'advisories' => $issues['advisory'],
             ];
         }
         usort($rows, static fn (array $a, array $b): int => $b['score'] <=> $a['score']);
@@ -539,6 +565,7 @@ class SeoWorkflowController extends AbstractController
         return $this->render('admin/seo_bulk_publish.html.twig', [
             'rows' => $rows,
             'eligibleCount' => $eligibleCount,
+            'reviewCount' => $reviewCount,
             'pageListUrl' => $pageListUrl,
             'bulkPublishUrl' => $bulkPublishUrl,
         ]);

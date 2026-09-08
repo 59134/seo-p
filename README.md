@@ -4,9 +4,16 @@ Ce package installe le module SEO programmatique dans un projet Symfony/Webtime 
 
 Il est prevu pour etre installe temporairement dans le projet cible, lancer l'installation du module, puis etre retire du `package.json` apres verification.
 
-## Version 1.2.1
+## Version 1.2.2
 
-- Distingue les vrais blocages des précisions facultatives : statistiques techniques locales manquantes signalées en jaune, service non confirmé, contenu générique ou absence de matière locale utile toujours bloquants.
+- Trois niveaux : blocage de véracité/technique, relecture éditoriale et précision facultative. Les alertes locales historiques ne sont plus toutes bloquantes.
+- Les pages à relire ne sont ni précochées ni incluses dans la sélection globale. Leur sélection individuelle et la confirmation valent validation de relecture, contrôlée côté serveur.
+- La publication individuelle demande aussi une confirmation de relecture. Les alertes restent conservées, même après publication ; une confirmation ne contourne ni le score minimum ni les vrais blocages.
+- Aucun appel Claude ou changement de contenu à l'ouverture de la liste. Aucune migration ni compilation front. Déployer aussi `public/js/seo-admin-actions.js` puis vider le cache Symfony.
+
+## Version 1.2.1 (historique)
+
+- Premier assouplissement des précisions techniques locales manquantes. Le classement des doutes éditoriaux est affiné en 1.2.2.
 - Score éditorial réellement sur 100. Le score affiché en publication en masse est recalculé sans écrire en base ni lancer de comparaisons page par page.
 - Règles communes pour génération, publication individuelle et en masse ; les alertes historiques restent lues et les nouvelles consignes complètent les prompts personnalisés.
 - Aucune migration, régénération automatique ni compilation front. Déployer tous les fichiers concernés, dont le nouveau `SeoPublicationPolicy.php`, puis vider le cache.
@@ -48,7 +55,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.2.1.tgz
+npm install ./seo-prog-1.2.2.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -68,13 +75,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.2.1
+npm install git+https://github.com/59134/seo-p.git#v1.2.2
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.2.1
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.2.2
 ```
 
 Puis lancer l'installation :

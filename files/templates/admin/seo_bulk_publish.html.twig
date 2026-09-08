@@ -15,7 +15,7 @@
         <div class="content-panel-body">
             <div class="alert {{ eligibleCount > 0 ? 'alert-info' : 'alert-warning' }} d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <div>
-                    <strong>{{ eligibleCount }} page(s) éligible(s) sur {{ rows|length }}.</strong>
+                    <strong>{{ eligibleCount }} page(s) sans blocage sur {{ rows|length }}, dont {{ reviewCount }} à relire.</strong>
                     Les pages bloquées restent en brouillon et indiquent la correction nécessaire.
                 </div>
                 <a class="btn btn-secondary" href="{{ pageListUrl }}">
@@ -33,12 +33,12 @@
 
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
                         <div class="form-check">
-                            <input id="seo-select-all-eligible" class="form-check-input" type="checkbox" checked {% if eligibleCount == 0 %}disabled{% endif %}>
-                            <label class="form-check-label" for="seo-select-all-eligible">Sélectionner toutes les pages éligibles</label>
+                            <input id="seo-select-all-eligible" class="form-check-input" type="checkbox" {% if eligibleCount > reviewCount %}checked{% else %}disabled{% endif %}>
+                            <label class="form-check-label" for="seo-select-all-eligible">Sélectionner les pages sans relecture requise</label>
                         </div>
-                        <button id="seo-bulk-publish-submit" type="submit" class="btn btn-success" {% if eligibleCount == 0 %}disabled{% endif %}>
+                        <button id="seo-bulk-publish-submit" type="submit" class="btn btn-success" {% if eligibleCount == reviewCount %}disabled{% endif %}>
                             <i class="fa fa-check-double"></i>
-                            Publier <span id="seo-selected-count">{{ eligibleCount }}</span> page(s)
+                            Publier <span id="seo-selected-count">{{ eligibleCount - reviewCount }}</span> page(s)
                         </button>
                     </div>
 
@@ -61,10 +61,12 @@
                                         <input
                                             class="form-check-input seo-page-checkbox"
                                             type="checkbox"
-                                            name="page_ids[]"
+                                            name="{{ row.reviews is empty ? 'page_ids[]' : 'reviewed_page_ids[]' }}"
                                             value="{{ row.page.id }}"
-                                            {% if row.eligible %}checked{% else %}disabled{% endif %}
-                                            aria-label="Sélectionner {{ row.page.mainKeyword }}"
+                                            data-requires-review="{{ row.reviews is empty ? '0' : '1' }}"
+                                            {% if not row.eligible %}disabled{% elseif row.reviews is empty %}checked{% endif %}
+                                            aria-label="{{ row.reviews is empty ? 'Sélectionner' : 'Confirmer ma relecture et sélectionner' }} {{ row.page.mainKeyword }}"
+                                            title="{{ row.reviews is empty ? 'Sélectionner' : 'Confirmer ma relecture et sélectionner' }}"
                                         >
                                     </td>
                                     <td>
@@ -79,12 +81,24 @@
                                     </td>
                                     <td>
                                         {% if row.eligible %}
-                                            <span class="badge {{ row.advisories is empty ? 'text-bg-success' : 'text-bg-warning' }}">{{ row.advisories is empty ? 'Éligible' : 'Éligible, à vérifier' }}</span>
+                                            {% if row.reviews is not empty %}
+                                                <span class="badge text-bg-warning">Relecture nécessaire</span>
+                                            {% else %}
+                                                <span class="badge {{ row.advisories is empty ? 'text-bg-success' : 'text-bg-warning' }}">{{ row.advisories is empty ? 'Éligible' : 'Éligible, à vérifier' }}</span>
+                                            {% endif %}
                                         {% else %}
                                             <span class="badge text-bg-danger mb-1">Bloquée</span>
                                             {% for blocker in row.blockers %}
                                                 <small class="d-block text-danger">{{ blocker }}</small>
                                             {% endfor %}
+                                        {% endif %}
+                                        {% if row.reviews is not empty %}
+                                            <details class="mt-1" open>
+                                                <summary>Points de relecture ({{ row.reviews|length }})</summary>
+                                                <ul class="mb-0">
+                                                    {% for review in row.reviews %}<li>{{ review }}</li>{% endfor %}
+                                                </ul>
+                                            </details>
                                         {% endif %}
                                         {% if row.advisories is not empty %}
                                             <details class="mt-1 text-muted">
@@ -124,17 +138,19 @@
             const submitButton = document.getElementById('seo-bulk-publish-submit');
             const selectedCount = document.getElementById('seo-selected-count');
             const checkboxes = [...root.querySelectorAll('.seo-page-checkbox:not(:disabled)')];
+            const automaticCheckboxes = checkboxes.filter((checkbox) => checkbox.dataset.requiresReview !== '1');
 
             const refreshSelection = () => {
                 const count = checkboxes.filter((checkbox) => checkbox.checked).length;
                 selectedCount.textContent = String(count);
                 submitButton.disabled = count === 0;
-                selectAll.checked = checkboxes.length > 0 && count === checkboxes.length;
-                selectAll.indeterminate = count > 0 && count < checkboxes.length;
+                const automaticCount = automaticCheckboxes.filter((checkbox) => checkbox.checked).length;
+                selectAll.checked = automaticCheckboxes.length > 0 && automaticCount === automaticCheckboxes.length;
+                selectAll.indeterminate = automaticCount > 0 && automaticCount < automaticCheckboxes.length;
             };
 
             selectAll?.addEventListener('change', () => {
-                checkboxes.forEach((checkbox) => {
+                automaticCheckboxes.forEach((checkbox) => {
                     checkbox.checked = selectAll.checked;
                 });
                 refreshSelection();
@@ -144,7 +160,11 @@
 
             form.addEventListener('submit', (event) => {
                 const count = checkboxes.filter((checkbox) => checkbox.checked).length;
-                if (count === 0 || !window.confirm(`Publier et rendre indexable ${count} page(s) ?`)) {
+                const reviewedCount = checkboxes.filter((checkbox) => checkbox.checked && checkbox.dataset.requiresReview === '1').length;
+                const reviewConfirmation = reviewedCount > 0
+                    ? ` Vous confirmez avoir relu les ${reviewedCount} page(s) signalée(s) et vérifié leur utilité et leurs différences avec les autres pages.`
+                    : '';
+                if (count === 0 || !window.confirm(`Publier et rendre indexable ${count} page(s) ?${reviewConfirmation}`)) {
                     event.preventDefault();
                 }
             });
