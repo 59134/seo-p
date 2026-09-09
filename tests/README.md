@@ -1,5 +1,7 @@
 # Tests de non-regression PSEO
 
+JSON-LD 1.2.3 : parser JSON strict pour les graphes communs/PSEO, multi-FAQ et items désactivés, caractères de contrôle, guillemets, caractères HTML et emoji. Les horaires réels du site JLV, les plages françaises/Schema.org et les rejets conservateurs sont couverts. Les helpers sont aussi vérifiés par compilation du conteneur Symfony.
+
 Publication 1.2.2 : trois niveaux d'alerte, anciens messages Maçon Valenciennes/Raismes, préfixes historiques, confirmations manuelles individuelles/en masse et impossibilité de contourner les vrais blocages, le score ou le CSRF. Les tests vérifient la conservation des alertes et l'absence de publication automatique des pages à relire. Le navigateur vérifie que la sélection globale exclut ces pages et que la confirmation individuelle transmet l'accord uniquement après validation. Le barème sur 100 et le recalcul sans écriture restent couverts.
 
 Depuis le depot du module, avec PHP 8.1+ (mbstring et pdo_sqlite) et Composer :

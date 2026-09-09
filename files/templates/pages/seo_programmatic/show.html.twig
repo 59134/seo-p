@@ -919,8 +919,9 @@ endblock %}
     {% if coordonnees().email|default('')|striptags|trim is not empty %}
         {% set local_business = local_business|merge({'email': coordonnees().email|striptags|trim}) %}
     {% endif %}
-    {% if coordonnees().horaires|default('')|striptags|trim is not empty %}
-        {% set local_business = local_business|merge({'openingHours': coordonnees().horaires|striptags|trim}) %}
+    {% set opening_hours = coordonnees().horaires|default('')|schema_opening_hours %}
+    {% if opening_hours is not empty %}
+        {% set local_business = local_business|merge({'openingHours': opening_hours}) %}
     {% endif %}
     {% if same_as_links is not empty %}
         {% set local_business = local_business|merge({'sameAs': same_as_links}) %}
@@ -998,7 +999,7 @@ endblock %}
         {{ {
             '@context': 'https://schema.org',
             '@graph': schema_graph
-        }|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }}
+        }|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}
     </script>
 {% endblock %}
 

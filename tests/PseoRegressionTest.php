@@ -324,6 +324,7 @@ final class PseoRegressionTest extends TestCase
         ]);
         $twig = new Twig\Environment($loader, ['strict_variables' => true]);
         $twig->addExtension(new SeoProgrammaticExtension($provider));
+        $twig->addExtension(new App\Twig\StructuredDataExtension(new App\Service\OpeningHoursNormalizer()));
         $twig->addFunction(new Twig\TwigFunction('config', static fn () => ['raisonSociale' => 'Entreprise de test', 'lienContact' => '/contact']));
         $twig->addFunction(new Twig\TwigFunction('coordonnees', static fn () => ['ville' => 'Lille', 'tel1' => '']));
         $twig->addFunction(new Twig\TwigFunction('designFront', static fn () => ['logo' => ['logo' => 'test.png']]));
@@ -382,7 +383,8 @@ final class PseoRegressionTest extends TestCase
             $container->register($dependency, $dependency)->setSynthetic(true)->setPublic(true);
         }
         foreach ([SeoSiteLinkProvider::class, SeoEditorialAdvisor::class, SeoPromptBuilder::class,
-            App\Service\SeoQualityScorer::class, App\Service\ClaudeSeoGenerator::class, SeoProgrammaticExtension::class] as $service) {
+            App\Service\SeoQualityScorer::class, App\Service\ClaudeSeoGenerator::class, SeoProgrammaticExtension::class,
+            App\Service\OpeningHoursNormalizer::class, App\Twig\StructuredDataExtension::class] as $service) {
             $container->register($service, $service)->setAutowired(true)->setPublic(true);
         }
         $container->compile();

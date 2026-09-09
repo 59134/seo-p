@@ -2,6 +2,7 @@
 <phpunit bootstrap="bootstrap.php" colors="true" failOnWarning="true">
     <testsuites>
         <testsuite name="PSEO regression">
+            <file>StructuredDataTest.php</file>
             <file>PseoRegressionTest.php</file>
             <file>PseoNaturalLinksTest.php</file>
             <file>PseoPublicationPolicyTest.php</file>

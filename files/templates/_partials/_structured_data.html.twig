@@ -1,0 +1,70 @@
+{% set company = config() %}
+{% set contact = coordonnees() %}
+{% set homepage_url = absolute_url(path('app_main')) %}
+{% set logo_url = absolute_url(asset(pathImage().get('elementFront_images') ~ '/' ~ designFront()['logo']['logo'])) %}
+{% set same_as_links = [] %}
+{% if contact.facebook|default('') is not empty and contact.facebook != 'https://www.facebook.com' %}
+    {% set same_as_links = same_as_links|merge([contact.facebook]) %}
+{% endif %}
+{% if contact.linkedin|default('') is not empty and contact.linkedin != 'https://www.linkedin.com' %}
+    {% set same_as_links = same_as_links|merge([contact.linkedin]) %}
+{% endif %}
+{% set description = categorie is defined and categorie.getMetaDesc is defined ? categorie.getMetaDesc : '' %}
+{% set organization = {
+    '@type': 'Organization',
+    '@id': homepage_url,
+    'name': company.raisonSociale,
+    'logo': logo_url,
+    'url': homepage_url,
+    'sameAs': same_as_links
+} %}
+{% set local_business = {
+    '@type': 'LocalBusiness',
+    'name': company.raisonSociale,
+    'description': description|replaceAll|schema_text,
+    'image': logo_url,
+    'telephone': contact.tel1,
+    'address': {
+        '@type': 'PostalAddress',
+        'streetAddress': contact.adresse,
+        'addressLocality': contact.ville,
+        'postalCode': contact.cp,
+        'addressCountry': contact.pays|default('FR')
+    },
+    'parentOrganization': {'@id': homepage_url},
+    'url': homepage_url
+} %}
+{% set opening_hours = contact.horaires|default('')|schema_opening_hours %}
+{% if opening_hours is not empty %}
+    {% set local_business = local_business|merge({'openingHours': opening_hours}) %}
+{% endif %}
+{% set schema_graph = [organization, local_business] %}
+{% set questions = [] %}
+{% for group in faq|default([]) %}
+    {% if group.valid %}
+        {% for item in group.faqItems %}
+            {% if item.valid %}
+                {% set translation = item.getTranslations[app.request.locale]|default(null) %}
+                {% set question = translation.question|default('')|schema_text %}
+                {% set answer = translation.reponse|default('')|schema_text %}
+                {% if question is not empty and answer is not empty %}
+                    {% set questions = questions|merge([{
+                        '@type': 'Question',
+                        'name': question,
+                        'acceptedAnswer': {'@type': 'Answer', 'text': answer}
+                    }]) %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+{% if questions is not empty %}
+    {% set schema_graph = schema_graph|merge([{
+        '@type': 'FAQPage',
+        '@id': absolute_url(app.request.baseUrl ~ app.request.pathInfo) ~ '#faq',
+        'mainEntity': questions
+    }]) %}
+{% endif %}
+<script type="application/ld+json">
+    {{ {'@context': 'https://schema.org', '@graph': schema_graph}|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}
+</script>

@@ -4,6 +4,13 @@ Ce package installe le module SEO programmatique dans un projet Symfony/Webtime 
 
 Il est prevu pour etre installe temporairement dans le projet cible, lancer l'installation du module, puis etre retire du `package.json` apres verification.
 
+## Version 1.2.3
+
+- JSON-LD commun sérialisé en une seule fois : retours à la ligne, guillemets et plusieurs groupes FAQ ne cassent plus le graphe. Seuls les groupes et items FAQ actifs et traduits sont inclus.
+- Horaires structurés normalisés pour le CMS et le PSEO : `Du lundi au vendredi de 9h - 18h` devient `Mo-Fr 09:00-18:00`. Les horaires ambigus sont omis du JSON-LD, sans modifier le texte visible.
+- Pour le CMS classique, remplacer seulement le bloc `structured_data` de `templates/base.html.twig` par celui de `references/templates/base-structured-data-block.twig`. L'installateur fournit le partiel et les helpers, mais n'écrase pas les bases personnalisées. Une installation du package seule ne corrige donc pas une ancienne base.
+- Déployer `OpeningHoursNormalizer.php`, `StructuredDataExtension.php`, `_partials/_structured_data.html.twig` et le template PSEO ensemble, puis vider le cache Symfony. Aucune migration ni compilation front.
+
 ## Version 1.2.2
 
 - Trois niveaux : blocage de véracité/technique, relecture éditoriale et précision facultative. Les alertes locales historiques ne sont plus toutes bloquantes.
@@ -55,7 +62,7 @@ Il est prevu pour etre installe temporairement dans le projet cible, lancer l'in
 Copier le fichier `.tgz` a la racine du projet cible, puis lancer :
 
 ```bash
-npm install ./seo-prog-1.2.2.tgz
+npm install ./seo-prog-1.2.3.tgz
 ```
 
 Verifier ce qui sera modifie sans rien ecrire :
@@ -75,13 +82,13 @@ Installer le module :
 Si le repository Git est accessible depuis le serveur :
 
 ```bash
-npm install git+https://github.com/59134/seo-p.git#v1.2.2
+npm install git+https://github.com/59134/seo-p.git#v1.2.3
 ```
 
 Si tu utilises une cle SSH configuree sur le serveur :
 
 ```bash
-npm install git+ssh://git@github.com/59134/seo-p.git#v1.2.2
+npm install git+ssh://git@github.com/59134/seo-p.git#v1.2.3
 ```
 
 Puis lancer l'installation :

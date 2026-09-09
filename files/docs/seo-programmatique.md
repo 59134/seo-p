@@ -1,6 +1,35 @@
 # Module SEO programmatique
 
-**Version du module : 1.2.2**
+**Version du module : 1.2.3**
+
+## Correctif 1.2.3 : JSON-LD et horaires
+
+Le graphe du template commun est construit comme un tableau Twig, puis encodé en JSON en une seule fois. Les retours à la ligne, guillemets, esperluettes et caractères pouvant fermer une balise script sont échappés. Les groupes FAQ sont réunis dans une liste unique ; groupes/items inactifs, traductions absentes et réponses vides sont exclus. Les URL tiennent compte d'une installation en sous-répertoire.
+
+`OpeningHoursNormalizer` est partagé par le CMS et le template PSEO via le filtre `schema_opening_hours`. Il reconnaît les plages hebdomadaires simples en français ou au format Schema.org, les listes de jours, plusieurs lignes et deux créneaux séparés par `et` ou une virgule. Exemple : `Du lundi au vendredi de 9h - 18h` devient `["Mo-Fr 09:00-18:00"]`. Une pause entre midi et deux reste deux créneaux, sans être fusionnée.
+
+La conversion est volontairement conservatrice : texte sur rendez-vous, exceptions, jours fériés, horaires incomplets, valeurs invalides ou lignes non reconnues entraînent l'omission de `openingHours` pour l'ensemble du champ. Aucun horaire n'est deviné. Le champ en base et l'affichage des horaires sur le site sont inchangés. Les horaires de nuit explicites sont conservés, mais les plages à début et fin identiques ne sont pas interprétées comme une ouverture 24h/24.
+
+### Déploiement
+
+Déployer ensemble :
+
+- `src/Service/OpeningHoursNormalizer.php` ;
+- `src/Twig/StructuredDataExtension.php` ;
+- `templates/_partials/_structured_data.html.twig` ;
+- `templates/pages/seo_programmatic/show.html.twig` pour les pages PSEO.
+
+Pour les pages classiques du CMS, remplacer l'ancien bloc JSON-LD de `templates/base.html.twig` par :
+
+```twig
+{% block structured_data %}
+    {% include '_partials/_structured_data.html.twig' %}
+{% endblock %}
+```
+
+Le même bloc est fourni dans `references/templates/base-structured-data-block.twig`. Ne pas ajouter le nouveau script à côté de l'ancien : remplacer l'ancien bloc. Conserver les personnalisations de la base et les autres blocs `extra_schema`. L'installateur ne modifie pas automatiquement les bases des sites clients ; cette intégration est donc nécessaire sur un site existant. Les helpers sont autonomes et ne nécessitent pas l'activation du module PSEO.
+
+Puis exécuter `php bin/console cache:clear`. Aucune migration, aucun appel Claude, aucune nouvelle requête SQL et aucune compilation front. Valider les scripts rendus avec un parseur JSON strict. Un JSON-LD valide n'est pas une garantie de résultat enrichi : Google a retiré les résultats enrichis FAQ depuis le 7 mai 2026 (voir https://developers.google.com/search/updates).
 
 ## Correctif 1.2.2 : distinguer blocage et relecture
 

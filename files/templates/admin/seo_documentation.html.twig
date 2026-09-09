@@ -15,7 +15,10 @@
     </div>
 
     <section class="mb-4" aria-labelledby="seo-release-title">
-        <h2 id="seo-release-title" class="h4">Correctif 1.2.2</h2>
+        <h2 id="seo-release-title" class="h4">Correctif 1.2.3</h2>
+        <p>JSON-LD commun encodé en une seule fois : les retours à la ligne, guillemets et plusieurs groupes FAQ ne cassent plus le graphe. Seules les FAQ actives avec une traduction complète sont incluses.</p>
+        <p>Les horaires simples sont normalisés pour le CMS et le PSEO. Un texte ambigu ou sur rendez-vous est omis des horaires structurés, sans changer le texte visible. Le déploiement nécessite les nouveaux helpers et le partiel commun ; pour les pages classiques, remplacer le bloc <code>structured_data</code> de la base par l'inclusion du partiel <code>_partials/_structured_data.html.twig</code>. L'installateur n'écrase pas les bases personnalisées.</p>
+        <h3 class="h4">Correctif 1.2.2</h3>
         <p>Le score éditorial totalise réellement 100 points. La liste de publication le recalcule à l'affichage, sans modifier les pages enregistrées. Un score élevé ne remplace pas la vérification des faits.</p>
         <p>Les précisions techniques locales restent facultatives. Un contenu potentiellement générique ou répétitif passe en « Relecture nécessaire », sans être déclaré faux. Service non confirmé, zone non couverte, information inventée ou génération inutilisable restent bloquants.</p>
         <p>Les pages à relire ne sont ni précochées ni incluses dans la sélection globale. Après vérification, leur sélection individuelle et la confirmation valident la relecture. Le serveur contrôle cette confirmation, aussi en publication individuelle. Les anciennes alertes restent conservées et les prompts personnalisés reçoivent les nouvelles consignes sans être écrasés.</p>
